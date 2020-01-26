@@ -1,3 +1,5 @@
+// Responsible author(s): Zihao Zhang
+
 #include <inode.h>
 
 int inode_list_init(){

@@ -1,5 +1,6 @@
+// Responsible author(s): DZ
+
 #include <fs.h>
-#include <inode.h>
 
 void mkfs(){
 	// init sb, inode, db, root
@@ -7,9 +8,4 @@ void mkfs(){
 	inode_list_init();
 	db_init();
 	pcd_mkroot();
-}
-
-int main(int argc, char** argv)
-{
-
 }

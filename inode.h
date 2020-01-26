@@ -1,23 +1,35 @@
+// Responsible author(s): DZ
 
-#define DIRECT_BLKS_NUM 
+#include <stdlib.h>
+#include <db.h>
 
-struct inode{
-     //owner info
+#define DIRECT_BLKS_NUM 12
 
-     //size
+typedef struct{
+     /* Mode: keeps information about two things, 
+               1) permission information, 
+               2) type of inode */
+     
+
+     /* Owner info: Access details like owner of the file, 
+                    group of the file etc */
+     int UID;
+     int GID;
+
+     /* Size: size of the file in terms of bytes */
      int size;
-     //link
-     int link;
-     //time stamped
+
+     // Time stampes
      int last_accessed;
      int last_modified;
-     //data blocks
-     int db[DIRECT_BLKS_NUM];
-     int single_ind;
-     int double_ind;
-     int triple_ind;   
-}
 
-inode_list_init();
+     // Data blocks
+     db* direct_blocks[DIRECT_BLKS_NUM];
+     inode* single_ind;
+     inode* double_ind;
+     inode* triple_ind;   
+}inode;
+
+int inode_list_init();
 int inode_read(inode* node);
 int inode_write(inode* node);
