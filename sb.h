@@ -1,8 +1,12 @@
-#define NUM_INODE;
+// Responsible author(s): DZ
 
+#include <stdlib.h>
+#include <inode.h>
+#include <db.h>
 
+#define NUM_INODE 4096
 
-struct sb{
+typedef struct{
 	// Blocks in the file system
 	int blk_size;
 	// No of free blocks in the file system
@@ -10,7 +14,7 @@ struct sb{
 	// Inodes per block group
 	int max_free_inode;
 	int num_free_inode;
-	int ilist[NUM_INODE] // free inode list
+	int ilist[NUM_INODE]; // free inode list
 	// Blocks per block group
 	int max_free_blk;
 	int num_free_blk;
@@ -30,7 +34,7 @@ struct sb{
 	// The operating system in which the file system was formatted
 
 
-}
+}sb;
 
 void sb_init();
 int sb_read();
