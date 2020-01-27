@@ -2,7 +2,7 @@
 
 #include <stdlib.h>
 
-typedef struct{
+typedef struct db{
 
 }db;
 
