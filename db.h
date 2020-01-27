@@ -3,6 +3,6 @@
 #include <stdlib.h>
 
 typedef struct db{
-
+char* Block;
 }db;
 
