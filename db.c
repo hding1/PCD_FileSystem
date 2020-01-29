@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <db.h>
-
+#include <fs.c>>
 int allocate(db* Disk_Buffer){
 	Disk_Buffer = (struct db*)malloc(sizeof(struct db));
 	Disk_Buffer->Block = malloc(4096*sizeof(char));
@@ -11,6 +11,18 @@ return 1;
 int free(db* Disk_Buffer){
 //memset(Disk_Buff.content, 0, 4096);
 	free(Disk_Buffer->Block);
+
+	db* out = malloc(sizeof(db));
+	out->block = malloc(sizeof(4096*sizeof(char)));
+	disk_read(out, add_0);
+
+	super_block sb;
+	memcpy(&sb, out, sizeof(sb));
+
+	void* temp  =  sb->freelist;
+	sb->freelist = Disk_Buffer;
+	Disk_buffer = &temp;
+	
 	return 1;
 }
 int read(db* out, db* Disk_Buffer){
