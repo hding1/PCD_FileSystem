@@ -33,9 +33,19 @@ typedef struct inode{
      unsigned int triple_ind;   
 }inode;
 
-int inode_allocate(struct inode* node);
-int inode_free(struct inode* node);
-int inode_read(struct inode* node, char* disk_buffer);
-int inode_write(struct inode* node, char* disk_buffer);
+unsigned int inode_allocate();
+unsigned int inode_free(unsigned int inum);
+int inode_read(char* out_buffer, unsigned int inum);
+int inode_write(char* in_buffer, unsigned int inum);
 
-int inode_list_init(struct inode* list);
+unsigned int inode_list_init();
+
+
+// Layer 1.5 - File io by inode id
+int get_root_inum(int* inum);
+int allocate_file(int* inum, mode_t mode);
+int chmod(int* inum, mode_t mode);
+int chmod(int* inum, mode_t mode);
+int free_file(int inum);
+int read_file(int inum, char* buf, int size, int offset);
+int write_file(int inum, char* buf, int size, int offset);
