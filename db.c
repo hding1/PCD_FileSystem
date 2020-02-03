@@ -3,12 +3,11 @@
 #include <stdio.h>
 #include <db.h>
 #include <fs.c>>
-int allocate(db* Disk_Buffer){
-	Disk_Buffer = (struct db*)malloc(sizeof(struct db));
-	Disk_Buffer->Block = malloc(4096*sizeof(char));
-return 1;
+unsigned int allocate(){
+	db* out = malloc(sizeof(db));
+	db_read(out,add_0);
 }
-int free(db* Disk_Buffer){
+int free(unsigned int block_id){
 //memset(Disk_Buff.content, 0, 4096);
 	free(Disk_Buffer->Block);
 
@@ -41,4 +40,10 @@ void disk_write(db* in, db* Disk_Buffer){
 	memcpy(Disk_Buffer->Block, in->Block,4096);
 }
 
+
+void db_init(){
+
+
+
+}
 
