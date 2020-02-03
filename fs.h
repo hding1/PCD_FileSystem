@@ -5,3 +5,4 @@
 #include <stdlib.h>
 
 void mkfs();
+void* add_0; // the first block of the disk

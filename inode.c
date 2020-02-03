@@ -1,4 +1,4 @@
-// Responsible author(s): Zihao Zhang
+// Responsible author(s): Dennis
 
 #include <inode.h>
 

@@ -1,4 +1,4 @@
-// Responsible author(s): DZ
+// Responsible author(s): Dennis
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -11,9 +11,7 @@ typedef struct inode{
      /* Mode: keeps information about two things, 
                1) permission information, 
                2) type of inode */
-     unsigned int permission; /* 9 bits */
-     unsigned int type;  /* 0)file 1)directory 2)symbolic link 3)block device 4)character device 5)FIFO */
-    
+     mode_t mode;
 
      /* Owner info: Access details like owner of the file, 
                     group of the file etc */
@@ -29,10 +27,10 @@ typedef struct inode{
      time_t last_modified;
 
      // Data blocks
-     db* direct_blo[DIRECT_BLKS_NUM];
-     inode* single_ind;
-     inode* double_ind;
-     inode* triple_ind;   
+     unsigned int direct_blo[DIRECT_BLKS_NUM];
+     unsigned int single_ind;
+     unsigned int double_ind;
+     unsigned int triple_ind;   
 }inode;
 
 int inode_allocate(struct inode* node);
