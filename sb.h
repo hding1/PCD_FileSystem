@@ -8,7 +8,9 @@
 
 typedef struct sb{
 	// Blocks in the file system
+
 	// No of free blocks in the file system
+	
 	// Inodes per block group
 	// Blocks per block group
 	// No of times the file system was mounted since last fsck.
