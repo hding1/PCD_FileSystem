@@ -1019,5 +1019,9 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
+
+# The binary compiled from the Makefile
+pcd_fuse
+
 # I'm compiling with the Makefile, but it's targeted at fuse3 --Karl Wang
 !Makefile

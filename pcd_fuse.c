@@ -1,4 +1,9 @@
-#include <pcd_fuse.h>
+#include <stdio.h>
+#include <string.h>
+#include <assert.h>
+#include <stddef.h> //for offsetof
+
+#include "pcd_fuse.h"
 
 
 static void *pcd_init(struct fuse_conn_info *conn,
@@ -7,6 +12,9 @@ static void *pcd_init(struct fuse_conn_info *conn,
 	// (void) conn;
 	// cfg->kernel_cache = 1;
 	// return NULL;
+
+	//TODO: implement this
+	return NULL;
 }
 
 static int pcd_getattr(const char *path, struct stat *stbuf,
@@ -85,6 +93,39 @@ static struct fuse_operations pcd_oper = {
 	.read		= pcd_read,
 };
 
+/*
+ * Command line options
+ *
+ * We can't set default values for the char* fields here because
+ * fuse_opt_parse would attempt to free() them when the user specifies
+ * different values on the command line.
+ */
+static struct options {
+	const char *filename;
+	const char *contents;
+	int show_help;
+} options;
+
+#define OPTION(t, p)                           \
+    { t, offsetof(struct options, p), 1 }
+static const struct fuse_opt option_spec[] = {
+	OPTION("--name=%s", filename),
+	OPTION("--contents=%s", contents),
+	OPTION("-h", show_help),
+	OPTION("--help", show_help),
+	FUSE_OPT_END
+};
+
+static void show_help(const char *progname)
+{
+	printf("usage: %s [options] <mountpoint>\n\n", progname);
+	printf("File-system specific options:\n"
+	       "    --name=<s>          Name of the \"hello\" file\n"
+	       "                        (default: \"hello\")\n"
+	       "    --contents=<s>      Contents \"hello\" file\n"
+	       "                        (default \"Hello, World!\\n\")\n"
+	       "\n");
+}
 
 int main(int argc, char *argv[])
 {
