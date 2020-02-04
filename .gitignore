@@ -1018,3 +1018,6 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# I'm compiling with the Makefile, but it's targeted at fuse3 --Karl Wang
+!Makefile
