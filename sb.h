@@ -32,9 +32,9 @@ typedef struct sb{
 	unsigned int START_ILIST;
 	unsigned int START_BITMAP;
 	unsigned int FREE_LIST;
-};
+}sb;
 
 
 void sb_init();
-int sb_read();
-int sb_write();
+sb* sb_read();
+void sb_write();
