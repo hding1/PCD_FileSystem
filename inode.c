@@ -2,16 +2,40 @@
 
 #include <inode.h>
 
-int inode_allocate(struct inode* node){
-    node = (struct inode*) malloc(sizeof(struct inode));
+
+unsigned int inode_bitmap_init(){
+
+    // Allocate the 2nd block and 3rd block (block id = 1, 2) for inode bitmap
+
+    // Set all inode to free
+
+    // Return the starting block id
+    return 1;
+}
+
+
+unsigned int inode_list_init(){
+
+    // Allocate the 4th to 131th block (block id =3, 130) for inode list
+
+    // Return the starting block id
+    return 3;
+}
+
+
+unsigned int inode_allocate(){
+
+    // Find a opening in the bitmap
+
+    // Create a default inode struct
+    inode node;
     node->permission = 666;
     node->type = 0;
-    node->UID = 0;      //STUB!! How to get UID, PID?
-    node->GID = 0;      //STUB!!
+    node->UID = 0;
+    node->GID = 0;
     node->size = 4096;
     node->last_accessed = time(NULL);
     node->last_modified = time(NULL);
-
     for(int i = 0; i < DIRECT_BLKS_NUM; i++){
         node->direct_blo[i] = NULL;
     }
@@ -19,54 +43,35 @@ int inode_allocate(struct inode* node){
     node->double_ind = NULL;
     node->triple_ind = NULL;
 
+    // Write the inode struct to the place indicated by bitmap in the disk 
+
+    // Return the inum of the inode created
+    return 0; 
+}
+
+unsigned int inode_free(unsigned int inum){
+    
+    // Free the inode in the bitmap
+
+    // Return the inum of the inode freed
+    return 0;
+
+}
+
+int inode_read(char* out_buffer, unsigned int inum){
+
+    // Find the inode by inum
+
+    // load the inode (128 bytes) to buffer
+    
     return 0; // If success
 }
 
-int inode_free(struct inode* node){
-    for(int i = 0; i < DIRECT_BLKS_NUM; i++){
-        free(node->direct_blo[i]);
-    }
-    free(node->single_ind);
-    free(node->double_ind);
-    free(node->triple_ind);
-    free(node);
+int inode_write(char* in_buffer, unsigned int inum){
 
-    return 0; // If success
-}
+    // Find the inode by inum
 
-int inode_read(struct inode* node, char* disk_buffer){
-    int offset = 0;
-    offset += sprintf(disk_buffer + offset, "%d", node->permission);
-    disk_buffer[offset++] = ";";
-    offset += sprintf(disk_buffer + offset, "%d", node->type);
-    disk_buffer[offset++] = ";";
-    offset += sprintf(disk_buffer + offset, "%d", node->UID);
-    disk_buffer[offset++] = ";";
-    offset += sprintf(disk_buffer + offset, "%d", node->GID);
-    disk_buffer[offset++] = ";";
-    offset += sprintf(disk_buffer + offset, "%d", node->size);
-    disk_buffer[offset++] = ";";
-    offset += sprintf(disk_buffer + offset, "%ld", node->last_accessed);
-    disk_buffer[offset++] = ";";
-    offset += sprintf(disk_buffer + offset, "%ld", node->last_modified);
-    disk_buffer[offset++] = ";";
-    for(int i = 0; i < DIRECT_BLKS_NUM; i++){
-        offset += sprintf(disk_buffer + offset, "%p", (void*) node->direct_blo[i]);
-        disk_buffer[offset++] = ";";
-    }
-    offset += sprintf(disk_buffer + offset, "%p", (void*) node->single_ind);
-    disk_buffer[offset++] = ";";
-    offset += sprintf(disk_buffer + offset, "%p", (void*) node->double_ind);
-    disk_buffer[offset++] = ";";
-    offset += sprintf(disk_buffer + offset, "%p", (void*) node->triple_ind);
+    // load the buffer (128 bytes) to inode
 
-    return 0; // If success
-}
-
-int inode_write(struct inode* node, char* disk_buffer){
-   
-}
-
-int inode_list_init(struct inode* list){
-
+   return 0; // If success
 }
