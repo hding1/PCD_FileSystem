@@ -2,10 +2,14 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <time.h>
 #include <db.h>
+#include <sys/stat.h>
 
+#define NUM_INODE 4096
 #define DIRECT_BLKS_NUM 12
+#define INODE_SIZE 128
 
 typedef struct inode{
      /* Mode: keeps information about two things, 
@@ -19,7 +23,7 @@ typedef struct inode{
      unsigned int GID;
 
      /* Size: size of the file in terms of bytes */
-     // Default file size is set to 4096 bytes (one data block)
+     // Default file size is 0
      unsigned int size;
 
      // Time stampes
@@ -35,7 +39,9 @@ typedef struct inode{
 
 // Allocate space for inode bitmap and inode list
 unsigned int inode_bitmap_init();
+unsigned int find_free_inode();
 unsigned int inode_list_init();
+inode* find_inode_by_inum(unsigned int inum);
 
 // Individual inode operations
 unsigned int inode_allocate();
