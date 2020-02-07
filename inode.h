@@ -1,3 +1,6 @@
+#ifndef PCD_FILESYSTEM_INODE_H_
+#define PCD_FILESYSTEM_INODE_H_
+
 // Responsible author(s): Dennis
 
 #include <stdlib.h>
@@ -58,3 +61,5 @@ int chmod(int* inum, mode_t mode);
 int free_file(int inum);
 int read_file(int inum, char* buf, int size, int offset);
 int write_file(int inum, char* buf, int size, int offset);
+
+#endif //PCD_FILESYSTEM_INODE_H_

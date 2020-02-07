@@ -1,3 +1,6 @@
+#ifndef PCD_FILESYSTEM_DB_H_
+#define PCD_FILESYSTEM_DB_H_
+
 // Responsible author(s): FZ
 
 #include <stdlib.h>
@@ -14,3 +17,4 @@ int db_write(db* in_buffer, unsigned int block_id);
 void disk_read(db* out_buffer, unsigned int block_id);
 void disk_write(db* in_buffer, unsigned int block_id);
 
+#endif //PCD_FILESYSTEM_DB_H_
