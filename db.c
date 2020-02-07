@@ -6,7 +6,9 @@
 #include <sb.h>
 
 unsigned int db_allocate(){
-	db_read(out,add_0);
+	// Return the bid of a free block
+	// STUB
+	return 0;
 }
 
 int db_free(unsigned int block_id){
@@ -27,22 +29,24 @@ int db_free(unsigned int block_id){
 
 	return 1;
 }
-int db_read(db* out, unsigned int block_id){
+
+
+int db_read(void* out, unsigned int block_id){
 	disk_read(out,block_id);
-	return 1;
+	return 0; // Return 0 on success
 }
-int db_write(db* in, unsigned int block_id){
+int db_write(void* in, unsigned int block_id){
 	disk_write(in, block_id);
-	return 1;
+	return 0; // Return 0 on success
 }
 
-void disk_read(db* out, unsigned int block_id){
-	db* Disk_Buffer = (db*)&(add_0 + block_id * 4096);
-	memcpy(out->Block, Disk_Buffer->Block,4096);
+void disk_read(void* out, unsigned int block_id){
+	db* Disk_Buffer = (db*) ((db*) add_0 + block_id);
+	memcpy(out, Disk_Buffer, DB_SIZE);
 }
-void disk_write(db* in, unsigned int block_id){
-	db* Disk_Buffer = (db*)&(add_0 + block_id * 4096);
-	memcpy(Disk_Buffer->Block, in->Block,4096);
+void disk_write(void* in, unsigned int block_id){
+	db* Disk_Buffer = (db*) ((db*) add_0 + block_id);
+	memcpy(Disk_Buffer, in, DB_SIZE);
 }
 
 
