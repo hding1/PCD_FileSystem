@@ -4,8 +4,6 @@
 #include <inode.h>
 #include <db.h>
 
-#define NUM_INODE 4096
-
 typedef struct sb{
 	// Blocks in the file system
 	unsigned int NUM_BLOCK;
@@ -32,9 +30,9 @@ typedef struct sb{
 	unsigned int START_ILIST;
 	unsigned int START_BITMAP;
 	unsigned int FREE_LIST;
-};
+}sb;
 
 
 void sb_init();
-int sb_read();
-int sb_write();
+sb* sb_read();
+void sb_write();

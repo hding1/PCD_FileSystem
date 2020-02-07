@@ -2,48 +2,62 @@
 #include <string.h>
 #include <stdio.h>
 #include <db.h>
-#include <fs.c>>
-unsigned int allocate(){
-	db* out = malloc(sizeof(db));
+#include <fs.c>
+#include <sb.h>
+
+unsigned int db_allocate(){
 	db_read(out,add_0);
 }
-int free(unsigned int block_id){
-//memset(Disk_Buff.content, 0, 4096);
-	free(Disk_Buffer->Block);
 
-	db* out = malloc(sizeof(db));
-	out->block = malloc(sizeof(4096*sizeof(char)));
-	disk_read(out, add_0);
+int db_free(unsigned int block_id){
 
-	super_block sb;
-	memcpy(&sb, out, sizeof(sb));
-
-	void* temp  =  sb->freelist;
-	sb->freelist = Disk_Buffer;
-	Disk_buffer = &temp;
+	sb* super = sb_read();
 	
+	unsigned int temp  =  super->FREE_LIST;
+	super->FREE_LIST = block_id;
+	super->NUM_FREE_BLOCK+=1;
+
+	sb_write(super);
+	free(super);
+
+	db* input = (db*)malloc(sizeof(db));
+	memcpy(input->block, temp, sizeof(unsigned int));
+	disk_write(input, block_id);
+	free(input);
+
 	return 1;
 }
-int read(db* out, db* Disk_Buffer){
-	disk_read(out,Disk_Buffer);
+int db_read(db* out, unsigned int block_id){
+	disk_read(out,block_id);
 	return 1;
 }
-int write(db* in, db* Disk_Buffer){
-	disk_write(in, Disk_Buffer);
+int db_write(db* in, unsigned int block_id){
+	disk_write(in, block_id);
 	return 1;
 }
 
-void disk_read(db* out, db* Disk_Buffer){
+void disk_read(db* out, unsigned int block_id){
+	db* Disk_Buffer = (db*)&(add_0 + block_id * 4096);
 	memcpy(out->Block, Disk_Buffer->Block,4096);
 }
-void disk_write(db* in, db* Disk_Buffer){
+void disk_write(db* in, unsigned int block_id){
+	db* Disk_Buffer = (db*)&(add_0 + block_id * 4096);
 	memcpy(Disk_Buffer->Block, in->Block,4096);
 }
 
 
 void db_init(){
-
-
+	sb* super = sb_read();
+	unsigned int START_DATA_BLOCK = super->START_DATA_BLOCK;
+	db* input = (db*)malloc(sizeof(db));
+	//the last free data block doesnt need to be initialized so size-1
+	for(unsigned int i = 0; i < NUM_FREE_BLOCK-1; i++){
+		memset(inpit, 0, sizeof(db));
+		unsigned int id = i+START_DATA_BLOCK;
+		memcpy(input, id+1, sizeof(unsigned int));		
+		disk_write(input, id);
+	}
+	free(input);
 
 }
 
