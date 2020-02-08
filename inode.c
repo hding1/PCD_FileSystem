@@ -6,9 +6,9 @@
 int inode_bitmap_init(){
 
     // Create a bitmap of size NUM_INODE, set all inodes to be free
-    bool bitmap[NUM_INODE];
+    unsigned short bitmap[NUM_INODE];
     for(int i = 0; i < NUM_INODE; i++){
-        bitmap[i] = false;
+        bitmap[i] = 0;
     }
 
     // Wirte the bitmap to disk
@@ -20,11 +20,11 @@ int inode_bitmap_init(){
 
 unsigned int find_free_inode(){
     // Bring the bitmap from disk to memory
-    bool bitmap[NUM_INODE];
+    unsigned short bitmap[NUM_INODE];
     db_read(bitmap, BITMAP_BID);
     for(int i = 0; i < NUM_INODE; i++){
-        if(bitmap[i] == false){
-            bitmap[i] = true;
+        if(bitmap[i] == 0){
+            bitmap[i] = 1;
             return i;   // Return the inum of the free inode
         }
     }
@@ -36,18 +36,18 @@ int inode_list_init(){
 
      // Create a default inode struct
     inode node;
-    node->mode = 0;
-    node->UID  = 0;
-    node->GID  = 0;
-    node->size = 0;
-    node->last_accessed = 0;
-    node->last_modified = 0;
+    node.mode = 0;
+    node.UID  = 0;
+    node.GID  = 0;
+    node.size = 0;
+    node.last_accessed = 0;
+    node.last_modified = 0;
     for(int i = 0; i < DIRECT_BLKS_NUM; i++){
-        node->direct_blo[i] = 0;
+        node.direct_blo[i] = 0;
     }
-    node->single_ind = 0;
-    node->double_ind = 0;
-    node->triple_ind = 0;
+    node.single_ind = 0;
+    node.double_ind = 0;
+    node.triple_ind = 0;
 
     // Allocate the 3rd to 130th block (block id =2, 129) for inode list
     char block[4096];
@@ -65,7 +65,7 @@ int inode_list_init(){
 inode* find_inode_by_inum(unsigned int inum){
     unsigned int bid = ILIST_BID + inum / 32;
     unsigned offset = inum % 32;
-    inode* ptr = (inode*)((db*)add_0 + bid) + offset;
+    inode* ptr = (inode*)((db*)(add_0) + bid) + offset;
     return ptr;
 }
 
@@ -85,7 +85,7 @@ unsigned int inode_allocate(){
 unsigned int inode_free(unsigned int inum){
     
     // Mark the inode free in bitmap
-    bool bitmap[NUM_INODE];
+    unsigned short bitmap[NUM_INODE];
     db_read(bitmap, BITMAP_BID);
     bitmap[inum] = 0;
     db_write(bitmap, BITMAP_BID);

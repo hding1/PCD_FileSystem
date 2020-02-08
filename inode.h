@@ -47,17 +47,16 @@ int inode_list_init();
 inode* find_inode_by_inum(unsigned int inum);
 
 // Individual inode operations
-unsigned int inode_allocate();
+int inode_allocate(unsigned int* inum, inode* out);
 unsigned int inode_free(unsigned int inum);
 int inode_read(inode* out, unsigned int inum);
 int inode_write(inode* in, unsigned int inum);
 
 // Layer 1.5 - File io by inode id
-// TO BE DETERMINED !
+// int allocate_file(int* inum, mode_t mode);
+// int chmod(int* inum, mode_t mode);
+// int chmod(int* inum, mode_t mode);
+// int free_file(int inum);
 int get_root_inum(int* inum);
-int allocate_file(int* inum, mode_t mode);
-// int chmod(int* inum, mode_t mode);
-// int chmod(int* inum, mode_t mode);
-int free_file(int inum);
-int read_file(int inum, char* buf, int size, int offset);
-int write_file(int inum, char* buf, int size, int offset);
+int read_file(inode* out, char* buf, int size, int offset);
+int write_file(inode* in, char* buf, int size, int offset);
