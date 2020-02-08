@@ -7,8 +7,29 @@
 
 unsigned int db_allocate(){
 	// Return the bid of a free block
-	// STUB
-	return 0;
+	
+	sb* super = sb_read();
+	unsigned int bid  =  super->FREE_LIST;
+	if(super->NUM_FREE_BLOCK==0){
+		free(super);
+		return -1;
+	}
+	else{	
+		super->NUM_FREE_BLOCK-=1;
+	}
+	void* buffer = malloc(sizeof(char) * DB_SIZE);
+	disk_read(buffer,bid);
+	unsigned int* new_free_id = malloc(sizeof(unsigned int));
+	memcpy(new_free_id, buffer, sizeof(unsigned int));
+
+	super->FREE_LIST = new_free_id;
+	
+	sb_write(super);
+
+	free(super);
+	free(buffer);
+
+	return bid;
 }
 
 int db_free(unsigned int block_id){
@@ -22,12 +43,12 @@ int db_free(unsigned int block_id){
 	sb_write(super);
 	free(super);
 
-	db* input = (db*)malloc(sizeof(db));
-	memcpy(input->block, temp, sizeof(unsigned int));
+	void* input = malloc(DB_SIZE*sizeof(char));
+	memcpy(input, temp, sizeof(unsigned int)); //dest, source
 	disk_write(input, block_id);
 	free(input);
 
-	return 1;
+	return 0;
 }
 
 
@@ -41,11 +62,11 @@ int db_write(void* in, unsigned int block_id){
 }
 
 void disk_read(void* out, unsigned int block_id){
-	db* Disk_Buffer = (db*) ((db*) add_0 + block_id);
+	void* Disk_Buffer = (void*)((char*)add_0 + block_id*4096);
 	memcpy(out, Disk_Buffer, DB_SIZE);
 }
 void disk_write(void* in, unsigned int block_id){
-	db* Disk_Buffer = (db*) ((db*) add_0 + block_id);
+	void* Disk_Buffer = (void*)((char*)add_0 + block_id*4096);
 	memcpy(Disk_Buffer, in, DB_SIZE);
 }
 
@@ -53,10 +74,9 @@ void disk_write(void* in, unsigned int block_id){
 void db_init(){
 	sb* super = sb_read();
 	unsigned int START_DATA_BLOCK = super->START_DATA_BLOCK;
-	db* input = (db*)malloc(sizeof(db));
+	void* input = malloc(sizeof(unsigned int));
 	//the last free data block doesnt need to be initialized so size-1
 	for(unsigned int i = 0; i < NUM_FREE_BLOCK-1; i++){
-		memset(inpit, 0, sizeof(db));
 		unsigned int id = i+START_DATA_BLOCK;
 		memcpy(input, id+1, sizeof(unsigned int));		
 		disk_write(input, id);
