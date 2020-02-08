@@ -4,9 +4,9 @@
 
 #define DB_SIZE 4096
 
-typedef struct db{
+/*typedef struct db{
 char Block[4096];
-}db;
+}db;*/
 
 void db_init();
 unsigned int db_allocate();
