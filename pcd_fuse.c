@@ -1,19 +1,25 @@
+
+#include <fuse.h>
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <stddef.h>
 #include <assert.h>
-#include <stddef.h> //for offsetof
+
+#include <sys/stat.h>
 
 #include "pcd_fuse.h"
-
+#include "fs.h"
+#include "inode.h"
 
 static void *pcd_init(struct fuse_conn_info *conn,
 			struct fuse_config *cfg)
 {
-	// (void) conn;
-	// cfg->kernel_cache = 1;
-	// return NULL;
+	//not using conn
+	(void) conn;
+	mkfs();
 
-	//TODO: implement this
 	return NULL;
 }
 
@@ -21,20 +27,23 @@ static int pcd_getattr(const char *path, struct stat *stbuf,
 			 struct fuse_file_info *fi)
 {
 	(void) fi;
-	int res = 0;
 
-	// memset(stbuf, 0, sizeof(struct stat));
-	// if (strcmp(path, "/") == 0) {
-	// 	stbuf->st_mode = S_IFDIR | 0755;
-	// 	stbuf->st_nlink = 2;
-	// } else if (strcmp(path+1, options.filename) == 0) {
-	// 	stbuf->st_mode = S_IFREG | 0444;
-	// 	stbuf->st_nlink = 1;
-	// 	stbuf->st_size = strlen(options.contents);
-	// } else
-	// 	res = -ENOENT;
+	memset(stbuf, 0, sizeof(struct stat));
 
-	return res;
+	inode node;
+	if(!find_inode(path, &node)){
+		return -ENOENT;
+	}
+
+	stbuf->st_mode = node.mode;
+	stbuf->st_nlink = node.links_count;
+	if(node.mode & S_IFREG){
+		// on off_t size: //stackoverflow.com/questions/9073667/
+		// stbuf->st_size = (node.i_dir_acl << 32) & node.i_size;
+		stbuf->st_size = node.size;
+	}
+
+	return 0;
 }
 
 static int pcd_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
