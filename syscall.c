@@ -1,7 +1,6 @@
 #define FUSE_USE_VERSION 31
 
 #include <fuse.h>
-#include <syscall.h>
 #include <inode.h>
 #include <string.h>
 #include <stdio.h>
@@ -9,7 +8,8 @@
 #include <dir.h>
 #include <sys/stat.h>
 
-// #include <sys/stat.h>
+#include "syscall.h"
+
 
 // get parent name, filename and parent path from path
 int get_parent(const char *path, char * parent, char * filename, char ** parentPath){
@@ -338,10 +338,12 @@ int pcd_open(const char *path, struct fuse_file_info *fi)
 	int res;
 
 	inode* node;
-	res = find_inode(path, node);
+	res = find_inode(path, &node);
 	if (res == -1)
 		return -1;
 
 	fi->fh = res;
+
+	free(node);
 	return 0;
 }
