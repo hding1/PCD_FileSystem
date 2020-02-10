@@ -1,8 +1,12 @@
 // Responsible author(s): DZ
 
+#ifndef PCD_FILESYSTEM_SB_H_
+#define PCD_FILESYSTEM_SB_H_
+
 #include <stdlib.h>
-#include <inode.h>
-#include <db.h>
+
+#include "inode.h"
+#include "db.h"
 
 typedef struct sb{
 	// Blocks in the file system
@@ -36,3 +40,5 @@ typedef struct sb{
 void sb_init();
 sb* sb_read();
 void sb_write();
+
+#endif //PCD_FILESYSTEM_SB_H_

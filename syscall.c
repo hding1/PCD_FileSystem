@@ -1,9 +1,13 @@
+#define FUSE_USE_VERSION 31
+
+#include <fuse.h>
 #include <syscall.h>
 #include <inode.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <dir.h>
+#include <sys/stat.h>
 
 // #include <sys/stat.h>
 
@@ -333,7 +337,8 @@ int pcd_open(const char *path, struct fuse_file_info *fi)
 {
 	int res;
 
-	res = open(path, fi->flags);
+	inode* node;
+	res = find_inode(path, node);
 	if (res == -1)
 		return -errno;
 
