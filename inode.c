@@ -1,6 +1,6 @@
 // Responsible author(s): Dennis
 
-#include <inode.h>
+#include "inode.h"
 
 int inode_bitmap_init(){
 

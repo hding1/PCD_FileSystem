@@ -5,8 +5,8 @@
 #include <string.h>
 #include <time.h>
 #include <sys/stat.h>
-#include <db.h>
-#include <fs.h>
+#include "db.h"
+#include "fs.h"
 
 #define NUM_INODE 4096
 #define DIRECT_BLKS_NUM 12
