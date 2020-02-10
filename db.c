@@ -74,6 +74,7 @@ void db_init(){
 	sb* super = sb_read();
 	unsigned int START_DATA_BLOCK = super->START_DATA_BLOCK;
 	void* input = malloc(sizeof(unsigned int));
+	unsigned int NUM_FREE_BLOCK = super->NUM_FREE_BLOCK;
 	//the last free data block doesnt need to be initialized so size-1
 	for(unsigned int i = 0; i < NUM_FREE_BLOCK-1; i++){
 		unsigned int id = i+START_DATA_BLOCK;
@@ -81,6 +82,7 @@ void db_init(){
 		disk_write(input, id);
 	}
 	free(input);
+	free(super);
 
 }
 
