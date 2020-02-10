@@ -1,5 +1,6 @@
 #include "disk.h"
 
+
 void allocate_disk(){
 	add_0 = (void*) malloc(1073741824 * sizeof(char)); // allocate disk (1GB)
 }
