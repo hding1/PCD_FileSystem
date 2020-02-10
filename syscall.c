@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <dir.h>
 
+// #include <sys/stat.h>
+
 // get parent name, filename and parent path from path
 int get_parent(const char *path, char * parent, char * filename, char ** parentPath){
 	char* val = strrchr(path, '/');

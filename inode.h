@@ -7,8 +7,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-#include <db.h>
 #include <sys/stat.h>
+
+#include "db.h"
 
 #define NUM_INODE 4096
 #define DIRECT_BLKS_NUM 12
