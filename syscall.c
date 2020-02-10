@@ -340,7 +340,7 @@ int pcd_open(const char *path, struct fuse_file_info *fi)
 	inode* node;
 	res = find_inode(path, node);
 	if (res == -1)
-		return -errno;
+		return -1;
 
 	fi->fh = res;
 	return 0;

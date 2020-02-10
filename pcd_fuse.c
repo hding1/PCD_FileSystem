@@ -33,18 +33,19 @@ static int pcd_getattr(const char *path, struct stat *stbuf,
 
 	memset(stbuf, 0, sizeof(struct stat));
 
-	inode node;
+	inode* node;
 	if(!find_inode(path, &node)){
 		return -ENOENT;
 	}
 
-	stbuf->st_mode = node.mode;
-	stbuf->st_nlink = node.links_count;
-	if(node.mode & S_IFREG){
+	stbuf->st_mode = node->mode;
+	stbuf->st_nlink = node->links_count;
+	if(node->mode & S_IFREG){
 		// on off_t size: //stackoverflow.com/questions/9073667/
 		// stbuf->st_size = (node.i_dir_acl << 32) & node.i_size;
-		stbuf->st_size = node.size;
+		stbuf->st_size = node->size;
 	}
+	free(node);
 
 	return 0;
 }
