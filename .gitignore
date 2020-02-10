@@ -1017,4 +1017,5 @@ _deps
 modules.order
 Module.symvers
 Mkfile.old
-dkms.conf
+dkms.confi
+!Makefile
