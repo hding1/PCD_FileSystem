@@ -14,6 +14,7 @@
 #include "pcd_fuse.h"
 #include "fs.h"
 #include "inode.h"
+#include "syscall.h"
 
 static void *pcd_init(struct fuse_conn_info *conn,
 			struct fuse_config *cfg)
@@ -48,53 +49,6 @@ static int pcd_getattr(const char *path, struct stat *stbuf,
 	return 0;
 }
 
-static int pcd_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
-			 off_t offset, struct fuse_file_info *fi,
-			 enum fuse_readdir_flags flags)
-{
-	(void) offset;
-	(void) fi;
-	(void) flags;
-
-	// if (strcmp(path, "/") != 0)
-	// 	return -ENOENT;
-
-	// filler(buf, ".", NULL, 0, 0);
-	// filler(buf, "..", NULL, 0, 0);
-	// filler(buf, options.filename, NULL, 0, 0);
-
-	return 0;
-}
-
-static int pcd_open(const char *path, struct fuse_file_info *fi)
-{
-	// if (strcmp(path+1, options.filename) != 0)
-	// 	return -ENOENT;
-
-	// if ((fi->flags & O_ACCMODE) != O_RDONLY)
-	// 	return -EACCES;
-
-	return 0;
-}
-
-static int pcd_read(const char *path, char *buf, size_t size, off_t offset,
-		      struct fuse_file_info *fi)
-{
-	// size_t len;
-	// (void) fi;
-	// if(strcmp(path+1, options.filename) != 0)
-	// 	return -ENOENT;
-
-	// len = strlen(options.contents);
-	// if (offset < len) {
-	// 	if (offset + size > len)
-	// 		size = len - offset;
-	// 	memcpy(buf, options.contents + offset, size);
-	// } else
-	// 	size = 0;
-
-	return size;
-}
 
 static struct fuse_operations pcd_oper = {
 	.init           = pcd_init,
