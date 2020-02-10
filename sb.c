@@ -7,7 +7,7 @@ void sb_init(){
 	super.NUM_BLOCK = 262144;
 	super.NUM_FREE_BLOCK = 262013; // 262144 - 3 - 128
 	super.INODE_PER_BLOCK = 32;
-	super.NUM_DATABLOCK; = 262013;//
+	super.NUM_DATABLOCK = 262013;//
 	super.NUM_MOUNT_TIME = 0;
 	super.MOUNT_TIME = time(NULL);
 

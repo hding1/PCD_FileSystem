@@ -2,13 +2,11 @@
 #include <string.h>
 #include <stdio.h>
 #include "db.h"
-#include "fs.c"
-#include "sb.h"
 
 unsigned int db_allocate(){
 	// Return the bid of a free block
 	
-	sb* super = sb_read();
+	struct sb* super = sb_read();
 	unsigned int bid  =  super->FREE_LIST;
 	if(super->NUM_FREE_BLOCK==0){
 		free(super);
@@ -61,6 +59,7 @@ int db_write(void* in, unsigned int block_id){
 	return 0; // Return 0 on success
 }
 
+/*
 void disk_read(void* out, unsigned int block_id){
 	void* Disk_Buffer = (void*)((char*)add_0 + block_id*4096);
 	memcpy(out, Disk_Buffer, DB_SIZE);
@@ -69,7 +68,7 @@ void disk_write(void* in, unsigned int block_id){
 	void* Disk_Buffer = (void*)((char*)add_0 + block_id*4096);
 	memcpy(Disk_Buffer, in, DB_SIZE);
 }
-
+*/
 
 void db_init(){
 	sb* super = sb_read();
