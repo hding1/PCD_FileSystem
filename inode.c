@@ -11,9 +11,9 @@ int inode_bitmap_init(){
     }
 
     // Wirte the bitmap to disk
-    int status = db_write(bitmap, BITMAP_BID);
+    db_write(bitmap, BITMAP_BID);
 
-    return status;     // Return 0 on success, -1 on error
+    return 0;     // Return 0 on success, -1 on error
 }
 
 int find_free_inode(){
@@ -22,7 +22,6 @@ int find_free_inode(){
     unsigned short bitmap[NUM_INODE];
 
     int status = db_read(bitmap, BITMAP_BID);
-    if(!status) return -1; // error reading bitmap
 
     for(int i = 0; i < NUM_INODE; i++){
         if(bitmap[i] == 0){
@@ -36,7 +35,7 @@ int find_free_inode(){
 
 int inode_list_init(){
 
-     // Create a default inode struct
+    // Create a default inode struct
     inode node;
     node.mode = 0;
     node.UID  = 0;
@@ -60,9 +59,9 @@ int inode_list_init(){
         for(int i = 0; i < 32; i++){
             memcpy(block + i * INODE_SIZE, &node, sizeof(node));
         }
-        status = db_write(block, bid);
-        if(!status) return -1;  // error writing inode
+        db_write(block, bid);
     }
+
     // Return 0 on success
     return 0;
 }
@@ -95,9 +94,7 @@ int inode_allocate(){
     node->last_modified = time(NULL);
 
     // Write changes back to disk
-    char buf[sizeof(inode)];
-    memcpy(buf, node, sizeof(inode));
-    inode_write(buf, inum);
+    inode_write(node, inum);
 
     free(node);
 
@@ -122,29 +119,24 @@ int inode_free(unsigned int inum){
 }
 
 
-int inode_read(char* buffer, unsigned int inum){
+int inode_read(inode** node, unsigned int inum){
 
-    // Read the block
-    char block[4096];
-    unsigned int bid = ILIST_BID + inum / 32;
-    db_read(block, bid);
-    // Read the inode
-    unsigned offset = inum % 32;
-    char* ptr = (char*) block + offset * INODE_SIZE;    // Find the inode in the block
-    memcpy(buffer, ptr, sizeof(inode));
+    inode* mynode = find_inode_by_inum(inum);
+    *node = mynode;
  
     return 0; // If success
 }
 
-int inode_write(char* buffer, unsigned int inum){
+int inode_write(inode** node, unsigned int inum){
     
     // Read the block from disk
+    char block[4096];
     unsigned int bid = ILIST_BID + inum / 32;
     db_read(block, bid);
     // Write the inode in the block
     unsigned offset = inum % 32;
     char* ptr = (char*) block + offset * INODE_SIZE;    
-    memcpy(ptr, buffer, sizeof(inode));
+    memcpy(ptr, *node, sizeof(inode));
     // Write back to disk
     db_write(block, bid);
     return 0; // If success
