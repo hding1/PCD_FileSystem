@@ -23,6 +23,8 @@ static void *pcd_init(struct fuse_conn_info *conn,
 	(void) conn;
 	mkfs();
 
+	//could also allocate here
+	//return calloc(1, 16*1024*1024 /*allocate 16MB*/);
 	return NULL;
 }
 
@@ -42,6 +44,7 @@ static int pcd_getattr(const char *path, struct stat *stbuf,
 	stbuf->st_nlink = node->links_count;
 	if(node->mode & S_IFREG){
 		// on off_t size: //stackoverflow.com/questions/9073667/
+		// for 64 bit:
 		// stbuf->st_size = (node.i_dir_acl << 32) & node.i_size;
 		stbuf->st_size = node->size;
 	}

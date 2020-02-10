@@ -1,14 +1,12 @@
 #define FUSE_USE_VERSION 31
 
 #include <fuse.h>
-#include <inode.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <dir.h>
-#include <sys/stat.h>
 
-#include "syscall.h"
+#include "dir.h"
+#include "inode.h"
 
 
 // get parent name, filename and parent path from path
