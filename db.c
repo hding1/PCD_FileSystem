@@ -1,9 +1,9 @@
 // Responsible author(s): Fuheng Zhao
 #include <string.h>
 #include <stdio.h>
-#include <db.h>
-#include <fs.c>
-#include <sb.h>
+#include "db.h"
+#include "fs.c"
+#include "sb.h"
 
 unsigned int db_allocate(){
 	// Return the bid of a free block

@@ -1,5 +1,6 @@
-#include <sb.h>
-#include <db.h>
+#include "sb.h"
+#include <string.h>
+#include <stdio.h>
 
 void sb_init(){
 	sb super;
