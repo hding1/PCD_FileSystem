@@ -1,6 +1,9 @@
 #ifndef PCD_FILESYSTEM_SYSCALL_H_
 #define PCD_FILESYSTEM_SYSCALL_H_
 
+#include <fuse.h>
+#include <sys/stat.h>
+
 // mkdir: makes a directory
 // mknod: makes a file
 // readdir: reads a directory
