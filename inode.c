@@ -83,17 +83,23 @@ inode* find_inode_by_inum(unsigned int inum){
 }
 
 
-int inode_allocate(inode** out){
+int inode_allocate(){
 
     // Find a opening in the bitmap
     unsigned int inum = find_free_inode();
     if(inum == -1) return -1;
+
     // Get the inode, set initial values
-    inode_read(out, inum);
-    (*out)->last_accessed = time(NULL);
-    (*out)->last_modified = time(NULL);
+    inode* node = find_inode_by_inum(inum);
+    node->last_accessed = time(NULL);
+    node->last_modified = time(NULL);
+
     // Write changes back to disk
-    inode_write(out, inum);
+    char buf[sizeof(inode)];
+    memcpy(buf, node, sizeof(inode));
+    inode_write(buf, inum);
+
+    free(node);
 
     // Return the inum if success
     return inum; 
@@ -116,40 +122,49 @@ int inode_free(unsigned int inum){
 }
 
 
-int inode_read(inode** out, unsigned int inum){
+int inode_read(char* buffer, unsigned int inum){
 
     // Read the block
     char block[4096];
     unsigned int bid = ILIST_BID + inum / 32;
     db_read(block, bid);
     // Read the inode
-    inode* node = (inode*) malloc(sizeof(inode));
     unsigned offset = inum % 32;
     char* ptr = (char*) block + offset * INODE_SIZE;    // Find the inode in the block
-    memcpy(node, ptr, sizeof(inode));
-    // Set out
-    *out = node;
-
+    memcpy(buffer, ptr, sizeof(inode));
+ 
     return 0; // If success
 }
 
-int inode_write(inode** in, unsigned int inum){
+int inode_write(char* buffer, unsigned int inum){
     
     // Read the block from disk
-    char block[4096];
     unsigned int bid = ILIST_BID + inum / 32;
     db_read(block, bid);
     // Write the inode in the block
     unsigned offset = inum % 32;
     char* ptr = (char*) block + offset * INODE_SIZE;    
-    memcpy(ptr, *in, sizeof(inode));
+    memcpy(ptr, buffer, sizeof(inode));
     // Write back to disk
     db_write(block, bid);
-
-   return 0; // If success
+    return 0; // If success
 }
 
 
-unsigned int get_root_inum();
-int read_file(inode** out, char** buf, int size, int offset);
-int write_file(inode** in, char** buf, int size, int offset);
+unsigned int get_root_inum(){
+    return 0;
+}
+
+
+int read_file(unsigned int inum, char* buf, int size, int offset){
+    // Read inode
+    // Locate offset
+    // Read disk to buf
+}
+
+
+int write_file(unsigned int inum, char* buf, int size, int offset){
+    // Read inode
+    // Locate offset
+    // Write buffer to disk
+}
