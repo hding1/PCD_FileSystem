@@ -1,6 +1,7 @@
 // Responsible author(s): FZ
 
 #include <stdlib.h>
+#include "sb.h"
 
 #define DB_SIZE 4096
 

@@ -1,8 +1,9 @@
 // Responsible author(s): DZ
 
 #include <stdlib.h>
-#include <inode.h>
-#include "db.h"
+#include <time.h>
+#include "disk.h"
+#define DB_SIZE 4096
 
 typedef struct sb{
 	// Blocks in the file system
