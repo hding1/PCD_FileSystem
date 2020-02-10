@@ -4,8 +4,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-#include <db.h>
 #include <sys/stat.h>
+#include <db.h>
+#include <fs.h>
 
 #define NUM_INODE 4096
 #define DIRECT_BLKS_NUM 12
@@ -37,26 +38,29 @@ typedef struct inode{
      unsigned int direct_blo[DIRECT_BLKS_NUM];
      unsigned int single_ind;
      unsigned int double_ind;
-     unsigned int triple_ind;   
+     unsigned int triple_ind;
+
+     // Status
+     unsigned int link_count;   
 }inode;
 
 // Allocate space for inode bitmap and inode list
 int inode_bitmap_init();
-unsigned int find_free_inode();
+int find_free_inode();
 int inode_list_init();
 inode* find_inode_by_inum(unsigned int inum);
 
 // Individual inode operations
-int inode_allocate(unsigned int* inum, inode* out);
-unsigned int inode_free(unsigned int inum);
-int inode_read(inode* out, unsigned int inum);
-int inode_write(inode* in, unsigned int inum);
+int inode_allocate(inode** out);
+int inode_free(unsigned int inum);
+int inode_read(inode** out, unsigned int inum);
+int inode_write(inode** in, unsigned int inum);
 
 // Layer 1.5 - File io by inode id
 // int allocate_file(int* inum, mode_t mode);
 // int chmod(int* inum, mode_t mode);
 // int chmod(int* inum, mode_t mode);
 // int free_file(int inum);
-int get_root_inum(int* inum);
-int read_file(inode* out, char* buf, int size, int offset);
-int write_file(inode* in, char* buf, int size, int offset);
+unsigned int get_root_inum();
+int read_file(inode** out, char** buf, int size, int offset);
+int write_file(inode** in, char** buf, int size, int offset);
