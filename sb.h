@@ -1,13 +1,12 @@
-// Responsible author(s): DZ
-
-#ifndef PCD_FILESYSTEM_SB_H_
-#define PCD_FILESYSTEM_SB_H_
+// Responsible author(s): Fuheng
 
 #include <stdlib.h>
+#include <time.h>
+#include "disk.h"
+#define DB_SIZE 4096
 
-#include "inode.h"
-#include "db.h"
-
+#ifndef SB_H_
+#define SB_H_
 typedef struct sb{
 	// Blocks in the file system
 	unsigned int NUM_BLOCK;
@@ -41,4 +40,4 @@ void sb_init();
 sb* sb_read();
 void sb_write();
 
-#endif //PCD_FILESYSTEM_SB_H_
+#endif

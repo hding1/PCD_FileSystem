@@ -921,10 +921,10 @@ gradle-app.setting
 ##### CMake
 CMakeLists.txt.user
 CMakeCache.txt
-CMakeFiles
+# CMakeFiles
 CMakeScripts
 Testing
-Makefile
+# Makefile
 cmake_install.cmake
 install_manifest.txt
 compile_commands.json
@@ -1019,9 +1019,5 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
-
-# The binary compiled from the Makefile
 pcd_fuse
-
-# I'm compiling with the Makefile, but it's targeted at fuse3 --Karl Wang
 !Makefile
