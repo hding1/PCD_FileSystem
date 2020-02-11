@@ -11,8 +11,6 @@
 #include "db.h"
 #include "fs.h"
 
-#include "db.h"
-
 #define NUM_INODE 4096
 #define DIRECT_BLKS_NUM 12
 #define INODE_SIZE 128
