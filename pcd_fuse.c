@@ -35,8 +35,7 @@ static int pcd_getattr(const char *path, struct stat *stbuf,
 
 	memset(stbuf, 0, sizeof(struct stat));
 
-	inode* node;
-	if(!find_inode(path, &node)){
+	if(!find_inode(path)){
 		return -ENOENT;
 	}
 

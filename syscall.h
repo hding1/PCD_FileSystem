@@ -22,6 +22,6 @@ int pcd_read(const char *path, char *buf, size_t size, off_t offset,
 int pcd_write(const char *path, const char *buf, size_t size,
 		     off_t offset, struct fuse_file_info *fi);
 int pcd_open(const char *path, struct fuse_file_info *fi);
-int find_inode(const char *path, inode ** node);
+int find_inode(const char *path);
 
 #endif //PCD_FILESYSTEM_SYSCALL_H_
