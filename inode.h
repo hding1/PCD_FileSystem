@@ -9,7 +9,10 @@
 #include "fs.h"
 
 #define NUM_INODE 4096
-#define DIRECT_BLKS_NUM 12
+#define DIR_ID_NUM 12
+#define INDIR_ID_NUM 1024
+#define D_INDIR_ID_NUM 1024*1024
+#define T_INDIR_ID_NUM 1024*1024*1024
 #define INODE_SIZE 128
 #define ROOT_INUM 0
 
@@ -29,7 +32,7 @@ typedef struct inode{
 
      /* Size: size of the file in terms of bytes */
      // Default file size is 0
-     unsigned int size;
+     unsigned long size;
 
      // Time stampes
      time_t last_accessed;
@@ -47,23 +50,27 @@ typedef struct inode{
 
 // Allocate space for inode bitmap and inode list
 int inode_bitmap_init();
-int find_free_inode();
 int inode_list_init();
 
 // Helper function
+int find_free_inode();
 inode* find_inode_by_inum(unsigned int inum);
+int write_inode_to_disk(unsigned int inum, inode* target_node);
+int free_indblo_by_bid(unsigned int bid);
+int free_dindblo_by_bid(unsigned int bid);
+int free_tindblo_by_bid(unsigned int bid);
+char* find_block_by_bid(unsigned int bid);
 
 // Individual inode operations
 int inode_allocate();
 int inode_free(unsigned int inum);
 int inode_read_mode(unsigned int inum, mode_t* mode_out);
 int inode_write_mode(unsigned int inum, mode_t* mode_in);
+int inode_read_size(unsigned int inum, unsigned long* size); 
+int inode_read_link_count(unsigned int inum, unsigned int* count); 
+
 
 // Layer 1.5 - File io by inode id
-// int allocate_file(int* inum, mode_t mode);
-// int chmod(int* inum, mode_t mode);
-// int chmod(int* inum, mode_t mode);
-// int free_file(int inum);
 unsigned int get_root_inum();
 int read_file(unsigned int inum, char* buf, int size, int offset);
 int write_file(unsigned int inum, char* buf, int size, int offset);
@@ -73,5 +80,7 @@ int write_file(unsigned int inum, char* buf, int size, int offset);
 
 
 // TO DO
-// 1. use sb instead hard coded bid
+// 1. use sb instead hardcoded bid
 // 2. figure out how to set UID GID
+// 3. free block only free used
+// 4. safety check (espacially block)
