@@ -304,12 +304,16 @@ int pcd_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 
 	unsigned int offset = 0;
 	dirent* direntbuf = (dirent*)malloc(DIRENT_SIZE);
-	while(offset <= read_inode_size(inum)){
+	for(unsigned int offset = 0; offset <= read_inode_size(inum); offset += DIRENT_SIZE){
 		// read one entry at an time
 		if(read_file(inum, direntbuf, DIRENT_SIZE, offset)==-1){
 			perror("Error Unable to Read");
 			free(direntbuf);
 			return -1;
+		}
+
+		if(direntbuf->name[0] == '\0'){
+			continue;
 		}
 		
 		struct stat st = {0};
@@ -320,7 +324,6 @@ int pcd_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 			//error
 			break;
 		}
-		offset += DIRENT_SIZE;
 	}
 
 	free(direntbuf);
