@@ -21,8 +21,8 @@ static void *pcd_init(struct fuse_conn_info *conn,
 {
 	//not using conn
 	(void) conn;
-	mkfs();
 
+	mkfs();
 	//could also allocate here
 	//return calloc(1, 16*1024*1024 /*allocate 16MB*/);
 	return NULL;
@@ -35,17 +35,18 @@ static int pcd_getattr(const char *path, struct stat *stbuf,
 
 	memset(stbuf, 0, sizeof(struct stat));
 
-	if(!find_inode(path)){
+	int inum = find_inode(path);
+	if(inum == -1){
 		return -ENOENT;
 	}
 
-	stbuf->st_mode = node->mode;
-	stbuf->st_nlink = node->links_count;
-	if(node->mode & S_IFREG){
+	inode_read_mode(inum, stbuf->st_mode);
+	inode_read_link_count(inum, stbuf->st_nlink);
+	if(stbuf->st_mode & S_IFREG){
 		// on off_t size: //stackoverflow.com/questions/9073667/
 		// for 64 bit:
 		// stbuf->st_size = (node.i_dir_acl << 32) & node.i_size;
-		stbuf->st_size = node->size;
+		inode_read_size(inum, stbuf->st_size);
 	}
 
 	return 0;
@@ -53,11 +54,15 @@ static int pcd_getattr(const char *path, struct stat *stbuf,
 
 
 static struct fuse_operations pcd_oper = {
-	.init           = pcd_init,
+	.init       = pcd_init,
 	.getattr	= pcd_getattr,
+	.mkdir      = pcd_mkdir,
+	.unlink     = pcd_unlink,
+	.mknod      = pcd_mknod,
 	.readdir	= pcd_readdir,
-	.open		= pcd_open,
 	.read		= pcd_read,
+	.write		= pcd_write,
+	.open		= pcd_open
 };
 
 /*
