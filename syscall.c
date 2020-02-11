@@ -232,6 +232,19 @@ char FileType (mode_t m) {
     }
 }
 
+mode_t FileTypeToModeT (char m) {
+    switch (m) {   //bitwise AND to determine file type
+        case 's': return S_IFSOCK;     //socket
+        case 'l': return S_IFLNK;     //symbolic link
+        case '-': return S_IFREG;     //regular file
+        case 'b': return S_IFBLK;     //block device
+        case 'd': return S_IFDIR;     //directory
+        case 'c': return S_IFCHR;     //char device
+        case 'p': return S_IFIFO;     //pipe
+        default: return (mode_t)0;    //unknown
+    }
+}
+
 // Create a node (file, device special, or named pipe)
 int pcd_mknod(const char *path, mode_t mode, dev_t rdev)
 {
@@ -281,27 +294,36 @@ int pcd_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 		       off_t offset, struct fuse_file_info *fi,
 		       enum fuse_readdir_flags flags)
 {
-	DIR *dp;
-	struct dirent *de;
-
 	(void) offset;
 	(void) fi;
 	(void) flags;
 
-	dp = opendir(path);
-	if (dp == NULL)
-		return -errno;
+	int inum = find_inode(path);
+	if (inum == -1)
+		return -ENOENT;
 
-	while ((de = readdir(dp)) != NULL) {
-		struct stat st;
-		memset(&st, 0, sizeof(st));
-		st.st_ino = de->d_ino;
-		st.st_mode = de->d_type << 12;
-		if (filler(buf, de->d_name, &st, 0, 0))
+	unsigned int offset = 0;
+	dirent* direntbuf = (dirent*)malloc(DIRENT_SIZE);
+	while(offset <= read_inode_size(inum)){
+		// read one entry at an time
+		if(read_file(inum, direntbuf, DIRENT_SIZE, offset)==-1){
+			perror("Error Unable to Read");
+			free(direntbuf);
+			return -1;
+		}
+		
+		struct stat st = {0};
+		st.st_ino = (ino_t)direntbuf->inum;
+		st.st_mode = FileTypeToModeT(direntbuf->file_type);
+		
+		if(filler(buf, ".", &st, 0, 0)){
+			//error
 			break;
+		}
+		offset += DIRENT_SIZE;
 	}
 
-	closedir(dp);
+	free(direntbuf);
 	return 0;
 }
 
