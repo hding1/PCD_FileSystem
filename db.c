@@ -20,7 +20,7 @@ unsigned int db_allocate(){
 	unsigned int* new_free_id = malloc(sizeof(unsigned int));
 	memcpy(new_free_id, buffer, sizeof(unsigned int));
 
-	super->FREE_LIST = new_free_id;
+	super->FREE_LIST = *new_free_id;
 	
 	sb_write(super);
 
@@ -35,6 +35,7 @@ int db_free(unsigned int block_id){
 	sb* super = sb_read();
 	
 	unsigned int temp  =  super->FREE_LIST;
+	unsigned int* temp_ptr = &temp;
 	super->FREE_LIST = block_id;
 	super->NUM_FREE_BLOCK+=1;
 
@@ -42,7 +43,7 @@ int db_free(unsigned int block_id){
 	free(super);
 
 	void* input = malloc(DB_SIZE*sizeof(char));
-	memcpy(input, temp, sizeof(unsigned int)); //dest, source
+	memcpy(input, temp_ptr, sizeof(unsigned int)); //dest, source
 	disk_write(input, block_id);
 	free(input);
 
@@ -77,8 +78,9 @@ void db_init(){
 	unsigned int NUM_FREE_BLOCK = super->NUM_FREE_BLOCK;
 	//the last free data block doesnt need to be initialized so size-1
 	for(unsigned int i = 0; i < NUM_FREE_BLOCK-1; i++){
-		unsigned int id = i+START_DATA_BLOCK;
-		memcpy(input, id+1, sizeof(unsigned int));		
+		unsigned int id = i+START_DATA_BLOCK + 1;
+		unsigned int* id_ptr = &id;
+		memcpy(input, id_ptr, sizeof(unsigned int));		
 		disk_write(input, id);
 	}
 	free(input);
