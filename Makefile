@@ -1,4 +1,4 @@
-CXXFLAGS += -g -Wall -pedantic
+CXXFLAGS += -g
 
 files := disk.c db.c sb.c inode.c fs.c syscall.c pcd_fuse.c
 

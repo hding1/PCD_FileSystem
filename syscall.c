@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
+#include <errno.h>
 
 #include "dir.h"
 #include "inode.h"
@@ -48,7 +49,7 @@ int find_inode_index(int inum, char * target){
 	char * tempbuf = (char*)malloc(DIRENT_SIZE);
 	while(offset <= read_inode_size(inum)){
 		// read one entry at an time
-		if(read_file(inum, &tempbuf, DIRENT_SIZE, offset)==-1){
+		if(read_file(inum, tempbuf, DIRENT_SIZE, offset)==-1){
 			perror("Error Unable to Read");
 			return -1;
 		}
@@ -72,7 +73,8 @@ int find_inode_index(int inum, char * target){
 int find_inode(const char *path){	
 	// make a copy of path
 	char* pathCopy = (char*)malloc(strlen(path) + 1);
-	pathCopy = path;
+	char* pathCopyStart = pathCopy;
+	strcpy(pathCopy, path);
 	// check if the first directory is root
 	char* dir;
 	dir = get_dir(pathCopy);
@@ -80,6 +82,7 @@ int find_inode(const char *path){
 	if(strcmp(dir,"root")!=0){
 		printf("%s\n",path);
 		perror("Error Incorrect Path (No Root)");
+		free(pathCopyStart);
 		return -1;
 	}
 	// get root
@@ -92,11 +95,12 @@ int find_inode(const char *path){
 		if(myInum == -1){
 			printf("%s\n",path);
 			perror("Error Cannot Find Directory");
+			free(pathCopyStart);
 			return -1;
 		}
 		pathCopy = pathCopy+strlen(dir)+1;
 	}
-	free(pathCopy);
+	free(pathCopyStart);
 	return myInum;
 }
 
@@ -110,7 +114,7 @@ int pcd_mkdir(const char *path, mode_t mode)
 		return -1;
 	}
 	//set inode type
-	write_inode_mode(myInum, mode);
+	inode_write_mode(myInum, mode);
 
 	//write current node id into the parent
 	char parentName[MAX_FILE_NAME];
@@ -126,25 +130,19 @@ int pcd_mkdir(const char *path, mode_t mode)
 	dirent dir;
 	dir.inum = myInum;
 	dir.file_type = 'd';
-	dir.name = parentName;
-	char* buf = (char*)malloc(DIRENT_SIZE);
-	memcpy(buf,&dir,DIRENT_SIZE);
-	if(write_file(parentInum, &buf, DIRENT_SIZE, read_inode_size(parentInum))==-1){
+	strcpy(dir.name, parentName);
+	if(write_file(parentInum, (char*)&dir, DIRENT_SIZE, read_inode_size(parentInum))==-1){
 		perror("Error Writing to File");
 		return -1;
 	}
 	//write . and .. to the inode
-	dir = {myInum,'d',"."};
-	char* buf = (char*)malloc(DIRENT_SIZE);
-	memcpy(buf,&dir,DIRENT_SIZE);
-	if(write_file(myInum, &buf, DIRENT_SIZE,read_inode_size(myInum))==-1){
+	dirent dir1 = {myInum,'d',"."};
+	if(write_file(myInum, (char*)&dir1, DIRENT_SIZE,read_inode_size(myInum))==-1){
 		perror("Error Writing to File");
 		return -1;
 	}
-	dir = {parentInum,'d',".."};
-	char* buf = (char*)malloc(DIRENT_SIZE);
-	memcpy(buf,&dir,DIRENT_SIZE);
-	if(write_file(myInum, &buf, DIRENT_SIZE, read_inode_size(myInum))==-1){
+	dirent dir2 = {parentInum,'d',".."};
+	if(write_file(myInum, (char*)&dir2, DIRENT_SIZE, read_inode_size(myInum))==-1){
 		perror("Error Writing to File");
 		return -1;
 	}
@@ -162,8 +160,9 @@ int delete_dirent(int inum, char * target){
 	char * tempbuf = (char*)malloc(DIRENT_SIZE);
 	while(offset <= read_inode_size(inum)){
 		// read one entry at an time
-		if(read_file(inum, &tempbuf, DIRENT_SIZE, offset)==-1){
+		if(read_file(inum, tempbuf, DIRENT_SIZE, offset)==-1){
 			perror("Error Unable to Read");
+			free(tempbuf);
 			return -1;
 		}
 		// cast the buffer to dirent
@@ -175,11 +174,14 @@ int delete_dirent(int inum, char * target){
 			mydirent->inum = -1;
 			char* buf = (char*)malloc(DIRENT_SIZE);
 			memcpy(buf,mydirent,DIRENT_SIZE);
-			if(write_file(myInum, &buf, DIRENT_SIZE,offset)==-1){
+			if(write_file(inum, buf, DIRENT_SIZE,offset)==-1){
 				perror("Error Writing to File");
+				free(tempbuf);
+				free(buf);
 				return -1;
 			}
 			free(tempbuf);
+			free(buf);
 			return 0;
 		}
 		start++;
@@ -207,7 +209,7 @@ int pcd_unlink(const char *path)
 	get_parent(path,parentName,fileName,&parentPath);
 	// find inode of the parent
 	int parentInum = find_inode(parentPath);
-	delete_dirent(parentInum, filename);
+	delete_dirent(parentInum, fileName);
 
 	if(parentInum==-1){
 		perror("Error Cannot Find Directory Inode");
@@ -254,10 +256,9 @@ int pcd_mknod(const char *path, mode_t mode, dev_t rdev)
 		return -1;
 	}
 	//set inode type
-	write_inode_mode(myInum, mode);
+	inode_write_mode(myInum, mode);
 	char fileType = FileType(mode);
 	//write current node id into the parent directory
-	inode* parentNode;
 	char parentName[MAX_FILE_NAME];
 	char fileName[MAX_FILE_NAME];
 	char * parentPath;
@@ -270,13 +271,15 @@ int pcd_mknod(const char *path, mode_t mode, dev_t rdev)
 	dirent dir;
 	dir.inum = myInum;
 	dir.file_type = fileType;
-	dir.name = fileName;
+	strcpy(dir.name, fileName);
 	char* buf = (char*)malloc(DIRENT_SIZE);
 	memcpy(buf,&dir,DIRENT_SIZE);
-	if(write_file(parentInum, &buf, DIRENT_SIZE, read_inode_size(parentInum))==-1){
+	if(write_file(parentInum, buf, DIRENT_SIZE, read_inode_size(parentInum))==-1){
 		perror("Error Writing to File");
+		free(buf);
 		return -1;
 	}
+	free(buf);
 	return 0;
 }
 
@@ -302,11 +305,10 @@ int pcd_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 	if (inum == -1)
 		return -ENOENT;
 
-	unsigned int offset = 0;
 	dirent* direntbuf = (dirent*)malloc(DIRENT_SIZE);
-	for(unsigned int offset = 0; offset <= read_inode_size(inum); offset += DIRENT_SIZE){
+	for(unsigned int offset_idx = 0; offset_idx <= read_inode_size(inum); offset_idx += DIRENT_SIZE){
 		// read one entry at an time
-		if(read_file(inum, direntbuf, DIRENT_SIZE, offset)==-1){
+		if(read_file(inum, (char*)direntbuf, DIRENT_SIZE, offset_idx)==-1){
 			perror("Error Unable to Read");
 			free(direntbuf);
 			return -1;
@@ -320,7 +322,7 @@ int pcd_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 		st.st_ino = (ino_t)direntbuf->inum;
 		st.st_mode = FileTypeToModeT(direntbuf->file_type);
 		
-		if(filler(buf, ".", &st, 0, 0)){
+		if(filler(buf, direntbuf->name, &st, 0, 0)){
 			//error
 			break;
 		}
@@ -344,7 +346,7 @@ int pcd_read(const char *path, char *buf, size_t size, off_t offset,
 		return -1;
 	}
 	//read to buf
-	if(read_file(myInum, &buf, size, offset)==-1){
+	if(read_file(myInum, buf, size, offset)==-1){
 		perror("Error Reading File");
 		return -1;
 	}
@@ -362,7 +364,7 @@ int pcd_write(const char *path, const char *buf, size_t size,
 		return -1;
 	}
 	//read to buf
-	if(write_file(myInum, &buf, size, offset)==-1){
+	if(write_file(myInum, buf, size, offset)==-1){
 		perror("Error Writing File");
 		return -1;
 	}
