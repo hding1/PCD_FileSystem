@@ -1,4 +1,4 @@
-test: test.c disk.c db.c sb.c
-	gcc test.c disk.c db.c sb.c -o test
+block_test: block_test.c disk.c db.c sb.c
+	gcc block_test.c disk.c db.c sb.c -o block_test
 clean:	
-	rm test
+	rm block_test
