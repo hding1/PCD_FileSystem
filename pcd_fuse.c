@@ -47,7 +47,6 @@ static int pcd_getattr(const char *path, struct stat *stbuf,
 		// stbuf->st_size = (node.i_dir_acl << 32) & node.i_size;
 		stbuf->st_size = node->size;
 	}
-	free(node);
 
 	return 0;
 }
