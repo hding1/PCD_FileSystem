@@ -79,9 +79,8 @@ void db_init(){
 	//the last free data block doesnt need to be initialized so size-1
 	for(unsigned int i = 0; i < NUM_FREE_BLOCK-1; i++){
 		unsigned int id = i+START_DATA_BLOCK + 1;
-		unsigned int* id_ptr = &id;
-		memcpy(input, id_ptr, sizeof(unsigned int));		
-		disk_write(input, id);
+		memcpy(input, &id, sizeof(unsigned int));		
+		disk_write(input, id-1);
 	}
 	free(input);
 	free(super);
