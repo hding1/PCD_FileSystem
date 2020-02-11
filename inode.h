@@ -11,6 +11,7 @@
 #define NUM_INODE 4096
 #define DIRECT_BLKS_NUM 12
 #define INODE_SIZE 128
+#define ROOT_INUM 0
 
 #define BITMAP_BID 1
 #define ILIST_BID 2
@@ -48,13 +49,15 @@ typedef struct inode{
 int inode_bitmap_init();
 int find_free_inode();
 int inode_list_init();
+
+// Helper function
 inode* find_inode_by_inum(unsigned int inum);
 
 // Individual inode operations
 int inode_allocate();
 int inode_free(unsigned int inum);
-int inode_read(inode** node, unsigned int inum);
-int inode_write(inode** node, unsigned int inum);
+int inode_read_mode(unsigned int inum, mode_t* mode_out);
+int inode_write_mode(unsigned int inum, mode_t* mode_in);
 
 // Layer 1.5 - File io by inode id
 // int allocate_file(int* inum, mode_t mode);
@@ -64,3 +67,11 @@ int inode_write(inode** node, unsigned int inum);
 unsigned int get_root_inum();
 int read_file(unsigned int inum, char* buf, int size, int offset);
 int write_file(unsigned int inum, char* buf, int size, int offset);
+
+
+
+
+
+// TO DO
+// 1. use sb instead hard coded bid
+// 2. figure out how to set UID GID

@@ -53,8 +53,7 @@ int inode_list_init(){
 
     // Allocate the 3rd to 130th block (block id =2, 129) for inode list
     char block[4096];
-    int status;
-    for(unsigned int bid = 2; bid < 130; bid++){
+    for(unsigned int bid = ILIST_BID; bid < 130; bid++){
         memset(block, 0, 4096);
         for(int i = 0; i < 32; i++){
             memcpy(block + i * INODE_SIZE, &node, sizeof(node));
@@ -68,6 +67,11 @@ int inode_list_init(){
 
 
 inode* find_inode_by_inum(unsigned int inum){
+
+    if(inum < ROOT_INUM || inum > NUM_INODE - 1){
+        return NULL;
+    }
+
     // Read the block
     char block[4096];
     unsigned int bid = ILIST_BID + inum / 32;
@@ -81,23 +85,39 @@ inode* find_inode_by_inum(unsigned int inum){
     return node;
 }
 
+void write_inode_to_disk(unsigned int inum, inode* target_node){
+    char block[4096];
+    unsigned int bid = ILIST_BID + inum / 32;
+    db_read(block, bid);
+    unsigned offset = inum % 32;
+    char* node_ptr = (char*) block + offset * INODE_SIZE;
+    memcpy(node_ptr, target_node, sizeof(inode));
+    free(target_node);
+    block_write(block, bid);
+}
+
 
 int inode_allocate(){
 
     // Find a opening in the bitmap
     unsigned int inum = find_free_inode();
-    if(inum == -1) return -1;
+    if(inum == -1) return -1;   // Error
 
     // Get the inode, set initial values
-    inode* node = find_inode_by_inum(inum);
+    inode* target_node = find_inode_by_inum(inum);
+    if(target_node == NULL) return -2;  // Error
     node->last_accessed = time(NULL);
     node->last_modified = time(NULL);
 
     // Write changes back to disk
-    inode_write(node, inum);
-
-    free(node);
-
+    char block[4096];
+    unsigned int bid = ILIST_BID + inum / 32;
+    db_read(block, bid);
+    unsigned offset = inum % 32;
+    char* node_ptr = (char*) block + offset * INODE_SIZE;
+    memcpy(node_ptr, target_node, sizeof(inode));
+    free(target_node);
+    block_write(block, bid);
     // Return the inum if success
     return inum; 
 }
@@ -119,24 +139,31 @@ int inode_free(unsigned int inum){
 }
 
 
-int inode_read(inode** node, unsigned int inum){
+int inode_read(unsigned int inum, mode_t* mode_out){
 
-    inode* mynode = find_inode_by_inum(inum);
-    *node = mynode;
- 
+    inode* target_node = find_inode_by_inum(inum);
+    if(target_node == NULL) return -1;   // Error
+    *mode_out = target_node->mode;
+    free(target_node);
     return 0; // If success
 }
 
-int inode_write(inode** node, unsigned int inum){
+int inode_write(unsigned int inum, mode_t* mode_in){
     
-    // Read the block from disk
+    // Read the block containing the target inode
     char block[4096];
     unsigned int bid = ILIST_BID + inum / 32;
     db_read(block, bid);
-    // Write the inode in the block
+    // Find the target inode position inside the block
     unsigned offset = inum % 32;
-    char* ptr = (char*) block + offset * INODE_SIZE;    
-    memcpy(ptr, *node, sizeof(inode));
+    char* node_ptr = (char*) block + offset * INODE_SIZE;
+    // Modify mode of target inode
+    inode* target_node = find_inode_by_inum(inum);
+    if(target_node == NULL) return -1; // Error
+    target_node->mode = *mode_in;
+    // Write the modified inode into block
+    memcpy(node_ptr, target_node, sizeof(inode));
+    free(target_node);
     // Write back to disk
     db_write(block, bid);
     return 0; // If success
@@ -146,6 +173,13 @@ int inode_write(inode** node, unsigned int inum){
 unsigned int get_root_inum(){
     return 0;
 }
+
+
+
+
+
+
+
 
 
 int read_file(unsigned int inum, char* buf, int size, int offset){
