@@ -76,7 +76,6 @@ int inode_read_size(unsigned int inum, unsigned long* size);
 int inode_read_link_count(unsigned int inum, unsigned int* count); 
 int inode_reduce_link(unsigned int inum); 
 
-
 unsigned int get_root_inum();
 int read_file(unsigned int inum, char* buf, int size, int offset);
 int write_file(unsigned int inum, char* buf, int size, int offset);
@@ -86,7 +85,6 @@ int write_file(unsigned int inum, char* buf, int size, int offset);
 
 
 // TO DO
-
 // 1. use sb instead hardcoded bid
 // 2. figure out how to set UID GID
 // 3. free block only free used
