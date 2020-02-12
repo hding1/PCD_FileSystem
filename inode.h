@@ -73,8 +73,6 @@ int inode_read_size(unsigned int inum, unsigned long* size);
 int inode_read_link_count(unsigned int inum, unsigned int* count); 
 int inode_reduce_link(unsigned int inum); 
 
-
-// Layer 1.5 - File io by inode id
 unsigned int get_root_inum();
 int read_file(unsigned int inum, char* buf, int size, int offset);
 int write_file(unsigned int inum, char* buf, int size, int offset);
