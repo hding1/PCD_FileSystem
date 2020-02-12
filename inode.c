@@ -534,7 +534,7 @@ int read_file(unsigned int inum, char* buf, int size, int offset){
     return buf_off;
 }
 
-int write_file(unsigned int inum, char* buf, int size, int offset){
+int write_file(unsigned int inum, const char* buf, int size, int offset){
 
     // Read inode
     inode * target_node = find_inode_by_inum(inum);

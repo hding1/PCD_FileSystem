@@ -81,7 +81,7 @@ int inode_reduce_link(unsigned int inum);
 
 unsigned int get_root_inum();
 int read_file(unsigned int inum, char* buf, int size, int offset);
-int write_file(unsigned int inum, char* buf, int size, int offset);
+int write_file(unsigned int inum, const char* buf, int size, int offset);
 
 #endif
 
