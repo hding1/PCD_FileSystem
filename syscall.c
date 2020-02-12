@@ -123,6 +123,7 @@ int pcd_mkdir(const char *path, mode_t mode)
 	get_parent(path,parentName,fileName,&parentPath);
 	// find inode of the parent
 	int parentInum = find_inode(parentPath);
+	free(parentPath);
 	if(parentInum==-1){
 		perror("Error Cannot Find Directory Inode");
 		return -1;
@@ -304,7 +305,8 @@ int pcd_mknod(const char *path, mode_t mode, dev_t rdev)
 	char fileName[MAX_FILE_NAME];
 	char * parentPath;
 	get_parent(path,parentName,fileName,&parentPath);
-	int parentInum = find_inode(path);
+	int parentInum = find_inode(parentPath);
+	free(parentPath);
 	if(parentInum==-1){
 		perror("Error Cannot Find Directory Inode");
 		return -1;
