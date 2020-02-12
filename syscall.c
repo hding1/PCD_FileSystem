@@ -47,7 +47,7 @@ int find_inode_index(int inum, char * target){
 	unsigned int start = 2;
 	unsigned int offset = start*DIRENT_SIZE;
 	char * tempbuf = (char*)malloc(DIRENT_SIZE);
-	while(offset <= read_inode_size(inum)){
+	while(offset <= inode_read_size(inum)){
 		// read one entry at an time
 		if(read_file(inum, tempbuf, DIRENT_SIZE, offset)==-1){
 			perror("Error Unable to Read");
@@ -193,7 +193,7 @@ int delete_dirent(int inum, char * target){
 }
 
 int is_dir(int inum){
-	mode_t mode = {};
+	mode_t mode = 0;
 	inode_read_mode(inum, &mode);
 	return (mode & S_IFDIR) ? 1: 0;
 }

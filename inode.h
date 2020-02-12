@@ -74,7 +74,7 @@ int add_block(unsigned int inum);
 int inode_allocate();
 int inode_free(unsigned int inum);
 int inode_read_mode(unsigned int inum, mode_t* mode_out);
-int inode_write_mode(unsigned int inum, mode_t* mode_in);
+int inode_write_mode(unsigned int inum, mode_t mode_in);
 int inode_read_size(unsigned int inum, unsigned long* size); 
 int inode_read_link_count(unsigned int inum, unsigned int* count); 
 int inode_reduce_link(unsigned int inum); 

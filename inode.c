@@ -58,6 +58,8 @@ int find_free_inode(){
     unsigned short bitmap[NUM_INODE];
 
     int status = db_read(bitmap, BITMAP_BID);
+    if(status < 0)
+        return status;
 
     for(int i = 0; i < NUM_INODE; i++){
         if(bitmap[i] == 0){
@@ -321,7 +323,7 @@ int add_block(unsigned int inum){
             memcpy(block, dind_block, DB_SIZE);
             db_write(block, dind_bid);
             memcpy(block, tind_block, DB_SIZE);
-            db_write(block, tind_bid);
+            db_write(block, target_node->triple_ind);
         }else if(index == 0){
             db_read(block, target_node->triple_ind);
             memcpy(tind_block, block, DB_SIZE);
