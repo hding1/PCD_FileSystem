@@ -47,9 +47,9 @@ int find_inode_index(int inum, char * target){
 	unsigned int start = 2;
 	unsigned int offset = start*DIRENT_SIZE;
 	char * tempbuf = (char*)malloc(DIRENT_SIZE);
-	unsigned long inode_size = 0;
-	inode_read_size(inum, &inode_size);
-	while(offset < inode_size){
+	unsigned long inodeSize = 0;
+	inode_read_size(inum, &inodeSize);
+	while(offset < inodeSize){
 		// read one entry at an time
 		if(read_file(inum, tempbuf, DIRENT_SIZE, offset)==-1){
 			perror("Error Unable to Read");
@@ -134,7 +134,7 @@ int pcd_mkdir(const char *path, mode_t mode)
 	dir.file_type = 'd';
 	strcpy(dir.name, parentName);
 	unsigned long parentInodeSize = 0;
-	inode_read_size(parentInum, &inode_size);
+	inode_read_size(parentInum, &parentInodeSize);
 	if(write_file(parentInum, (char*)&dir, DIRENT_SIZE, parentInodeSize)==-1){
 		perror("Error Writing to File");
 		return -1;
@@ -255,7 +255,7 @@ int pcd_unlink(const char *path)
 		// remove from parent
 		delete_dirent(parentInum, fileName);
 		// reduce link count and delete inode if necessary
-		reduce_inode_link(myInum);
+		inode_reduce_link(myInum);
 	}
 	else{
 		perror("cannot delete non-empty directory");
@@ -317,7 +317,10 @@ int pcd_mknod(const char *path, mode_t mode, dev_t rdev)
 	strcpy(dir.name, fileName);
 	char* buf = (char*)malloc(DIRENT_SIZE);
 	memcpy(buf,&dir,DIRENT_SIZE);
-	if(write_file(parentInum, buf, DIRENT_SIZE, read_inode_size(parentInum))==-1){
+
+	unsigned long parentInodeSize = 0;
+	inode_read_size(parentInum, &parentInodeSize);
+	if(write_file(parentInum, buf, DIRENT_SIZE, parentInodeSize)==-1){
 		perror("Error Writing to File");
 		free(buf);
 		return -1;
@@ -349,7 +352,9 @@ int pcd_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 		return -ENOENT;
 
 	dirent* direntbuf = (dirent*)malloc(DIRENT_SIZE);
-	for(unsigned int offset_idx = 0; offset_idx <= read_inode_size(inum); offset_idx += DIRENT_SIZE){
+	unsigned long inodeSize = 0;
+	inode_read_size(inum, &inodeSize);
+	for(unsigned int offset_idx = 0; offset_idx < inodeSize; offset_idx += DIRENT_SIZE){
 		// read one entry at an time
 		if(read_file(inum, (char*)direntbuf, DIRENT_SIZE, offset_idx)==-1){
 			perror("Error Unable to Read");
