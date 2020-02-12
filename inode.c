@@ -136,10 +136,82 @@ int free_tindblo_by_bid(unsigned int bid){
     }
 }
 
-char* find_block_by_bid(unsigned int bid){
-    char* buffer = (char*) malloc(DB_SIZE*sizeof(char));
-    //STUB
-    return block;
+unsigned int find_block_by_num(inode* target_node, unsigned int num){
+    unsigned int bid;
+    unsigned int ind_bid;
+    unsigned int dind_bid;
+    unsigned int index;
+    unsigned int d_index;
+    unsigned int t_index;
+    unsigned int ind_block[INDIR_ID_NUM];
+    unsigned int dind_block[INDIR_ID_NUM];
+    unsigned int tind_block[INDIR_ID_NUM];
+    if(num < DIR_ID_NUM){
+        bid = target_node->direct_blo[num];
+    }else if(num < DIR_ID_NUM + INDIR_ID_NUM){
+        index = num - DIR_ID_NUM;
+        db_read(ind_block, target_node->single_ind);
+        bid = ind_block[index];
+    }else if(num < DIR_ID_NUM + INDIR_ID_NUM + D_INDIR_ID_NUM){
+        d_index = (num - DIR_ID_NUM - INDIR_ID_NUM) / INDIR_ID_NUM;
+        index = (num - DIR_ID_NUM - INDIR_ID_NUM) % INDIR_ID_NUM;
+        db_read(dind_block, target_node->double_ind);
+        ind_bid = dind_block[d_index];
+        db_read(ind_block, ind_bid);
+        bid = ind_block[index];
+    }else if(num < DIR_ID_NUM + INDIR_ID_NUM + D_INDIR_ID_NUM + T_INDIR_ID_NUM){
+        t_index = (num - DIR_ID_NUM - INDIR_ID_NUM - D_INDIR_ID_NUM) / D_INDIR_ID_NUM;
+        d_index = (num - DIR_ID_NUM - INDIR_ID_NUM - D_INDIR_ID_NUM) / INDIR_ID_NUM;
+        index = (num - DIR_ID_NUM - INDIR_ID_NUM - D_INDIR_ID_NUM) % INDIR_ID_NUM;
+        db_read(tind_block, target_node->triple_ind);
+        dind_bid = tind_block[t_index];
+        db_read(dind_block, dind_bid);
+        ind_bid = dind_block[d_index];
+        db_read(ind_block, ind_bid);
+        bid = dind_block[index];
+    }else{
+        return -1;
+    }
+    
+    return bid;
+}
+
+int write_block_by_num(inode* target_node, unsigned int num, char* block){
+    int bid = find_block_by_num(inode* target_node, num);
+    if(bid == -1) return -1;
+    bd_write(block, bid);
+    return bid;
+}
+
+int add_block(inode* target_node){
+    unsigned int newid = db_allocate();
+    int num = target_node->size / DB_SIZE + 1;
+
+    unsigned int bid;
+    unsigned int ind_bid;
+    unsigned int dind_bid;
+    unsigned int index;
+    unsigned int d_index;
+    unsigned int t_index;
+    unsigned int ind_block[INDIR_ID_NUM];
+    unsigned int dind_block[INDIR_ID_NUM];
+    unsigned int tind_block[INDIR_ID_NUM];
+
+    if(num < DIR_ID_NUM){
+        target_node->direct_blo[num] = newid;
+    }else if(num < DIR_ID_NUM + INDIR_ID_NUM){
+        index = num - DIR_ID_NUM;
+        db_read(ind_block, target_node->single_ind);
+        ind_block[index] = newid;
+        db_write(target_node->single_ind, ind_block);
+    }else if(num < DIR_ID_NUM + INDIR_ID_NUM + D_INDIR_ID_NUM){
+
+    }else if(num < DIR_ID_NUM + INDIR_ID_NUM + D_INDIR_ID_NUM + T_INDIR_ID_NUM){
+
+    }else{
+        return -1;
+    }
+    return 0;
 }
 
 
@@ -154,8 +226,10 @@ int inode_allocate(){
     // Get the inode, set initial values
     inode* target_node = find_inode_by_inum(inum);
     if(target_node == NULL) return -1;  // Error
+    node->mode = 666;
     node->last_accessed = time(NULL);
     node->last_modified = time(NULL);
+    node->link_count = 1;
 
     // Write changes back to disk
     int status = write_inode_to_disk(inum, target_node);
@@ -253,6 +327,19 @@ int inode_read_link_count(unsigned int inum, unsigned int* count){
     return 0; // If success
 }
 
+int inode_reduce_link(unsigned int inum){
+    inode* target_node = find_inode_by_inum(inum);
+    if(target_node == NULL) return -1;   // Error
+    target_node->link_count =  target_node->link_count -1;
+    if(target_node->link_count <= 0){
+        inode_free(inum);
+    }else{
+        int status = write_inode_to_disk(inum, target_node);
+        if(!status) return -1;
+    }
+    return 0;
+}
+
 
 /********************************************Layer1.5 functions***********************************************/
 
@@ -263,50 +350,91 @@ unsigned int get_root_inum(){
 int read_file(unsigned int inum, char* buf, int size, int offset){
 
     // Read inode
-    inode * myNode;
-    myNode = find_inode_by_inum(inum);
+    inode * target_node = find_inode_by_inum(inum);
+    if(target_node == NULL) return -1;
+    if(buf == NULL) return -1;
+    if(size < 0) return -1;
+    if(offset < 0 || offset > target_node->size) return -1;
+
     // Locate offset 
-    unsigned int startBlock = offset/4096;
-    unsigned int endBlock = (offset+size)/4096;
-    unsigned int toRead = 4096-offset%4096;
-    unsigned int indirBuf1[1024];
-    unsigned int indirBuf2[1024];
-    unsigned int indirBuf3[1024];
-    // Read disk to buf
-    while(startBlock<=endBlock){
-     if(startBlock<=DIRECT_BLKS_NUM){
-      //disk read (startblock, toRead)
-     }else
-     if(startBlock<=(DIRECT_BLKS_NUM+1024)){
-      //assign indirBuf1
-      //disk read (indirBuf1[startblock-12], toRead)
-     }else
-     if(startBlock<=(DIRECT_BLKS_NUM+1024*1024)){
-      //assign indirBuf1
-      //assign indirBuf2
-      //disk read (indirBuf1[indirBuf2[(startblock-12)%1024]], toRead)
-     }else
-     if(startBlock<=(DIRECT_BLKS_NUM+1024*1024*1024)){
-      //assign indirBuf1
-      //assign indirBuf2
-      //assign indirBuf3
-      //same as above
-     }else{
-      //error
-     }
-     startBlock++;
-     size-=toRead;
-     if(size>=4096){
-      toRead = 4096;
-     }
-     else{
-      toRead = size;
-     }
+    unsigned int start_num = offset / DB_SIZE;   // start block# in this inode
+    unsigned int end_num = (offset + size) / DB_SIZE; // end block# in this inode
+    unsigned int start_off = offset % DB_SIZE;  // start byte# in first block
+    unsigned int toRead;
+    if(size >= DB_SIZE - start_off){
+        toRead = DB_SIZE - start_off;
+    }else{
+        toRead = size;
     }
+    unsigned int buf_off = 0;
+
+    // Read disk to buf
+    while(start_num <= end_num){
+        char* block = find_block_by_num(target_node, start_num);
+        memcpy(buf + buf_off, block + start_off, toRead);
+        buf_off += toRead;
+        start_off = 0;
+        start_num++;
+        size -= toRead;
+        if(size >= DB_SIZE){
+            toRead = DB_SIZE;
+        }
+        else{
+            toRead = size;
+        }
+    }
+
+    return buf_off;
 }
 
 int write_file(unsigned int inum, char* buf, int size, int offset){
+
     // Read inode
+    inode * target_node = find_inode_by_inum(inum);
+    if(target_node == NULL) return -1;
+    if(buf == NULL) return -1;
+    if(size < 0) return -1;
+    if(offset < 0 || offset > target_node->size) return -1;
+
+    if(offset + size > target_node->size){
+        // allocate enough blocks
+        int add_byte = offset + size - target_node->size;
+        int blo_add = add_byte / DB_SIZE;
+        int blo_off = add_byte % DB_SIZE;
+        if(blo_off > 0) blo_add++;
+        for(int i = 0; i < blo_add; i++){
+            add_block(target_node);
+        }     
+    }
+
     // Locate offset
+    unsigned int start_num = offset / DB_SIZE;   // start block# in this inode
+    unsigned int end_num = (offset + size) / DB_SIZE; // end block# in this inode
+    unsigned int start_off = offset % DB_SIZE;  // start byte# in first block
+    unsigned int toWrite;
+    if(size >= DB_SIZE - start_off){
+        toWrite = DB_SIZE - start_off;
+    }else{ 
+        toWrite = size;
+    }
+    unsigned int buf_off = 0;
+
     // Write buffer to disk
+      while(start_num <= end_num){
+        char* block = find_block_by_num(target_node, start_num);
+        memcpy(block + start_off, buf + buf_off, toWrite);
+        write_block_by_num(target_node, start_num, block);
+        buf_off += toWrite;
+        start_off = 0;
+        start_num++;
+        size -= toWrite;
+        if(size >= DB_SIZE){
+            toWrite = DB_SIZE;
+        }
+        else{
+            toWrite = size;
+        }
+    }
+
+    return buf_off;
 }
