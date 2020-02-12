@@ -78,10 +78,7 @@ int find_inode(const char *path){
 	char* pathCopyStart = pathCopy;
 	strcpy(pathCopy, path);
 	// check if the first directory is root
-	char* dir;
-	dir = get_dir(pathCopy);
-	pathCopy = pathCopy+strlen(dir)+1;
-	if(strcmp(dir,"root")!=0){
+	if(pathCopy[0] != '/'){
 		printf("%s\n",path);
 		perror("Error Incorrect Path (No Root)");
 		free(pathCopyStart);
@@ -101,6 +98,7 @@ int find_inode(const char *path){
 			return -1;
 		}
 		pathCopy = pathCopy+strlen(dir)+1;
+		free(dir);
 	}
 	free(pathCopyStart);
 	return myInum;
