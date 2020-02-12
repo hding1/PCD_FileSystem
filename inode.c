@@ -439,6 +439,8 @@ int write_file(unsigned int inum, char* buf, int size, int offset){
             toWrite = size;
         }
     }
-    free(target_node);
+    target_node->size += buf_off;
+    write_inode_to_disk(inum, target_node);
+    
     return buf_off;
 }
