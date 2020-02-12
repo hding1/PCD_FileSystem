@@ -18,6 +18,7 @@
 #define T_INDIR_ID_NUM 1024*1024*1024
 #define INODE_SIZE 128
 #define ROOT_INUM 0
+#define MAX_FILE_SIZE 
 
 #define BITMAP_BID 1
 #define ILIST_BID 2
@@ -62,7 +63,9 @@ int write_inode_to_disk(unsigned int inum, inode* target_node);
 int free_indblo_by_bid(unsigned int bid);
 int free_dindblo_by_bid(unsigned int bid);
 int free_tindblo_by_bid(unsigned int bid);
-char* find_block_by_bid(unsigned int bid);
+unsigned int find_block_by_num(inode* target_node, unsigned int num);  // return the bid of the nth block in this inode
+int write_block_by_num(inode* target_node, unsigned int num, char* block);
+int add_block(inode* target_node, unsigned int blo_add);
 
 // Individual inode operations
 int inode_allocate();
@@ -71,6 +74,7 @@ int inode_read_mode(unsigned int inum, mode_t* mode_out);
 int inode_write_mode(unsigned int inum, mode_t* mode_in);
 int inode_read_size(unsigned int inum, unsigned long* size); 
 int inode_read_link_count(unsigned int inum, unsigned int* count); 
+int inode_reduce_link(unsigned int inum); 
 
 
 // Layer 1.5 - File io by inode id
@@ -89,7 +93,7 @@ int write_file(unsigned int inum, char* buf, int size, int offset);
 // 2. figure out how to set UID GID
 // 3. free block only free used
 // 4. safety check (espacially block)
-
+// 5. read file boundary
 
 
 #endif //PCD_FILESYSTEM_INODE_H_
