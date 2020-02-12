@@ -47,7 +47,9 @@ int find_inode_index(int inum, char * target){
 	unsigned int start = 2;
 	unsigned int offset = start*DIRENT_SIZE;
 	char * tempbuf = (char*)malloc(DIRENT_SIZE);
-	while(offset <= inode_read_size(inum)){
+	unsigned long inode_size = 0;
+	inode_read_size(inum, &inode_size);
+	while(offset < inode_size){
 		// read one entry at an time
 		if(read_file(inum, tempbuf, DIRENT_SIZE, offset)==-1){
 			perror("Error Unable to Read");

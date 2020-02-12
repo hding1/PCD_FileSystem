@@ -441,12 +441,12 @@ int inode_read_mode(unsigned int inum, mode_t* mode_out){
     return 0; // If success
 }
 
-int inode_write_mode(unsigned int inum, mode_t* mode_in){
+int inode_write_mode(unsigned int inum, mode_t mode_in){
     
     // Modify mode of target inode
     inode* target_node = find_inode_by_inum(inum);
     if(target_node == NULL) return -1; // Error
-    target_node->mode = *mode_in;
+    target_node->mode = mode_in;
     // Write the modified inode into block
     int status = write_inode_to_disk(inum, target_node);
     if(!status) return -1;
