@@ -16,6 +16,26 @@
 #include "inode.h"
 #include "syscall.h"
 
+int pcd_mkroot(){
+	int myInum = inode_allocate();
+	//write . and .. to the inode
+	dir = {myInum,'d',"."};
+	char* buf = (char*)malloc(DIRENT_SIZE);
+	memcpy(buf,&dir,DIRENT_SIZE);
+	if(write_file(myInum, &buf, DIRENT_SIZE,read_inode_size(myInum))==-1){
+		perror("Error Writing to File");
+		return -1;
+	}
+	dir = {myInum,'d',".."};
+	char* buf = (char*)malloc(DIRENT_SIZE);
+	memcpy(buf,&dir,DIRENT_SIZE);
+	if(write_file(myInum, &buf, DIRENT_SIZE, read_inode_size(myInum))==-1){
+		perror("Error Writing to File");
+		return -1;
+	}
+	return 0;
+}
+
 static void *pcd_init(struct fuse_conn_info *conn,
 			struct fuse_config *cfg)
 {
