@@ -1,10 +1,10 @@
 # PCD File System
 
-This file system is a class project for CS270
+This file system is a class project for CS270  
 Author - Peter Ding, Karl Wang, Zihao Zhao, Fuheng Zhao
 
 # Phase 1
-layer 0&1 - Zihao Zhao, Fuheng Zhao
+layer 0&1 - Zihao Zhao, Fuheng Zhao  
 layer 2&3 - Peter Ding, Karl Wang
 ## Layer 0 - Disk Layer
 
