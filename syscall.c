@@ -133,20 +133,20 @@ int pcd_mkdir(const char *path, mode_t mode)
 	dir.inum = myInum;
 	dir.file_type = 'd';
 	strcpy(dir.name, parentName);
-	unsigned long inode_size = 0;
+	unsigned long parentInodeSize = 0;
 	inode_read_size(parentInum, &inode_size);
-	if(write_file(parentInum, (char*)&dir, DIRENT_SIZE, inode_size)==-1){
+	if(write_file(parentInum, (char*)&dir, DIRENT_SIZE, parentInodeSize)==-1){
 		perror("Error Writing to File");
 		return -1;
 	}
 	//write . and .. to the inode
 	dirent dir1 = {myInum,'d',"."};
-	if(write_file(myInum, (char*)&dir1, DIRENT_SIZE, inode_size + DIRENT_SIZE)==-1){
+	if(write_file(myInum, (char*)&dir1, DIRENT_SIZE, 0)==-1){
 		perror("Error Writing to File");
 		return -1;
 	}
 	dirent dir2 = {parentInum,'d',".."};
-	if(write_file(myInum, (char*)&dir2, DIRENT_SIZE, inode_size + DIRENT_SIZE + DIRENT_SIZE)==-1){
+	if(write_file(myInum, (char*)&dir2, DIRENT_SIZE, DIRENT_SIZE)==-1){
 		perror("Error Writing to File");
 		return -1;
 	}
@@ -163,9 +163,9 @@ int delete_dirent(int inum, char * target){
 	unsigned int offset = start*DIRENT_SIZE;
 	char * tempbuf = (char*)malloc(DIRENT_SIZE);
 	
-	unsigned long parent_inode_size = 0;
-	inode_read_size(inum, &parent_inode_size);
-	while(offset < parent_inode_size){
+	unsigned long parentInodeSize = 0;
+	inode_read_size(inum, &parentInodeSize);
+	while(offset < parentInodeSize){
 		// read one entry at an time
 		if(read_file(inum, tempbuf, DIRENT_SIZE, offset)==-1){
 			perror("Error Unable to Read");
@@ -207,7 +207,9 @@ int is_dir(int inum){
 
 int is_empty_dir(int inum){
 	dirent* direntbuf = (dirent*)malloc(DIRENT_SIZE);
-	size_t inodeSize = read_inode_size(inum);
+
+	unsigned long inodeSize = 0;
+	inode_read_size(inum, &inodeSize);
 	for(unsigned int offset_idx = 0; offset_idx < inodeSize; offset_idx += DIRENT_SIZE){
 		// read one entry at an time
 		if(read_file(inum, (char*)direntbuf, DIRENT_SIZE, offset_idx)==-1){
