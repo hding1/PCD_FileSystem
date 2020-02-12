@@ -6,3 +6,4 @@
 #include <stdlib.h>
 
 void mkfs();
+void freefs();

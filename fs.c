@@ -10,6 +10,9 @@ void mkfs(){
 	inode_list_init();
 	db_init();
 	pcd_mkroot();
-	
+}
+void freefs(){
+
+	free_disk();
 }
 
