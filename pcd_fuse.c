@@ -59,12 +59,16 @@ static int pcd_getattr(const char *path, struct stat *stbuf,
 	}
 
 	inode_read_mode(inum, &(stbuf->st_mode));
-	inode_read_link_count(inum, &(stbuf->st_nlink));
+	unsigned int linkCount = 0;
+	inode_read_link_count(inum, &linkCount);
+	stbuf->st_nlink = linkCount;
 	if(stbuf->st_mode & S_IFREG){
 		// on off_t size: //stackoverflow.com/questions/9073667/
 		// for 64 bit:
 		// stbuf->st_size = (node.i_dir_acl << 32) & node.i_size;
-		inode_read_size(inum, &(stbuf->st_size));
+		unsigned long inodeSize = 0;
+		inode_read_size(inum, &inodeSize);
+		stbuf->st_size = inodeSize;
 	}
 
 	return 0;
