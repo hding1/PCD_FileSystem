@@ -29,12 +29,12 @@ int inode_list_init(){
     node.last_accessed = 0;
     node.last_modified = 0;
     for(int i = 0; i < DIR_ID_NUM; i++){
-        node.direct_blo[i] = 0;
+        node.direct_blo[i] = -1;
     }
-    node.single_ind = 0;
-    node.double_ind = 0;
-    node.triple_ind = 0;
-    node.link_count = 0;
+    node.single_ind = -1;
+    node.double_ind = -1;
+    node.triple_ind = -1;
+    node.link_count = -1;
 
     // Allocate the 3rd to 130th block (block id =2, 129) for inode list
     char block[4096];
@@ -281,6 +281,7 @@ int inode_free(unsigned int inum){
     bitmap[inum] = 0;
     db_write(bitmap, BITMAP_BID);
 
+    free(target_node);
     return 0; // If success
 }
 
@@ -340,9 +341,6 @@ int inode_reduce_link(unsigned int inum){
     return 0;
 }
 
-
-/********************************************Layer1.5 functions***********************************************/
-
 unsigned int get_root_inum(){
     return ROOT_INUM;
 }
@@ -368,9 +366,12 @@ int read_file(unsigned int inum, char* buf, int size, int offset){
     }
     unsigned int buf_off = 0;
 
+    unsigned int bid;
+    char block[DB_SIZE];
     // Read disk to buf
     while(start_num <= end_num){
-        char* block = find_block_by_num(target_node, start_num);
+        bid = find_block_by_num(target_node, start_num);
+        db_read(block, bid);
         memcpy(buf + buf_off, block + start_off, toRead);
         buf_off += toRead;
         start_off = 0;
@@ -383,7 +384,7 @@ int read_file(unsigned int inum, char* buf, int size, int offset){
             toRead = size;
         }
     }
-
+    free(target_node);
     return buf_off;
 }
 
@@ -419,9 +420,12 @@ int write_file(unsigned int inum, char* buf, int size, int offset){
     }
     unsigned int buf_off = 0;
 
+    unsigned int bid;
+    char block[4096];
     // Write buffer to disk
       while(start_num <= end_num){
-        char* block = find_block_by_num(target_node, start_num);
+        bid = find_block_by_num(target_node, start_num);
+        db_read(block, bid);
         memcpy(block + start_off, buf + buf_off, toWrite);
         write_block_by_num(target_node, start_num, block);
         buf_off += toWrite;
@@ -435,6 +439,8 @@ int write_file(unsigned int inum, char* buf, int size, int offset){
             toWrite = size;
         }
     }
-
+    target_node->size += buf_off;
+    write_inode_to_disk(inum, target_node);
+    
     return buf_off;
 }
