@@ -192,32 +192,66 @@ int delete_dirent(int inum, char * target){
 	return -1;
 }
 
+int is_dir(int inum){
+	mode_t mode = {};
+	inode_read_mode(inum, &mode);
+	return (mode & S_IFDIR) ? 1: 0;
+}
+
+int is_empty_dir(int inum){
+	dirent* direntbuf = (dirent*)malloc(DIRENT_SIZE);
+	size_t inodeSize = read_inode_size(inum);
+	for(unsigned int offset_idx = 0; offset_idx < inodeSize; offset_idx += DIRENT_SIZE){
+		// read one entry at an time
+		if(read_file(inum, (char*)direntbuf, DIRENT_SIZE, offset_idx)==-1){
+			perror("Error Unable to Read");
+			free(direntbuf);
+			return -1;
+		}
+
+		if(direntbuf->name[0] != '\0'){
+			free(direntbuf);
+			return 0;
+		}
+	}
+	free(direntbuf);
+	return 1;
+}
+
 // Remove a file
 int pcd_unlink(const char *path)
 {
 	int myInum = find_inode(path);
 	if(myInum==-1){
 		perror("Error Cannot Find Inode");
-		return -1;
+		return -ENOENT;
 	}
 
-	// remove from parent
-	// write current node id into the parent
-	char parentName[MAX_FILE_NAME];
-	char fileName[MAX_FILE_NAME];
-	char * parentPath;
-	get_parent(path,parentName,fileName,&parentPath);
-	// find inode of the parent
-	int parentInum = find_inode(parentPath);
-	delete_dirent(parentInum, fileName);
 
-	if(parentInum==-1){
-		perror("Error Cannot Find Directory Inode");
-		return -1;
+	if(is_dir(myInum) && is_empty_dir(myInum)){
+		char parentName[MAX_FILE_NAME];
+		char fileName[MAX_FILE_NAME];
+		char * parentPath;
+		get_parent(path,parentName,fileName,&parentPath);
+
+		// find inode of the parent
+		int parentInum = find_inode(parentPath);
+		free(parentPath);
+
+		if(parentInum==-1){
+			perror("Error Cannot Find Directory Inode");
+			return -ENOENT;
+		}
+
+		// remove from parent
+		delete_dirent(parentInum, fileName);
+		// reduce link count and delete inode if necessary
+		reduce_inode_link(myInum);
 	}
-
-	// reduce link count
-	reduce_inode_link(myInum);
+	else{
+		perror("cannot delete non-empty directory");
+		return -ENOTEMPTY;
+	}
 	return 0;
 }
 
