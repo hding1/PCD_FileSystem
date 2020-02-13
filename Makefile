@@ -2,7 +2,7 @@ CFLAGS += -g -Wall -pedantic -Werror
 
 files := disk.c db.c sb.c inode.c fs.c syscall.c pcd_fuse.c
 
-all: pcd_fuse block_test test_syscall
+all: pcd_fuse block_test syscall_test
 
 pcd_fuse: disk.c db.c sb.c inode.c fs.c syscall.c pcd_fuse.c
 	$(CC) $(CFLAGS) $^ `pkg-config fuse3 --cflags --libs` -o $@
