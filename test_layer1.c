@@ -13,7 +13,7 @@
 #define FAIL -1
 
 
-/*************************************inode test helpers****************************************/
+/*************************************inode test helpers***************************************/
 int test_bitmap_init(){
 	int status = inode_bitmap_init();
 	if(status){
