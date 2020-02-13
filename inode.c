@@ -37,12 +37,12 @@ int inode_list_init(){
     node.link_count = 0;
 
     // Allocate the 3rd to 130th block (block id =2, 129) for inode list
-    char block[4096];
-    for(unsigned int bid = ILIST_BID; bid < 130; bid++){
-        memset(block, 0, 4096);
-        for(int i = 0; i < 32; i++){
-            memcpy(block + i * INODE_SIZE, &node, sizeof(node));
-        }
+    char block[DB_SIZE];
+    memset(block, 0, DB_SIZE);
+    for(int i = 0; i < 32; i++){
+        memcpy(block + i * INODE_SIZE, &node, sizeof(node));
+    }
+    for(unsigned int bid = ILIST_BID; bid < ILIST_BID + NUM_INODE / (DB_SIZE / INODE_SIZE); bid++){
         db_write(block, bid);
     }
 
