@@ -10,6 +10,22 @@
 #include "dir.h"
 #include "inode.h"
 
+int pcd_mkroot(){
+	int myInum = inode_allocate();
+	//write . and .. to the inode
+	dirent dir1 = {myInum,'d',"."};
+	if(write_file(myInum, (char*)&dir1, DIRENT_SIZE, 0)==-1){
+		perror("Error Writing to File");
+		return -EIO;
+	}
+
+	dirent dir2 = {myInum,'d',".."};
+	if(write_file(myInum, (char*)&dir2, DIRENT_SIZE, DIRENT_SIZE)==-1){
+		perror("Error Writing to File");
+		return -EIO;
+	}
+	return 0;
+}
 
 // get parent name, filename and parent path from path
 int get_parent(const char *path, char * parent, char * filename, char ** parentPath){

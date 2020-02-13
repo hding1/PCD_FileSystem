@@ -1,6 +1,8 @@
 #ifndef PCD_FILESYSTEM_SYSCALL_H_
 #define PCD_FILESYSTEM_SYSCALL_H_
 
+#define FUSE_USE_VERSION 31
+
 #include <fuse.h>
 #include <sys/stat.h>
 
@@ -11,6 +13,7 @@
 // open/close: opens/closes a file
 // read/write: reads/writes a file
 
+int pcd_mkroot();
 int pcd_mkdir(const char *path, mode_t mode);
 int pcd_unlink(const char *path);
 int pcd_mknod(const char *path, mode_t mode, dev_t rdev);

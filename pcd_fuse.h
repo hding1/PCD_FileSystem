@@ -5,6 +5,4 @@
 
 #include <fuse.h>
 
-int pcd_mkroot();
-
 #endif  //PCD_FILESYSTEM_PCD_FUSE_H_

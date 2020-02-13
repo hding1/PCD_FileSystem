@@ -17,23 +17,6 @@
 #include "syscall.h"
 #include "dir.h"
 
-int pcd_mkroot(){
-	int myInum = inode_allocate();
-	//write . and .. to the inode
-	dirent dir1 = {myInum,'d',"."};
-	if(write_file(myInum, (char*)&dir1, DIRENT_SIZE, 0)==-1){
-		perror("Error Writing to File");
-		return -EIO;
-	}
-
-	dirent dir2 = {myInum,'d',".."};
-	if(write_file(myInum, (char*)&dir2, DIRENT_SIZE, DIRENT_SIZE)==-1){
-		perror("Error Writing to File");
-		return -EIO;
-	}
-	return 0;
-}
-
 static void *pcd_init(struct fuse_conn_info *conn,
 			struct fuse_config *cfg)
 {

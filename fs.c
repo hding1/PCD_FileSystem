@@ -1,6 +1,6 @@
 // Responsible author(s): DZ and Fuheng
 #include "fs.h"
-#include "pcd_fuse.h"
+#include "syscall.h"
 
 void mkfs(){
 	// init sb, inode, db, root
