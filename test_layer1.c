@@ -56,6 +56,64 @@ int test_inode_list_init(){
 	return PASS;
 }
 
+int test_inode_allocate(){
+	inode* node;
+	int inum = inode_allocate();
+	if(inum == -1){
+		printf("Error: inode allocate failed!\n");
+		return FAIL;
+	}
+	node = find_inode_by_inum(inum);
+	if(node->link_count != 1){
+		printf("Error: a single inode incorrectly initialized!\n");
+		free(node);
+		return FAIL;
+	}else{
+		free(node);
+	}
+
+	int inums[32];
+	for(int i = 0; i < 32; i++){
+		inums[i] = inode_allocate();
+	}
+	for(int i = 0; i < 32; i++){
+		node = find_inode_by_inum(inums[i]);
+		if(node->link_count != 1){
+			printf("Error: a block of inode incorrectly initialized!\n");
+			free(node);
+			return FAIL;
+		}else{
+			free(node);
+		}
+	}
+
+	inode_free(inum);
+	int recycle = inode_allocate();
+	if(recycle != inum){
+		printf("Error: freed inode recycle failed!\n");
+		return FAIL;
+	}
+
+	inode_free(recycle);
+	for(int i = 0; i < 32; i++){
+		inode_free(inums[i]);
+	}
+
+	return PASS;
+}
+
+int test_inode_free(){
+	char block[4096];
+	unsigned short bitmap[4096];
+
+	db_read(block, 1);
+	memcpy(bitmap, block, 4096);
+
+	// STUB
+
+	return PASS;
+}
+
 
 /***************************************test main********************************************/
 int main(){
@@ -109,6 +167,20 @@ int main(){
 		printf("PASS: test_inode_list_init!\n");
 	}else{
 		printf("FAIL: test_inode_list_init!\n");
+	}
+
+	printf("--------Running test 3: test_inode_allocate!--------\n");
+	if(!test_inode_allocate()){
+		printf("PASS: test_inode_allocate!\n");
+	}else{
+		printf("FAIL: test_inode_allocate!\n");
+	}
+
+	printf("--------Running test 4: test_inode_free!--------\n");
+	if(!test_inode_free()){
+		printf("PASS: test_inode_free!\n");
+	}else{
+		printf("FAIL: test_inode_free!\n");
 	}
 
 

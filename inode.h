@@ -8,6 +8,9 @@
 #include <string.h>
 #include <time.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <pwd.h>
+
 #include "db.h"
 #include "fs.h"
 
@@ -30,16 +33,16 @@ typedef struct inode{
      /* Mode: keeps information about two things, 
                1) permission information, 
                2) type of inode */
-     mode_t mode;
+     mode_t mode;   // 8 bytes
 
      /* Owner info: Access details like owner of the file, 
                     group of the file etc */
-     unsigned int UID;
-     unsigned int GID;
+     uid_t UID;     // 4 bytes
+     gid_t GID;     // 4 bytes
 
      /* Size: size of the file in terms of bytes */
      // Default file size is 0
-     unsigned long size;
+     unsigned long size; 
 
      // Time stampes
      time_t last_accessed;

@@ -57,9 +57,7 @@ int find_free_inode(){
     // Bring the bitmap from disk to memory
     unsigned short bitmap[NUM_INODE];
 
-    int status = db_read(bitmap, BITMAP_BID);
-    if(status < 0)
-        return status;
+    db_read(bitmap, BITMAP_BID);
 
     for(int i = 0; i < NUM_INODE; i++){
         if(bitmap[i] == 0){
@@ -82,7 +80,7 @@ inode* find_inode_by_inum(unsigned int inum){
     // Read the inode
     inode* node = (inode*) malloc(sizeof(inode));
     unsigned offset = inum % 32;
-    char* ptr = (char*) block + offset * INODE_SIZE;    // Find the inode in the block
+    char* ptr = (char*) (block + offset * INODE_SIZE);    // Find the inode in the block
     memcpy(node, ptr, sizeof(inode));
 
     return node;
@@ -99,7 +97,7 @@ int write_inode_to_disk(unsigned int inum, inode* target_node){
     unsigned int bid = ILIST_BID + inum / 32;
     db_read(block, bid);
     unsigned offset = inum % 32;
-    char* node_ptr = (char*) block + offset * INODE_SIZE;
+    char* node_ptr = (char*) (block + offset * INODE_SIZE);
     memcpy(node_ptr, target_node, sizeof(inode));
     db_write(block, bid);
 
@@ -377,9 +375,16 @@ int inode_allocate(){
     target_node->last_modified = time(NULL);
     target_node->link_count = 1;
 
+     char *p=getenv("USER");
+    if(p==NULL) return EXIT_FAILURE;
+    struct passwd *pw = getpwnam(p);
+    target_node->UID = pw->pw_uid;
+    target_node->GID = pw->pw_gid;
+
+
     // Write changes back to disk
     int status = write_inode_to_disk(inum, target_node);
-    if(!status) return -1;
+    if(status) return -1;
 
     // Return the inum if success
     return inum; 
