@@ -105,12 +105,13 @@ int write_inode_to_disk(unsigned int inum, inode* target_node){
 }
 
 int free_indblo_by_bid(unsigned int bid){
-    if(bid == 0) return 0;
+    if(bid == 0) return 0;  // Unused
     char block[DB_SIZE];
     db_read(block, bid);
     unsigned int bids[INDIR_ID_NUM];
     memcpy(bids, block, DB_SIZE);
     for(int i = 0; i < DIR_ID_NUM; i++){
+        if(bids[i] == 0) break;  // Unused
         db_free(bids[i]);
     }
     db_free(bid);
@@ -118,12 +119,13 @@ int free_indblo_by_bid(unsigned int bid){
 }
 
 int free_dindblo_by_bid(unsigned int bid){
-    if(bid == 0) return 0;
+    if(bid == 0) return 0;  // Unused
     char block[DB_SIZE];
     db_read(block, bid);
     unsigned int bids[INDIR_ID_NUM];
     memcpy(bids, block, DB_SIZE);
     for(int i = 0; i < INDIR_ID_NUM; i++){
+        if(bids[i] == 0) break; // Unused
         free_indblo_by_bid(bids[i]);
     }
     db_free(bid);
@@ -131,12 +133,13 @@ int free_dindblo_by_bid(unsigned int bid){
 }
 
 int free_tindblo_by_bid(unsigned int bid){
-    if(bid == 0) return 0;
+    if(bid == 0) return 0;  // Unused
     char block[DB_SIZE];
     db_read(block, bid);
     unsigned int bids[INDIR_ID_NUM];
     memcpy(bids, block, DB_SIZE);
     for(int i = 0; i < INDIR_ID_NUM; i++){
+        if(bids[i] == 0) break;
         free_dindblo_by_bid(bids[i]);
     }
     db_free(bid);
@@ -355,7 +358,7 @@ int add_block(unsigned int inum){
         return -1;
     }
     free(target_node);
-    return 0;
+    return newid;
 }
 
 
@@ -370,7 +373,7 @@ int inode_allocate(){
     // Get the inode, set initial values
     inode* target_node = find_inode_by_inum(inum);
     if(target_node == NULL) return -1;  // Error
-    target_node->mode = 666;
+    target_node->mode = 0666;
     target_node->last_accessed = time(NULL);
     target_node->last_modified = time(NULL);
     target_node->link_count = 1;

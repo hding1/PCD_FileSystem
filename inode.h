@@ -93,10 +93,11 @@ int write_file(unsigned int inum, const char* buf, int size, int offset);
 
 // TO DO
 // 1. use sb instead hardcoded bid
-// 2. figure out how to set UID GID
-// 3. free block only free used blocks
+// 2. figure out how to set UID GID          DONE
+// 3. free block only free used blocks       DONE
 // 4. safety checks
 // 5. read file boundary
+// 6. add new block, the rest of the block should all be zeros
 
 
 #endif //PCD_FILESYSTEM_INODE_H_

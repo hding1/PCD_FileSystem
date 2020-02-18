@@ -103,14 +103,95 @@ int test_inode_allocate(){
 }
 
 int test_inode_free(){
-	char block[4096];
-	unsigned short bitmap[4096];
+	unsigned long numbs = 12 + 1024 + 1024*2;
+	unsigned int dbs[numbs];
+	int bid;
 
+	int inum = inode_allocate();
+	if(inum == -1){
+		printf("Error: inode allocate failed!\n");
+		return FAIL;
+	}
+
+	for(unsigned long i = 0; i < numbs; i++){
+		bid = add_block(inum);
+		if(bid == -1){
+			printf("Error: inode add block failed!\n");
+			return FAIL;
+		}
+		dbs[i] = bid;
+	}
+
+	inode_free(inum);
+
+	// check if data blocks are freed
+	for(unsigned long i = 0; i < numbs; i++){
+		if(!is_db_free(dbs[i])) return FAIL;
+	}
+	// check if bitmap is freed
+	unsigned short bitmap[4096];
+	char block[4096];
 	db_read(block, 1);
 	memcpy(bitmap, block, 4096);
+	if(bitmap[inum] != 0){
+		printf("Error: bitmap free failed!\n");
+		return FAIL;
+	}
 
-	// STUB
+	return PASS;
+}
 
+int test_inode_mode_read_write(){
+	int inum = inode_allocate();
+	if(inum == -1){
+		printf("Error: inode allocate failed!\n");
+		return FAIL;
+	}
+
+	mode_t mode_out;
+	if(inode_read_mode(inum, &mode_out)){
+		printf("Error: inode read mode failed!\n");
+		return FAIL;
+	}
+	if(mode_out != 0666){
+		printf("Error: inode read mode incorrectly!\n");
+		return FAIL;
+	}
+	mode_t mode_in = 0777;
+	if(inode_write_mode(inum, mode_in)){
+		printf("Error: inode write mode failed!\n");
+		return FAIL;
+	}
+	if(inode_read_mode(inum, &mode_out)){
+		printf("Error: inode read mode failed!\n");
+		return FAIL;
+	}
+	if(mode_out != 0777){
+		printf("Error: inode write mode incorrectly!\n");
+		return FAIL;
+	}
+
+	return PASS;
+}
+
+int test_inode_link_read_reduce(){
+	return PASS;
+}
+
+int test_inode_read_size(){
+	return PASS;
+}
+
+int test_inode_rootnum(){
+	if(get_root_inum() != 0) return FAIL;
+	return PASS;
+}
+
+int test_inode_read_file(){
+	return PASS;
+}
+
+int test_inode_write_file(){
 	return PASS;
 }
 
@@ -183,7 +264,47 @@ int main(){
 		printf("FAIL: test_inode_free!\n");
 	}
 
+	printf("--------Running test 5: test_inode_mode_read_write!--------\n");
+	if(!test_inode_mode_read_write()){
+		printf("PASS: test_inode_mode_read_write!\n");
+	}else{
+		printf("FAIL: test_inode_mode_read_write!\n");
+	}
 
+	printf("--------Running test 6: test_inode_link_read_reduce!--------\n");
+	if(!test_inode_link_read_reduce()){
+		printf("PASS: test_inode_link_read_reduce!\n");
+	}else{
+		printf("FAIL: test_inode_link_read_reduce!\n");
+	}
+
+	printf("--------Running test 7: test_inode_read_size!--------\n");
+	if(!test_inode_read_size()){
+		printf("PASS: test_inode_read_size!\n");
+	}else{
+		printf("FAIL: test_inode_read_size!\n");
+	}
+
+	printf("--------Running test 8: test_inode_rootnum!--------\n");
+	if(!test_inode_rootnum()){
+		printf("PASS: test_inode_rootnum!\n");
+	}else{
+		printf("FAIL: test_inode_rootnum!\n");
+	}
+
+	printf("--------Running test 9: test_inode_read_file!--------\n");
+	if(!test_inode_read_file()){
+		printf("PASS: test_inode_read_file!\n");
+	}else{
+		printf("FAIL: test_inode_read_file!\n");
+	}
+
+	printf("--------Running test 10: test_inode_write_file!--------\n");
+	if(!test_inode_write_file()){
+		printf("PASS: test_inode_write_file!\n");
+	}else{
+		printf("FAIL: test_inode_write_file!\n");
+	}
 
 	free_disk();
 	return 0;
