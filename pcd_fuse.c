@@ -17,8 +17,7 @@
 #include "syscall.h"
 #include "dir.h"
 
-static void *pcd_init(struct fuse_conn_info *conn,
-			struct fuse_config *cfg)
+static void *pcd_init(struct fuse_conn_info *conn)
 {
 	//not using conn
 	(void) conn;
@@ -29,10 +28,8 @@ static void *pcd_init(struct fuse_conn_info *conn,
 	return NULL;
 }
 
-static int pcd_getattr(const char *path, struct stat *stbuf,
-			 struct fuse_file_info *fi)
+static int pcd_getattr(const char *path, struct stat *stbuf)
 {
-	(void) fi;
 
 	memset(stbuf, 0, sizeof(struct stat));
 

@@ -356,12 +356,10 @@ int pcd_mknod(const char *path, mode_t mode, dev_t rdev)
 // It uses the offset parameter and always passes non-zero offset to the filler function. 
 // When the buffer is full (or an error happens) the filler function will return '1'.
 int pcd_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
-		       off_t offset, struct fuse_file_info *fi,
-		       enum fuse_readdir_flags flags)
+		       off_t offset, struct fuse_file_info *fi)
 {
 	(void) offset;
 	(void) fi;
-	(void) flags;
 
 	int inum = find_inode(path);
 	if (inum == -1)
@@ -386,7 +384,7 @@ int pcd_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 		st.st_ino = (ino_t)direntbuf->inum;
 		st.st_mode = FileTypeToModeT(direntbuf->file_type);
 		
-		if(filler(buf, direntbuf->name, &st, 0, 0)){
+		if(filler(buf, direntbuf->name, &st, 0)){
 			//error
 			break;
 		}

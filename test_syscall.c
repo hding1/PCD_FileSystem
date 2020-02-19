@@ -10,12 +10,10 @@
 #include "syscall.h"
 
 int test_filler(void *buf, const char *name,
-				const struct stat *stbuf, off_t off,
-				enum fuse_fill_dir_flags flags);
+				const struct stat *stbuf, off_t off);
 
 int test_filler(void *buf, const char *name,
-				const struct stat *stbuf, off_t off,
-				enum fuse_fill_dir_flags flags){
+				const struct stat *stbuf, off_t off){
 	printf("name: %s, ", name);
 	printf("mode: %d, ", stbuf->st_mode);
 	printf("inum: %lu", stbuf->st_ino);
@@ -64,7 +62,7 @@ int test_mkdir(void){
 int test_readdir(){
 	const char* path1 = "/root";
 	char* buf = (char *)malloc(1000);
-	if(pcd_readdir(path1,buf,test_filler,0,0,0)<0){
+	if(pcd_readdir(path1,buf,test_filler,0,0)<0){
 		printf("Read Directory Failed");
 		return -1;
 	}
@@ -86,7 +84,7 @@ int test_mknod(void){
 	pcd_mknod(path1,S_IFREG,0);
 	const char* path2 = "/root/dir1/dir2";
 	char* buf = (char *)malloc(1000);
-	if(pcd_readdir(path2,buf,test_filler,0,0,0)<0){
+	if(pcd_readdir(path2,buf,test_filler,0,0)<0){
 		printf("Read Directory Failed");
 		return -1;
 	}
@@ -107,7 +105,7 @@ int test_read(void){
 	}
 	const char* path2 = "/root/dir1/dir2";
 	char* buf2 = (char *)malloc(1000);
-	if(pcd_readdir(path2, buf2, test_filler, 0, 0, 0) < 0){
+	if(pcd_readdir(path2, buf2, test_filler, 0, 0) < 0){
 		printf("Read Directory Failed");
 		return -1;
 	}
@@ -126,7 +124,7 @@ int test_write(void){
 	}
 	const char* path2 = "/root/dir1/dir2";
 	char* buf2 = (char *)malloc(1000);
-	if(pcd_readdir(path2,buf2,test_filler,0,0,0)<0){
+	if(pcd_readdir(path2,buf2,test_filler,0,0)<0){
 		printf("Read Directory Failed");
 		return -1;
 	}
