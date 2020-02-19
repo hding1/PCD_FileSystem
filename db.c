@@ -50,6 +50,28 @@ int db_free(unsigned int block_id){
 	return 0;
 }
 
+int is_db_free(unsigned int block_id){
+	sb* super = sb_read();
+	unsigned int F_L = super->FREE_LIST;
+	unsigned int F_B = super->NUM_FREE_BLOCK;
+	void* buffer = malloc(sizeof(char) * DB_SIZE);
+
+	if(F_L == block_id){
+		free(super);
+		return 1;
+	}
+	for(unsigned int i=0; i<F_B;i++){
+		disk_read(buffer,F_L);
+		memcpy(&F_L,buffer,sizeof(unsigned int));
+		if(F_L == block_id){
+			free(super);
+			return 1;
+		}
+	}
+
+	free(super);
+	return 0; //bid is not free 
+}
 
 int db_read(void* out, unsigned int block_id){
 	disk_read(out,block_id);

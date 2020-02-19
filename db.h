@@ -14,6 +14,7 @@ void db_init();
 unsigned int db_allocate();
 int db_free(unsigned int block_id);
 
+int is_db_free(unsigned int block_id);
 
 int db_read(void* out_buffer, unsigned int block_id);
 int db_write(void* in_buffer, unsigned int block_id);
