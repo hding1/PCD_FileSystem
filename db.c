@@ -98,12 +98,15 @@ void db_init(){
 	unsigned int START_DATA_BLOCK = super->START_DATA_BLOCK;
 	void* input = malloc(sizeof(unsigned int));
 	unsigned int NUM_FREE_BLOCK = super->NUM_FREE_BLOCK;
-	//the last free data block doesnt need to be initialized so size-1
-	for(unsigned int i = 0; i < NUM_FREE_BLOCK-1; i++){
+	
+	//the last free data block will contain a last+1 even tho it can not be used.
+	
+	for(unsigned int i = 0; i < NUM_FREE_BLOCK; i++){
 		unsigned int id = i+START_DATA_BLOCK + 1;
 		memcpy(input, &id, sizeof(unsigned int));		
 		disk_write(input, id-1);
 	}
+	
 	free(input);
 	free(super);
 
