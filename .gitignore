@@ -1017,5 +1017,11 @@ _deps
 modules.order
 Module.symvers
 Mkfile.old
-dkms.confi
+dkms.conf
+
+
+# custom .gitignore rules
+*_test
+pcd_fuse
+
 !Makefile

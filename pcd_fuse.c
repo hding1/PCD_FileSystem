@@ -1,90 +1,108 @@
-#include <pcd_fuse.h>
 
+#define FUSE_USE_VERSION 31
+
+#include <fuse.h>
+#include <stdio.h>
+#include <string.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <stddef.h>
+#include <assert.h>
+
+#include <sys/stat.h>
+
+#include "pcd_fuse.h"
+#include "fs.h"
+#include "inode.h"
+#include "syscall.h"
+#include "dir.h"
 
 static void *pcd_init(struct fuse_conn_info *conn,
 			struct fuse_config *cfg)
 {
-	// (void) conn;
-	// cfg->kernel_cache = 1;
-	// return NULL;
+	//not using conn
+	(void) conn;
+
+	mkfs();
+	//could also allocate here
+	//return calloc(1, 16*1024*1024 /*allocate 16MB*/);
+	return NULL;
 }
 
 static int pcd_getattr(const char *path, struct stat *stbuf,
 			 struct fuse_file_info *fi)
 {
 	(void) fi;
-	int res = 0;
 
-	// memset(stbuf, 0, sizeof(struct stat));
-	// if (strcmp(path, "/") == 0) {
-	// 	stbuf->st_mode = S_IFDIR | 0755;
-	// 	stbuf->st_nlink = 2;
-	// } else if (strcmp(path+1, options.filename) == 0) {
-	// 	stbuf->st_mode = S_IFREG | 0444;
-	// 	stbuf->st_nlink = 1;
-	// 	stbuf->st_size = strlen(options.contents);
-	// } else
-	// 	res = -ENOENT;
+	memset(stbuf, 0, sizeof(struct stat));
 
-	return res;
-}
+	int inum = find_inode(path);
+	if(inum == -1){
+		return -ENOENT;
+	}
 
-static int pcd_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
-			 off_t offset, struct fuse_file_info *fi,
-			 enum fuse_readdir_flags flags)
-{
-	(void) offset;
-	(void) fi;
-	(void) flags;
-
-	// if (strcmp(path, "/") != 0)
-	// 	return -ENOENT;
-
-	// filler(buf, ".", NULL, 0, 0);
-	// filler(buf, "..", NULL, 0, 0);
-	// filler(buf, options.filename, NULL, 0, 0);
+	inode_read_mode(inum, &(stbuf->st_mode));
+	unsigned int linkCount = 0;
+	inode_read_link_count(inum, &linkCount);
+	stbuf->st_nlink = linkCount;
+	if(stbuf->st_mode & S_IFREG){
+		// on off_t size: //stackoverflow.com/questions/9073667/
+		// for 64 bit:
+		// stbuf->st_size = (node.i_dir_acl << 32) & node.i_size;
+		unsigned long inodeSize = 0;
+		inode_read_size(inum, &inodeSize);
+		stbuf->st_size = inodeSize;
+	}
 
 	return 0;
 }
 
-static int pcd_open(const char *path, struct fuse_file_info *fi)
-{
-	// if (strcmp(path+1, options.filename) != 0)
-	// 	return -ENOENT;
-
-	// if ((fi->flags & O_ACCMODE) != O_RDONLY)
-	// 	return -EACCES;
-
-	return 0;
-}
-
-static int pcd_read(const char *path, char *buf, size_t size, off_t offset,
-		      struct fuse_file_info *fi)
-{
-	// size_t len;
-	// (void) fi;
-	// if(strcmp(path+1, options.filename) != 0)
-	// 	return -ENOENT;
-
-	// len = strlen(options.contents);
-	// if (offset < len) {
-	// 	if (offset + size > len)
-	// 		size = len - offset;
-	// 	memcpy(buf, options.contents + offset, size);
-	// } else
-	// 	size = 0;
-
-	return size;
-}
 
 static struct fuse_operations pcd_oper = {
-	.init           = pcd_init,
+	.init       = pcd_init,
 	.getattr	= pcd_getattr,
+	.mkdir      = pcd_mkdir,
+	.unlink     = pcd_unlink,
+	.mknod      = pcd_mknod,
 	.readdir	= pcd_readdir,
-	.open		= pcd_open,
 	.read		= pcd_read,
+	.write		= pcd_write,
+	.open		= pcd_open
 };
 
+/*
+ * Command line options
+ *
+ * We can't set default values for the char* fields here because
+ * fuse_opt_parse would attempt to free() them when the user specifies
+ * different values on the command line.
+ */
+static struct options {
+	const char *filename;
+	const char *contents;
+	int show_help;
+} options;
+
+#define OPTION(t, p)                           \
+    { t, offsetof(struct options, p), 1 }
+static const struct fuse_opt option_spec[] = {
+	OPTION("--name=%s", filename),
+	OPTION("--contents=%s", contents),
+	OPTION("-h", show_help),
+	OPTION("--help", show_help),
+	FUSE_OPT_END
+};
+
+static void show_help(const char *progname)
+{
+	printf("usage: %s [options] <mountpoint>\n\n", progname);
+	printf("File-system specific options:\n"
+	       "    --name=<s>          Name of the \"hello\" file\n"
+	       "                        (default: \"hello\")\n"
+	       "    --contents=<s>      Contents \"hello\" file\n"
+	       "                        (default \"Hello, World!\\n\")\n"
+	       "\n");
+}
 
 int main(int argc, char *argv[])
 {

@@ -39,4 +39,5 @@ typedef struct sb{
 void sb_init();
 sb* sb_read();
 void sb_write();
+
 #endif

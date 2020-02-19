@@ -1,3 +1,6 @@
+#ifndef PCD_FILESYSTEM_INODE_H_
+#define PCD_FILESYSTEM_INODE_H_
+
 // Responsible author(s): Dennis
 
 #include <stdlib.h>
@@ -5,6 +8,9 @@
 #include <string.h>
 #include <time.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <pwd.h>
+
 #include "db.h"
 #include "fs.h"
 
@@ -27,23 +33,23 @@ typedef struct inode{
      /* Mode: keeps information about two things, 
                1) permission information, 
                2) type of inode */
-     mode_t mode;
+     mode_t mode;   // 8 bytes
 
      /* Owner info: Access details like owner of the file, 
                     group of the file etc */
-     unsigned int UID;
-     unsigned int GID;
+     uid_t UID;     // 4 bytes
+     gid_t GID;     // 4 bytes
 
      /* Size: size of the file in terms of bytes */
      // Default file size is 0
-     unsigned long size;
+     unsigned long size; 
 
      // Time stampes
      time_t last_accessed;
      time_t last_modified;
 
      // Data blocks
-     unsigned int direct_blo[DIRECT_BLKS_NUM];
+     unsigned int direct_blo[DIR_ID_NUM];
      unsigned int single_ind;
      unsigned int double_ind;
      unsigned int triple_ind;
@@ -71,14 +77,14 @@ int add_block(unsigned int inum);
 int inode_allocate();
 int inode_free(unsigned int inum);
 int inode_read_mode(unsigned int inum, mode_t* mode_out);
-int inode_write_mode(unsigned int inum, mode_t* mode_in);
+int inode_write_mode(unsigned int inum, mode_t mode_in);
 int inode_read_size(unsigned int inum, unsigned long* size); 
 int inode_read_link_count(unsigned int inum, unsigned int* count); 
 int inode_reduce_link(unsigned int inum); 
 
 unsigned int get_root_inum();
 int read_file(unsigned int inum, char* buf, int size, int offset);
-int write_file(unsigned int inum, char* buf, int size, int offset);
+int write_file(unsigned int inum, const char* buf, int size, int offset);
 
 #endif
 
@@ -87,7 +93,11 @@ int write_file(unsigned int inum, char* buf, int size, int offset);
 
 // TO DO
 // 1. use sb instead hardcoded bid
-// 2. figure out how to set UID GID
-// 3. free block only free used blocks
+// 2. figure out how to set UID GID          DONE
+// 3. free block only free used blocks       DONE
 // 4. safety checks
 // 5. read file boundary
+// 6. add new block, the rest of the block should all be zeros
+
+
+#endif //PCD_FILESYSTEM_INODE_H_
