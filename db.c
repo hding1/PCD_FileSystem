@@ -55,15 +55,17 @@ int is_db_free(unsigned int block_id){
 	unsigned int F_L = super->FREE_LIST;
 	unsigned int F_B = super->NUM_FREE_BLOCK;
 	void* buffer = malloc(sizeof(char) * DB_SIZE);
-
+	//printf("is_db_free: ourside: freelist bid = %d, block_id = %d\n", F_L, block_id);
 	if(F_L == block_id){
 		free(super);
+		//printf("is_db_free: freelist bid = %d\n", F_L);
 		return 1;
 	}
 	for(unsigned int i=0; i<F_B;i++){
 		disk_read(buffer,F_L);
 		memcpy(&F_L,buffer,sizeof(unsigned int));
 		if(F_L == block_id){
+			//printf("is_db_free: freelist bid = %d\n", F_L);
 			free(super);
 			return 1;
 		}

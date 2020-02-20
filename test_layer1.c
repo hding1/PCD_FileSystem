@@ -103,7 +103,7 @@ int test_inode_allocate(){
 }
 
 int test_inode_free(){
-	unsigned long numbs = 12 + 1024 + 1024*2;
+	unsigned long numbs = 12 + 1024 + 1024 * 2;
 	unsigned int dbs[numbs];
 	int bid;
 
@@ -119,14 +119,23 @@ int test_inode_free(){
 			printf("Error: inode add block failed!\n");
 			return FAIL;
 		}
+		// Simulate file write, increase size
+		inode* target_node = find_inode_by_inum(inum);
+		target_node->size += 4096;
+		write_inode_to_disk(inum,target_node);
+
 		dbs[i] = bid;
+		//printf("test_inode_free: bid%lu = %d\n", i, dbs[i]);
 	}
 
 	inode_free(inum);
 
 	// check if data blocks are freed
 	for(unsigned long i = 0; i < numbs; i++){
-		if(!is_db_free(dbs[i])) return FAIL;
+		if(!is_db_free(dbs[i])){
+			printf("Error: Used data block is not freed!\n");
+			return FAIL;
+		}
 	}
 	// check if bitmap is freed
 	unsigned short bitmap[4096];
@@ -222,7 +231,7 @@ int main(){
 	new_block = super->FREE_LIST+1;
 	
 	super = sb_read();
-	printf("%d \n",super->FREE_LIST);
+	//printf("%d \n",super->FREE_LIST);
 	assert(super->FREE_LIST == new_block);
 
 	db_free(new_block-1);
@@ -264,47 +273,47 @@ int main(){
 		printf("FAIL: test_inode_free!\n");
 	}
 
-	printf("--------Running test 5: test_inode_mode_read_write!--------\n");
-	if(!test_inode_mode_read_write()){
-		printf("PASS: test_inode_mode_read_write!\n");
-	}else{
-		printf("FAIL: test_inode_mode_read_write!\n");
-	}
+	// printf("--------Running test 5: test_inode_mode_read_write!--------\n");
+	// if(!test_inode_mode_read_write()){
+	// 	printf("PASS: test_inode_mode_read_write!\n");
+	// }else{
+	// 	printf("FAIL: test_inode_mode_read_write!\n");
+	// }
 
-	printf("--------Running test 6: test_inode_link_read_reduce!--------\n");
-	if(!test_inode_link_read_reduce()){
-		printf("PASS: test_inode_link_read_reduce!\n");
-	}else{
-		printf("FAIL: test_inode_link_read_reduce!\n");
-	}
+	// printf("--------Running test 6: test_inode_link_read_reduce!--------\n");
+	// if(!test_inode_link_read_reduce()){
+	// 	printf("PASS: test_inode_link_read_reduce!\n");
+	// }else{
+	// 	printf("FAIL: test_inode_link_read_reduce!\n");
+	// }
 
-	printf("--------Running test 7: test_inode_read_size!--------\n");
-	if(!test_inode_read_size()){
-		printf("PASS: test_inode_read_size!\n");
-	}else{
-		printf("FAIL: test_inode_read_size!\n");
-	}
+	// printf("--------Running test 7: test_inode_read_size!--------\n");
+	// if(!test_inode_read_size()){
+	// 	printf("PASS: test_inode_read_size!\n");
+	// }else{
+	// 	printf("FAIL: test_inode_read_size!\n");
+	// }
 
-	printf("--------Running test 8: test_inode_rootnum!--------\n");
-	if(!test_inode_rootnum()){
-		printf("PASS: test_inode_rootnum!\n");
-	}else{
-		printf("FAIL: test_inode_rootnum!\n");
-	}
+	// printf("--------Running test 8: test_inode_rootnum!--------\n");
+	// if(!test_inode_rootnum()){
+	// 	printf("PASS: test_inode_rootnum!\n");
+	// }else{
+	// 	printf("FAIL: test_inode_rootnum!\n");
+	// }
 
-	printf("--------Running test 9: test_inode_read_file!--------\n");
-	if(!test_inode_read_file()){
-		printf("PASS: test_inode_read_file!\n");
-	}else{
-		printf("FAIL: test_inode_read_file!\n");
-	}
+	// printf("--------Running test 9: test_inode_read_file!--------\n");
+	// if(!test_inode_read_file()){
+	// 	printf("PASS: test_inode_read_file!\n");
+	// }else{
+	// 	printf("FAIL: test_inode_read_file!\n");
+	// }
 
-	printf("--------Running test 10: test_inode_write_file!--------\n");
-	if(!test_inode_write_file()){
-		printf("PASS: test_inode_write_file!\n");
-	}else{
-		printf("FAIL: test_inode_write_file!\n");
-	}
+	// printf("--------Running test 10: test_inode_write_file!--------\n");
+	// if(!test_inode_write_file()){
+	// 	printf("PASS: test_inode_write_file!\n");
+	// }else{
+	// 	printf("FAIL: test_inode_write_file!\n");
+	// }
 
 	free_disk();
 	return 0;

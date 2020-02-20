@@ -110,11 +110,13 @@ int free_indblo_by_bid(unsigned int bid){
     db_read(block, bid);
     unsigned int bids[INDIR_ID_NUM];
     memcpy(bids, block, DB_SIZE);
-    for(int i = 0; i < DIR_ID_NUM; i++){
+    for(int i = 0; i < INDIR_ID_NUM; i++){
         if(bids[i] == 0) break;  // Unused
         db_free(bids[i]);
+        //printf("free_indblo_by_bid: indirect data bid = %d\n", bids[i]);
     }
     db_free(bid);
+    //printf("free_indblo_by_bid: indirect bid = %d\n", bid);
     return 0;
 }
 
@@ -221,19 +223,25 @@ int add_block(unsigned int inum){
     if(num < DIR_ID_NUM){
         target_node->direct_blo[num] = newid;
         write_inode_to_disk(inum, target_node);
+        //printf("add_block: add direct blocks!\n");
 
     }else if(num < DIR_ID_NUM + INDIR_ID_NUM){
         index = num - DIR_ID_NUM;
         if(index == 0){
+            //printf("add_block: add new single indirect blocks!\n");
             ind_bid = db_allocate();
             target_node->single_ind = ind_bid;
             db_read(block, ind_bid);
             memcpy(ind_block, block, DB_SIZE);
-            ind_block[index] = newid;
+            ind_block[0] = newid;
+            for(int i = 1; i < INDIR_ID_NUM; i++){
+                ind_block[i] = 0;
+            }
             memcpy(block, ind_block, DB_SIZE);
             db_write(block, ind_bid);
             write_inode_to_disk(inum, target_node);
         }else{
+            //printf("add_block: add existed single indirect blocks!\n");
             db_read(block, target_node->single_ind);
             memcpy(ind_block, block, DB_SIZE);
             ind_block[index] = newid;
@@ -242,8 +250,8 @@ int add_block(unsigned int inum){
         } 
         
     }else if(num < DIR_ID_NUM + INDIR_ID_NUM + D_INDIR_ID_NUM){
-        d_index = (num - DIR_ID_NUM - INDIR_ID_NUM) / DB_SIZE;
-        index = (num - DIR_ID_NUM - INDIR_ID_NUM) % DB_SIZE;
+        d_index = (num - DIR_ID_NUM - INDIR_ID_NUM) / INDIR_ID_NUM;
+        index = (num - DIR_ID_NUM - INDIR_ID_NUM) % INDIR_ID_NUM;
         if(d_index == 0 && index == 0){
             dind_bid = db_allocate();
             target_node->double_ind = dind_bid;
@@ -404,22 +412,25 @@ int inode_free(unsigned int inum){
     if(offset != 0) num_blo++;
     // Free those blocks
     if(num_blo < DIR_ID_NUM){
+        //printf("inode_free: free direct blocks!\n");
         for(int i = 0; i < num_blo; i++){
             db_free(target_node->direct_blo[i]);
         }
     }else if(num_blo < INDIR_ID_NUM + DIR_ID_NUM){
-        for(int i = 0; i < num_blo; i++){
+        //printf("inode_free: free direct + single indirect blocks!\n");
+        for(int i = 0; i < DIR_ID_NUM; i++){
             db_free(target_node->direct_blo[i]);
+            //printf("inode_free: free direct bid = %d\n", target_node->direct_blo[i]);
         }
         free_indblo_by_bid(target_node->single_ind);
     }else if(num_blo < D_INDIR_ID_NUM + INDIR_ID_NUM + DIR_ID_NUM){
-        for(int i = 0; i < num_blo; i++){
+        for(int i = 0; i < DIR_ID_NUM; i++){
             db_free(target_node->direct_blo[i]);
         }
         free_indblo_by_bid(target_node->single_ind);
         free_dindblo_by_bid(target_node->double_ind);
     }else if(num_blo < T_INDIR_ID_NUM + D_INDIR_ID_NUM + INDIR_ID_NUM + DIR_ID_NUM){
-        for(int i = 0; i < num_blo; i++){
+        for(int i = 0; i < DIR_ID_NUM; i++){
             db_free(target_node->direct_blo[i]);
         }
         free_indblo_by_bid(target_node->single_ind);
