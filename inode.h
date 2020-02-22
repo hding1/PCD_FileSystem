@@ -72,6 +72,8 @@ int free_tindblo_by_bid(unsigned int bid);
 unsigned int find_block_by_num(unsigned int inum, unsigned int num);  // return the bid of the nth block in this inode
 int write_block_by_num(unsigned int inum, unsigned int num, char* block);
 int add_block(unsigned int inum);
+unsigned long get_inode_size(unsigned int inum);
+int set_inode_size(unsigned int inum, unsigned long size);
 
 // Individual inode operations
 int inode_allocate();

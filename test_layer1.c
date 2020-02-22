@@ -201,6 +201,62 @@ int test_inode_read_file(){
 }
 
 int test_inode_write_file(){
+	int inum = inode_allocate();
+	if(inum == -1){
+		printf("Error: inode allocate failed!\n");
+		return FAIL;
+	}
+
+	// Test write direct block
+	unsigned int bufA_size = 4096 * 12;
+	unsigned int bufB_size = 2;
+	char bufA[bufA_size];
+	char bufB[bufB_size];
+	for(int i = 0; i < bufA_size; i++){
+		bufA[i] = 'A';
+	}
+	for(int i  = 0; i < bufB_size; i++){
+		bufB[i] = 'B';
+	}
+	// Test with buffer A (write all direct blocks)
+	if(write_file(inum, bufA, bufA_size, 0) == -1){	
+		printf("Error: write file failed!\n");
+		return FAIL;
+	}
+	inode* target = find_inode_by_inum(inum);
+	int bid;
+	char result[4096];
+	for(int i = 0; i < 12; i++){
+		bid = target->direct_blo[i];
+		db_read(result, bid);
+		//printf("test bufA: block%d = %s\n", i, result);
+		for(int j = 0; j < 4096; j++){
+			if(result[j] != 'A'){
+				printf("Error: bufA write file db%d incorrectly\n", i);
+				return FAIL;
+			}
+		}
+	}
+	// Test with buffer B (write between existed blocks with offset)
+	if(write_file(inum, bufB, bufB_size, 4095) == -1){	
+		printf("Error: write file failed!\n");
+		return FAIL;
+	}
+	target = find_inode_by_inum(inum);
+	int bid0 = target->direct_blo[0];
+	int bid1 = target->direct_blo[1];
+	char r0[4096];
+	char r1[4096];
+	db_read(r0, bid0);
+	db_read(r1, bid1);
+	if(r0[4095] != 'B' || r1[0] != 'B'){
+		printf("Error: bufB write file incorrectly\n");
+		return FAIL;
+	}
+	// Test with buffer C (partially write on existed blocks, partially write on new blocks. file size extended)
+	
+
+	free(target);
 	return PASS;
 }
 
@@ -259,19 +315,19 @@ int main(){
 		printf("FAIL: test_inode_list_init!\n");
 	}
 
-	printf("--------Running test 3: test_inode_allocate!--------\n");
-	if(!test_inode_allocate()){
-		printf("PASS: test_inode_allocate!\n");
-	}else{
-		printf("FAIL: test_inode_allocate!\n");
-	}
+	// printf("--------Running test 3: test_inode_allocate!--------\n");
+	// if(!test_inode_allocate()){
+	// 	printf("PASS: test_inode_allocate!\n");
+	// }else{
+	// 	printf("FAIL: test_inode_allocate!\n");
+	// }
 
-	printf("--------Running test 4: test_inode_free!--------\n");
-	if(!test_inode_free()){
-		printf("PASS: test_inode_free!\n");
-	}else{
-		printf("FAIL: test_inode_free!\n");
-	}
+	// printf("--------Running test 4: test_inode_free!--------\n");
+	// if(!test_inode_free()){
+	// 	printf("PASS: test_inode_free!\n");
+	// }else{
+	// 	printf("FAIL: test_inode_free!\n");
+	// }
 
 	// printf("--------Running test 5: test_inode_mode_read_write!--------\n");
 	// if(!test_inode_mode_read_write()){
@@ -308,12 +364,12 @@ int main(){
 	// 	printf("FAIL: test_inode_read_file!\n");
 	// }
 
-	// printf("--------Running test 10: test_inode_write_file!--------\n");
-	// if(!test_inode_write_file()){
-	// 	printf("PASS: test_inode_write_file!\n");
-	// }else{
-	// 	printf("FAIL: test_inode_write_file!\n");
-	// }
+	printf("--------Running test 10: test_inode_write_file!--------\n");
+	if(!test_inode_write_file()){
+		printf("PASS: test_inode_write_file!\n");
+	}else{
+		printf("FAIL: test_inode_write_file!\n");
+	}
 
 	free_disk();
 	return 0;
