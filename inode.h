@@ -82,7 +82,7 @@ int inode_read_mode(unsigned int inum, mode_t* mode_out);
 int inode_write_mode(unsigned int inum, mode_t mode_in);
 int inode_read_size(unsigned int inum, unsigned long* size); 
 int inode_read_link_count(unsigned int inum, unsigned int* count); 
-int inode_reduce_link(unsigned int inum); 
+int inode_reduce_link_count(unsigned int inum); 
 
 unsigned int get_root_inum();
 int read_file(unsigned int inum, char* buf, int size, int offset);

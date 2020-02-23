@@ -62,6 +62,7 @@ int find_free_inode(){
     for(int i = 0; i < NUM_INODE; i++){
         if(bitmap[i] == 0){
             bitmap[i] = 1;
+            db_write(bitmap, BITMAP_BID);
             return i;   // Return the inum of the free inode
         }
     }
@@ -73,8 +74,13 @@ inode* find_inode_by_inum(unsigned int inum){
     if(inum < ROOT_INUM || inum > NUM_INODE - 1){
         return NULL;
     }
-    // Read the block
     char block[4096];
+    unsigned short bitmap[4096];
+    db_read(block, BITMAP_BID);
+    memcpy(bitmap, block, 4096);
+    if(bitmap[inum] == 0) return NULL;
+
+    // Read the block
     unsigned int bid = ILIST_BID + inum / 32;
     db_read(block, bid);
     // Read the inode
@@ -402,6 +408,7 @@ int inode_allocate(){
     target_node->last_accessed = time(NULL);
     target_node->last_modified = time(NULL);
     target_node->link_count = 1;
+    target_node->size = 0;
 
      char *p=getenv("USER");
     if(p==NULL) return EXIT_FAILURE;
@@ -409,7 +416,13 @@ int inode_allocate(){
     target_node->UID = pw->pw_uid;
     target_node->GID = pw->pw_gid;
 
-
+    for(int i = 0; i < DIR_ID_NUM; i++){
+        target_node->direct_blo[i] = 0;
+    }
+    target_node->single_ind = 0;
+    target_node->double_ind = 0;
+    target_node->triple_ind = 0;
+    
     // Write changes back to disk
     int status = write_inode_to_disk(inum, target_node);
     if(status) return -1;
@@ -485,7 +498,7 @@ int inode_write_mode(unsigned int inum, mode_t mode_in){
     target_node->mode = mode_in;
     // Write the modified inode into block
     int status = write_inode_to_disk(inum, target_node);
-    if(!status) return -1;
+    if(status == -1) return -1;
 
     return 0; // If success
 }
@@ -510,15 +523,16 @@ int inode_read_link_count(unsigned int inum, unsigned int* count){
     return 0; // If success
 }
 
-int inode_reduce_link(unsigned int inum){
+int inode_reduce_link_count(unsigned int inum){
     inode* target_node = find_inode_by_inum(inum);
     if(target_node == NULL) return -1;   // Error
     target_node->link_count =  target_node->link_count -1;
     if(target_node->link_count <= 0){
+        //printf("inode freed due to low link count!\n");
         inode_free(inum);
     }else{
         int status = write_inode_to_disk(inum, target_node);
-        if(!status) return -1;
+        if(status == -1) return -1;
     }
     return 0;
 }
@@ -530,15 +544,21 @@ unsigned int get_root_inum(){
 int read_file(unsigned int inum, char* buf, int size, int offset){
 
     // Read inode
-    inode * target_node = find_inode_by_inum(inum);
-    if(target_node == NULL) return -1;
     if(buf == NULL) return -1;
     if(size < 0) return -1;
-    if(offset < 0 || offset > target_node->size) return -1;
+    unsigned long inode_size = get_inode_size(inum);
+    if(offset < 0 || offset > inode_size) return -1;
 
     // Locate offset 
     unsigned int start_num = offset / DB_SIZE;   // start block# in this inode
-    unsigned int end_num = (offset + size) / DB_SIZE; // end block# in this inode
+    unsigned int end_num; // end block# in this inode
+    if(offset + size > inode_size){
+        end_num = inode_size / DB_SIZE;
+        size = inode_size;
+    }else{
+        end_num = (offset + size) / DB_SIZE;
+    }
+    if((offset + size) % DB_SIZE == 0) end_num--;
     unsigned int start_off = offset % DB_SIZE;  // start byte# in first block
     unsigned int toRead;
     if(size >= DB_SIZE - start_off){
@@ -566,7 +586,6 @@ int read_file(unsigned int inum, char* buf, int size, int offset){
             toRead = size;
         }
     }
-    free(target_node);
     return buf_off;
 }
 
@@ -582,6 +601,7 @@ int write_file(unsigned int inum, const char* buf, int size, int offset){
     // Locate offset
     unsigned int start_num = offset / DB_SIZE;   // start block# in this inode
     unsigned int end_num = (offset + size) / DB_SIZE; // end block# in this inode
+    if((offset + size) % DB_SIZE == 0) end_num--;
     unsigned int start_off = offset % DB_SIZE;  // start byte# in first block
     unsigned int toWrite;
     if(size >= DB_SIZE - start_off){
