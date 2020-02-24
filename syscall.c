@@ -35,15 +35,18 @@ int get_parent(const char *path, char * parent, char * filename, char ** parentP
 	}
 	//obtain file name
 	strcpy( filename, val + 1);
-    printf("%s\n",filename);
 
     //obtain parent name
     int length = strlen(path)-strlen(val);
-    *parentPath = (char*)malloc(length);
+	*parentPath = (char*)malloc(length);
+    if(length==0){
+    	strcpy(*parentPath,"/");
+    	strcpy( parent, "root");
+    	return 0;
+    }
     strncpy(*parentPath,path,length);
     val = strrchr(*parentPath, '/');
     strcpy( parent, val + 1);
-    printf("%s\n",parent);
 	return 0;
 }
 
@@ -75,7 +78,6 @@ int find_inode_index(int inum, char * target){
 		dirent * mydirent = (dirent *) tempbuf;
 		// compare the dirent with target
 		if(strcmp(mydirent->name,target)==0){
-			free(tempbuf);
 			return mydirent->inum;
 		}
 		start++;
@@ -90,7 +92,7 @@ int find_inode_index(int inum, char * target){
 // return -1 if not found, inumber if found 
 int find_inode(const char *path){	
 	// make a copy of path
-	char* pathCopy = (char*)malloc(strlen(path) + 1);
+	char* pathCopy = (char*)malloc(strlen(path));
 	char* pathCopyStart = pathCopy;
 	strcpy(pathCopy, path);
 	// check if the first directory is root
@@ -102,7 +104,7 @@ int find_inode(const char *path){
 	}
 	// get root
 	int myInum = get_root_inum();
-	
+	pathCopy = pathCopy+1;
 	// loop throught the path
 	while(strlen(pathCopy)!=0){
 		char* dir = get_dir(pathCopy);
@@ -113,8 +115,10 @@ int find_inode(const char *path){
 			free(pathCopyStart);
 			return -1;
 		}
+		if(strlen(pathCopy)==strlen(dir)){
+			return myInum;
+		}
 		pathCopy = pathCopy+strlen(dir)+1;
-		free(dir);
 	}
 	free(pathCopyStart);
 	return myInum;
@@ -124,7 +128,6 @@ int find_inode(const char *path){
 int pcd_mkdir(const char *path, mode_t mode)
 {
 	int myInum = inode_allocate();
-
 	if(myInum == -1 ){
 		perror("Error Inode Allocation Failed");
 		return -1;
@@ -138,6 +141,7 @@ int pcd_mkdir(const char *path, mode_t mode)
 	char * parentPath;
 	get_parent(path,parentName,fileName,&parentPath);
 	// find inode of the parent
+	
 	int parentInum = find_inode(parentPath);
 	free(parentPath);
 	if(parentInum==-1){
@@ -147,7 +151,7 @@ int pcd_mkdir(const char *path, mode_t mode)
 	dirent dir;
 	dir.inum = myInum;
 	dir.file_type = 'd';
-	strcpy(dir.name, parentName);
+	strcpy(dir.name, fileName);
 	unsigned long parentInodeSize = 0;
 	inode_read_size(parentInum, &parentInodeSize);
 	if(write_file(parentInum, (char*)&dir, DIRENT_SIZE, parentInodeSize)==-1){
@@ -225,7 +229,7 @@ int is_empty_dir(int inum){
 
 	unsigned long inodeSize = 0;
 	inode_read_size(inum, &inodeSize);
-	for(unsigned int offset_idx = 0; offset_idx < inodeSize; offset_idx += DIRENT_SIZE){
+	for(unsigned int offset_idx = 2*DIRENT_SIZE; offset_idx < inodeSize; offset_idx += DIRENT_SIZE){
 		// read one entry at an time
 		if(read_file(inum, (char*)direntbuf, DIRENT_SIZE, offset_idx)==-1){
 			perror("Error Unable to Read");
@@ -270,7 +274,7 @@ int pcd_unlink(const char *path)
 		// remove from parent
 		delete_dirent(parentInum, fileName);
 		// reduce link count and delete inode if necessary
-		inode_reduce_link(myInum);
+		inode_reduce_link_count(myInum);
 	}
 	else{
 		perror("cannot delete non-empty directory");
