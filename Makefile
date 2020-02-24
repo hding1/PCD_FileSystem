@@ -5,8 +5,8 @@ CFLAGS += -g -Wall -pedantic -Werror
 files := disk.c db.c sb.c inode.c fs.c syscall.c pcd_fuse.c
 
 # This specifies how fuse wants to be compiled. Equivalent to
-# -D_FILE_OFFSET_BITS=64 -I/usr/include/fuse -lfuse -pthread
-FUSE_LIB := `pkg-config fuse --cflags --libs`
+FUSE_LIB := -D_FILE_OFFSET_BITS=64 -I/usr/include/fuse -lfuse -pthread
+# FUSE_LIB := `pkg-config fuse --cflags --libs`
 
 targets := pcd_fuse layer1_test syscall_test
 
