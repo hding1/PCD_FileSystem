@@ -89,9 +89,12 @@ int test_unlink(void){
 }
 
 int test_mknod(void){
+	printf("Testing mknod\n");
 	const char* path1 = "/dir1/dir2/test.txt";
+	printf("Creating File %s\n",path1);
 	pcd_mknod(path1,S_IFREG,0);
 	const char* path2 = "/dir1/dir2";
+	printf("Read Directory %s\n",path2);
 	char* buf = (char *)malloc(1000);
 	if(pcd_readdir(path2,buf,test_filler,0,0)<0){
 		printf("Read Directory Failed");
@@ -107,6 +110,7 @@ int test_open(void){
 }
 
 int test_read(void){
+	printf("Testing read\n");
 	const char* path1 = "/dir1/dir2/test.txt";
 	printf("Reading from path '%s'\n",path1);
 	char* buf1 = (char *)malloc(20);
@@ -130,6 +134,7 @@ int test_read(void){
 }
 
 int test_write(void){
+	printf("Testing write\n");
 	const char* path1 = "/dir1/dir2/test.txt";
 	char* buf1 = "hello world";
 	printf("Writing '%s'",buf1);

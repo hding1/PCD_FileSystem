@@ -1,4 +1,4 @@
-CFLAGS += -g -Wall -pedantic -Werror
+CFLAGS += -g -Wall -pedantic -Werror -D_FILE_OFFSET_BITS=64
 
 files := disk.c db.c sb.c inode.c fs.c syscall.c pcd_fuse.c
 
