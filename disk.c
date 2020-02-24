@@ -134,9 +134,83 @@ void list_add(unsigned int block_id, void* buffer){
 /*
  */
 void hash_init(){
-
-
-
+	hash_table = (table*)malloc(sizeof(struct hash_table));
+	hash_table->list = (Hash_Node**)malloc(BUFFER_NUM * sizeof(Hash_Node));
+	for(int i=0; i<BUFFER_NUM; i++){
+		hash_table->list[i]=NULL
+	}
 }
+void hash_free(){
+	for(int i=0; i<BUFFER_NUM; i++){
+		free(hash_table->list[i]);
+	}
+	free(hash_table->list);
+	free(hash_table);
+	
+}
+int hash_func(unsigned int block_id){
+	return block_id % BUFFER_NUM;
+}
+Hash_Node* hash_find(unsigned int block_id){
+	int index = hash_func(block_id);
+	Hash_Node* l = hash_table->list[index];
+	Hash_Node* temp = l;
+	while(temp!=NULL){
+		if(temp->block_id == block_id){
+			return temp;
+		}
+		temp = temp->next;
+	}	
+	return NULL;
+}
+int hash_insert(unsigned int block_id,unsigned int buffer_id){
+	int index = hash_func(block_id);
+	Hash_Node* l = hash_table->list[index];
+	Hash_Node* temp = l;
+	while(temp!=NULL){
+		if(temp->block_id == block_id){
+			//it's already inside the hash table
+			return -1;
+		}
+		temp=temp->next;
+	}
+	Hash_Node* new_node = (Hash_Node*)malloc(sizeof(Hash_Node));
+	new_node->buffer_id = buffer_id;
+	new_node->block_id = block_id;
+	new_node->next = NULL;
+	temp->next = new_node;	
+	return 1;
+}
+int hash_delete(unsigned int block_id){
+	int index = hash_func(block_id);
+        Hash_Node* l = hash_table->list[index];
+        Hash_Node* temp = l;
+	Hash_Node* prev = NULL;
+
+	if(temp!=NULL && temp->block_id == block_id){
+		l = temp->next;
+		free(temp);
+		return 1;
+	}
+	
+        while(temp!=NULL){
+                if(temp->block_id == block_id){
+			if(temp->next==NULL){
+				free(temp);
+				prev->next = NULL;
+			}
+			else{
+				prev->next = temp->next;
+				free(temp);	
+			}
+                        return 1;
+                }
+		prev = temp;
+                temp=temp->next;
+        }
+	
+	return -1; //not found
+}
+
 
 
