@@ -40,8 +40,8 @@ void read_from_cache(void* out, unsigned int buffer_id);
 typedef struct List_Node{
         unsigned int buffer_id;
         unsigned int block_id;
-        List_Node* next;
-        List_Node* prev;
+        struct List_Node* next;
+        struct List_Node* prev;
         unsigned short dirty;
         unsigned short in_hash;
 }List_Node;
@@ -50,6 +50,7 @@ List_Node* list_tail;
 void list_init();
 void list_free();
 void list_add(unsigned int block_id, void* buffer);
+void list_prioritize(List_Node* node);
 
 /*
  */
@@ -57,15 +58,21 @@ void list_add(unsigned int block_id, void* buffer);
 typedef struct Hash_Node{
         unsigned int buffer_id;
         unsigned int block_id;
-        Hash__Node* next;
+	struct List_Node* list_node;
+        struct Hash_Node* next;
 }Hash_Node;
 
-Hash_Node** hash_table;
+typedef struct table{
+	struct Hash_Node** list; 
+}table;
+
+table* hash_table;
 void hash_init();
 void hash_free();
+int hash_func(unsigned int block_id);
 Hash_Node* hash_find(unsigned int block_id);
-void hash_insert(unsigned int block_id), unsigned int buffer_id;
-void hash_delete(unsigned int block_id);
+int hash_insert(unsigned int block_id, unsigned int buffer_id, List_Node* node);
+int hash_delete(unsigned int block_id);
 
 
 

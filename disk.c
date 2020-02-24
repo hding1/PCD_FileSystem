@@ -18,6 +18,7 @@ void disk_read(void* out, unsigned int block_id){
 	else{
 		//we have it inside the buffer
 		read_from_cache(out, h_node->buffer_id);
+		list_prioritize(h_node->list_node);
 	}
 }
 void disk_write(void* in, unsigned int block_id){
@@ -27,6 +28,7 @@ void disk_write(void* in, unsigned int block_id){
 	}
 	else{
 		write_to_cache(in , h_node->buffer_id);
+		list_prioritize(h_node->list_node);
 	}
 }
 
@@ -37,7 +39,7 @@ void sync(){
 	List_Node* head = list_head;
 	while(head!=NULL){
 		if(head->dirty){
-			cache_to_disk(head->buffer_id, head->disk_id);
+			cache_to_disk(head->buffer_id, head->block_id);
 			head->dirty=0;
 		}
 	}
@@ -124,20 +126,49 @@ void list_add(unsigned int block_id, void* buffer){
 	end->block_id = block_id;
 	end->dirty = 0;
 	end->in_hash = 1;
-	hash_insert(block_id,end->buffer_id);
+	hash_insert(block_id,end->buffer_id,end);
 	
 	end->next = list_head;
 	list_head->prev = end;
 	list_head = end;
 }
+void list_prioritize(List_Node* node){
+	if(node->prev==NULL){
+		//first element
+		return;
+	}
+	if(node->next == NULL){
+		//last element
+		list_tail = node->prev;
+		node->prev->next = NULL;
+
+		node->next = list_head;
+		list_head->prev = node;
+		list_head = node;
+		return;
+	}
+	else{
+		//in the middle
+		node->prev->next = node->next;
+		node->next->prev = node->prev;
+
+		node->prev = NULL;
+		node->next = list_head;
+
+		list_head->prev = node;
+		list_head = node;
+		return;
+	}
+
+}
 
 /*
  */
 void hash_init(){
-	hash_table = (table*)malloc(sizeof(struct hash_table));
+	hash_table = (table*)malloc(sizeof(table));
 	hash_table->list = (Hash_Node**)malloc(BUFFER_NUM * sizeof(Hash_Node));
 	for(int i=0; i<BUFFER_NUM; i++){
-		hash_table->list[i]=NULL
+		hash_table->list[i]=NULL;
 	}
 }
 void hash_free(){
@@ -163,7 +194,7 @@ Hash_Node* hash_find(unsigned int block_id){
 	}	
 	return NULL;
 }
-int hash_insert(unsigned int block_id,unsigned int buffer_id){
+int hash_insert(unsigned int block_id,unsigned int buffer_id, List_Node* node){
 	int index = hash_func(block_id);
 	Hash_Node* l = hash_table->list[index];
 	Hash_Node* temp = l;
@@ -177,6 +208,7 @@ int hash_insert(unsigned int block_id,unsigned int buffer_id){
 	Hash_Node* new_node = (Hash_Node*)malloc(sizeof(Hash_Node));
 	new_node->buffer_id = buffer_id;
 	new_node->block_id = block_id;
+	new_node->list_node = node;
 	new_node->next = NULL;
 	temp->next = new_node;	
 	return 1;
