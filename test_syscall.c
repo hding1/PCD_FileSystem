@@ -16,7 +16,7 @@ int test_filler(void *buf, const char *name,
 				const struct stat *stbuf, off_t off){
 	printf("name: %s, ", name);
 	printf("mode: %d, ", stbuf->st_mode);
-	printf("inum: %llu\n", stbuf->st_ino);
+	printf("inum: %lu\n", stbuf->st_ino);
 	return 0;
 }
 

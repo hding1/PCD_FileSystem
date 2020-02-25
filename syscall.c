@@ -45,6 +45,7 @@ int get_parent(const char *path, char * parent, char * filename, char ** parentP
     	return 0;
     }
     strncpy(*parentPath,path,length);
+    (*parentPath)[length] = '\0';
     val = strrchr(*parentPath, '/');
     strcpy( parent, val + 1);
 	return 0;
