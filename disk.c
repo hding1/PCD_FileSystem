@@ -13,20 +13,23 @@ void disk_read(void* out, unsigned int block_id){
 	if(h_node == NULL){
 		void* Disk_Buffer = (void*)((char*)add_0 + block_id*4096);
         	memcpy(out, Disk_Buffer, DB_SIZE);
-		list_add(block_id, Disk_Buffer);
+		list_add(block_id, Disk_Buffer,0);
 	}
 	else{
 		//we have it inside the buffer
 		read_from_cache(out, h_node->buffer_id);
+		list_prioritize(h_node->list_node);
 	}
 }
 void disk_write(void* in, unsigned int block_id){
 	Hash_Node* h_node = hash_find(block_id);
 	if(h_node == NULL){
-		list_add(block_id, in);
+		list_add(block_id, in,1);
 	}
 	else{
 		write_to_cache(in , h_node->buffer_id);
+		h_node->list_node->dirty=1;
+		list_prioritize(h_node->list_node);
 	}
 }
 
@@ -37,7 +40,7 @@ void sync(){
 	List_Node* head = list_head;
 	while(head!=NULL){
 		if(head->dirty){
-			cache_to_disk(head->buffer_id, head->disk_id);
+			cache_to_disk(head->buffer_id, head->block_id);
 			head->dirty=0;
 		}
 	}
@@ -107,36 +110,139 @@ void list_free(){
 	}
 	free(list_head);
 }
-void list_add(unsigned int block_id, void* buffer){
+void list_add(unsigned int block_id, void* buffer, int dirty){
 	List_Node* end = list_tail;
 	list_tail = list_tail->prev;
 	list_tail->next = NULL;
 	end->prev = NULL;
 
 	if(end->in_hash){
-		hash_delete(end->buffer_id);
 		if(end->dirty){
 			cache_to_disk(end->buffer_id, end->block_id);
 		}
+		hash_delete(end->block_id);
 	}
 	
 	write_to_cache(buffer, end->buffer_id);
 	end->block_id = block_id;
-	end->dirty = 0;
+	end->dirty = dirty;
 	end->in_hash = 1;
-	hash_insert(block_id,end->buffer_id);
+	hash_insert(block_id,end->buffer_id,end);
 	
 	end->next = list_head;
 	list_head->prev = end;
 	list_head = end;
 }
+void list_prioritize(List_Node* node){
+	if(node->prev==NULL){
+		//first element
+		return;
+	}
+	if(node->next == NULL){
+		//last element
+		list_tail = node->prev;
+		node->prev->next = NULL;
+
+		node->next = list_head;
+		list_head->prev = node;
+		list_head = node;
+		return;
+	}
+	else{
+		//in the middle
+		node->prev->next = node->next;
+		node->next->prev = node->prev;
+
+		node->prev = NULL;
+		node->next = list_head;
+
+		list_head->prev = node;
+		list_head = node;
+		return;
+	}
+
+}
 
 /*
  */
 void hash_init(){
-
-
-
+	hash_table = (table*)malloc(sizeof(table));
+	hash_table->list = (Hash_Node**)malloc(BUFFER_NUM * sizeof(Hash_Node*));
+	for(int i=0; i<BUFFER_NUM; i++){
+		hash_table->list[i]=NULL;
+	}
 }
+void hash_free(){
+	for(int i=0; i<BUFFER_NUM; i++){
+		free(hash_table->list[i]);
+	}
+	free(hash_table->list);
+	free(hash_table);
+	
+}
+int hash_func(unsigned int block_id){
+	return block_id % BUFFER_NUM;
+}
+Hash_Node* hash_find(unsigned int block_id){
+	int index = hash_func(block_id);
+	Hash_Node* l = hash_table->list[index];
+	Hash_Node* temp = l;
+	while(temp!=NULL){
+		if(temp->block_id == block_id){
+			return temp;
+		}
+		temp = temp->next;
+	}	
+	return NULL;
+}
+int hash_insert(unsigned int block_id,unsigned int buffer_id, List_Node* node){
+	int index = hash_func(block_id);
+	Hash_Node* l = hash_table->list[index];
+	Hash_Node* temp = l;
+	while(temp!=NULL){
+		if(temp->block_id == block_id){
+			//it's already inside the hash table
+			return -1;
+		}
+		temp=temp->next;
+	}
+	Hash_Node* new_node = (Hash_Node*)malloc(sizeof(Hash_Node));
+	new_node->buffer_id = buffer_id;
+	new_node->block_id = block_id;
+	new_node->list_node = node;
+	new_node->next = hash_table->list[index];
+	hash_table->list[index] = new_node;
+	
+	
+
+	return 1;
+}
+int hash_delete(unsigned int block_id){
+	int index = hash_func(block_id);
+        Hash_Node* l = hash_table->list[index];
+        
+	Hash_Node* temp = l;
+	Hash_Node* prev = NULL;
+
+	if(temp!=NULL && temp->block_id == block_id){
+		hash_table->list[index] = temp->next;
+		free(temp);
+		return 1;
+	}
+	
+        while(temp!=NULL){
+                if(temp->block_id == block_id){
+			prev->next = temp->next;
+			free(temp);
+                        return 1;
+                }
+
+		prev = temp;
+                temp=temp->next;
+        }
+	
+	return -1; //not found
+}
+
 
 

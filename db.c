@@ -3,12 +3,14 @@
 #include <stdio.h>
 #include "db.h"
 
+
 unsigned int db_allocate(){
 	// Return the bid of a free block
 	
 	struct sb* super = sb_read();
 	unsigned int bid  =  super->FREE_LIST;
 	if(super->NUM_FREE_BLOCK==0){
+		printf("no free block left \n");
 		free(super);
 		return -1;
 	}
@@ -24,9 +26,12 @@ unsigned int db_allocate(){
 	
 	sb_write(super);
 
+	if(bid > super->NUM_BLOCK){
+		printf("bid %u too large in allocation\n",bid);
+		bid=-1;
+	}
 	free(super);
 	free(buffer);
-
 	return bid;
 }
 
@@ -76,10 +81,23 @@ int is_db_free(unsigned int block_id){
 }
 
 int db_read(void* out, unsigned int block_id){
+	sb* super = sb_read();
+
+	if(block_id > super->NUM_BLOCK){
+		free(super);
+		printf("block id %u too large to read \n",block_id);
+		return -1;		
+	}
 	disk_read(out,block_id);
+	free(super);
 	return 0; // Return 0 on success
 }
 int db_write(void* in, unsigned int block_id){
+	sb* super = sb_read();
+	if(block_id > super->NUM_BLOCK){
+		free(super);
+		printf("block %u id too large to write \n", block_id);
+	}
 	disk_write(in, block_id);
 	return 0; // Return 0 on success
 }
