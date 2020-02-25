@@ -45,7 +45,7 @@ sb* sb_read(){
 
 void sb_write(sb* super){
 
-        void* input = malloc(sizeof(char) * 4096);
+        void* input = malloc(sizeof(char) * DB_SIZE);
 
         memcpy(input, super, sizeof(sb)); // dest src size
 

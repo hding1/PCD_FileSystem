@@ -13,7 +13,7 @@ void disk_read(void* out, unsigned int block_id){
 	if(h_node == NULL){
 		void* Disk_Buffer = (void*)((char*)add_0 + block_id*4096);
         	memcpy(out, Disk_Buffer, DB_SIZE);
-		list_add(block_id, Disk_Buffer);
+		list_add(block_id, Disk_Buffer,0);
 	}
 	else{
 		//we have it inside the buffer
@@ -24,10 +24,11 @@ void disk_read(void* out, unsigned int block_id){
 void disk_write(void* in, unsigned int block_id){
 	Hash_Node* h_node = hash_find(block_id);
 	if(h_node == NULL){
-		list_add(block_id, in);
+		list_add(block_id, in,1);
 	}
 	else{
 		write_to_cache(in , h_node->buffer_id);
+		h_node->list_node->dirty=1;
 		list_prioritize(h_node->list_node);
 	}
 }
@@ -109,22 +110,22 @@ void list_free(){
 	}
 	free(list_head);
 }
-void list_add(unsigned int block_id, void* buffer){
+void list_add(unsigned int block_id, void* buffer, int dirty){
 	List_Node* end = list_tail;
 	list_tail = list_tail->prev;
 	list_tail->next = NULL;
 	end->prev = NULL;
 
 	if(end->in_hash){
-		hash_delete(end->buffer_id);
 		if(end->dirty){
 			cache_to_disk(end->buffer_id, end->block_id);
 		}
+		hash_delete(end->block_id);
 	}
 	
 	write_to_cache(buffer, end->buffer_id);
 	end->block_id = block_id;
-	end->dirty = 0;
+	end->dirty = dirty;
 	end->in_hash = 1;
 	hash_insert(block_id,end->buffer_id,end);
 	
@@ -166,7 +167,7 @@ void list_prioritize(List_Node* node){
  */
 void hash_init(){
 	hash_table = (table*)malloc(sizeof(table));
-	hash_table->list = (Hash_Node**)malloc(BUFFER_NUM * sizeof(Hash_Node));
+	hash_table->list = (Hash_Node**)malloc(BUFFER_NUM * sizeof(Hash_Node*));
 	for(int i=0; i<BUFFER_NUM; i++){
 		hash_table->list[i]=NULL;
 	}
@@ -209,34 +210,33 @@ int hash_insert(unsigned int block_id,unsigned int buffer_id, List_Node* node){
 	new_node->buffer_id = buffer_id;
 	new_node->block_id = block_id;
 	new_node->list_node = node;
-	new_node->next = NULL;
-	temp->next = new_node;	
+	new_node->next = hash_table->list[index];
+	hash_table->list[index] = new_node;
+	
+	
+
 	return 1;
 }
 int hash_delete(unsigned int block_id){
 	int index = hash_func(block_id);
         Hash_Node* l = hash_table->list[index];
-        Hash_Node* temp = l;
+        
+	Hash_Node* temp = l;
 	Hash_Node* prev = NULL;
 
 	if(temp!=NULL && temp->block_id == block_id){
-		l = temp->next;
+		hash_table->list[index] = temp->next;
 		free(temp);
 		return 1;
 	}
 	
         while(temp!=NULL){
                 if(temp->block_id == block_id){
-			if(temp->next==NULL){
-				free(temp);
-				prev->next = NULL;
-			}
-			else{
-				prev->next = temp->next;
-				free(temp);	
-			}
+			prev->next = temp->next;
+			free(temp);
                         return 1;
                 }
+
 		prev = temp;
                 temp=temp->next;
         }

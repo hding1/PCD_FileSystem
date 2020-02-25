@@ -430,10 +430,18 @@ int test_inode_write_file_double_indirect_blo(){
 /***************************************test main********************************************/
 int main(){
 	
-	allocate_disk();
 	
+
+	allocate_disk();
+	allocate_cache();
+        list_init();
+        hash_init();
+
+        sb_init();        
+	db_init();
+
+
 	//sb tests
-	sb_init();
 	sb* super = sb_read();
 	assert(super->NUM_BLOCK == 262144);
 	assert(super->blocksize == 4096);
@@ -447,7 +455,6 @@ int main(){
 	assert(super->NUM_BLOCK == new_block);
 
 	//db tests
-	db_init();
 	assert(db_allocate() == super->FREE_LIST);
 	
 	new_block = super->FREE_LIST+1;
@@ -467,6 +474,7 @@ int main(){
 
 	/*---inode tests---*/
 
+	
 	printf("--------Running test 1: test_bitmap_init!--------\n");
 	if(!test_bitmap_init()){
 		printf("PASS: test_bitmap_init!\n");
@@ -550,7 +558,14 @@ int main(){
 	}else{
 		printf("FAIL: test_inode_write_file_double_indirect_blo!\n");
 	}
+	
+	
 
 	free_disk();
+        deallocate_cache();
+        list_free();
+        hash_free();
+
+
 	return 0;
 }

@@ -49,7 +49,7 @@ List_Node* list_head;
 List_Node* list_tail;
 void list_init();
 void list_free();
-void list_add(unsigned int block_id, void* buffer);
+void list_add(unsigned int block_id, void* buffer, int dirty);
 void list_prioritize(List_Node* node);
 
 /*
