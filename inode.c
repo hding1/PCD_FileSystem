@@ -212,6 +212,7 @@ int write_block_by_num(unsigned int inum, unsigned int num, char* block){
 
 int add_block(unsigned int inum){
     unsigned int newid = db_allocate();
+    if(newid == -1) return -1;
     inode* target_node = find_inode_by_inum(inum);
     int num = target_node->size / DB_SIZE;
     if(target_node->size % DB_SIZE != 0) num++;
@@ -237,6 +238,7 @@ int add_block(unsigned int inum){
         if(index == 0){
             //printf("add_block: add new single indirect blocks!\n");
             ind_bid = db_allocate();
+            if(ind_bid == -1) return -1;
             target_node->single_ind = ind_bid;
             db_read(block, ind_bid);
             memcpy(ind_block, block, DB_SIZE);
@@ -261,10 +263,12 @@ int add_block(unsigned int inum){
         index = (num - DIR_ID_NUM - INDIR_ID_NUM) % INDIR_ID_NUM;
         if(d_index == 0 && index == 0){
             dind_bid = db_allocate();
+            if(dind_bid == -1) return -1;
             target_node->double_ind = dind_bid;
             db_read(block, dind_bid);
             memcpy(dind_block, block, DB_SIZE);
             ind_bid = db_allocate();
+            if(ind_bid == -1) return -1;
             dind_block[d_index] = ind_bid;
             db_read(block, ind_bid);
             memcpy(ind_block, block, DB_SIZE);
@@ -278,6 +282,7 @@ int add_block(unsigned int inum){
             db_read(block, target_node->double_ind);
             memcpy(dind_block, block, DB_SIZE);
             ind_bid = db_allocate();
+            if(ind_bid == -1) return -1;
             dind_block[d_index] = ind_bid;
             db_read(block, ind_bid);
             memcpy(ind_block, block, DB_SIZE);
@@ -303,14 +308,17 @@ int add_block(unsigned int inum){
         index = (num - DIR_ID_NUM - INDIR_ID_NUM - D_INDIR_ID_NUM) % INDIR_ID_NUM;
         if(t_index == 0 && d_index == 0 && index == 0){
             tind_bid = db_allocate();
+            if(tind_bid == -1) return -1;
             target_node->triple_ind = tind_bid;
             db_read(block, tind_bid);
             memcpy(tind_block, block, DB_SIZE);
             dind_bid = db_allocate();
+            if(dind_bid == -1) return -1;
             tind_block[t_index] = dind_bid;
             db_read(block, dind_bid);
             memcpy(dind_block, block, DB_SIZE);
             ind_bid = db_allocate();
+            if(ind_bid == -1) return -1;
             dind_block[d_index] = ind_bid;
             db_read(block, ind_bid);
             memcpy(ind_block, block, DB_SIZE);
@@ -326,10 +334,12 @@ int add_block(unsigned int inum){
             db_read(block, target_node->triple_ind);
             memcpy(tind_block, block, DB_SIZE);
             dind_bid = db_allocate();
+            if(dind_bid == -1) return -1;
             tind_block[t_index] = dind_bid;
             db_read(block, dind_bid);
             memcpy(dind_block, block, DB_SIZE);
             ind_bid = db_allocate();
+            if(ind_bid == -1) return -1;
             dind_block[d_index] = ind_bid;
             db_read(block, ind_bid);
             memcpy(ind_block, block, DB_SIZE);
@@ -347,6 +357,7 @@ int add_block(unsigned int inum){
             db_read(block, dind_bid);
             memcpy(dind_block, block, DB_SIZE);
             ind_bid = db_allocate();
+            if(ind_bid == -1) return -1;
             dind_block[d_index] = ind_bid;
             db_read(block, ind_bid);
             memcpy(ind_block, block, DB_SIZE);
