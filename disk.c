@@ -10,7 +10,7 @@ int allocate_disk(const char* filename){
 	}
 	return 0;
 }
-void free_disk(){
+int free_disk(){
         //free(add_0);
 	int status = close(add);
 	if(status == -1){
@@ -47,9 +47,7 @@ int disk_write(void* in, unsigned int block_id){
 		list_add(block_id, in,1);
 	}
 	else{
-		if(write_to_cache(in , h_node->buffer_id)==-1){
-			return -1;
-		}
+		write_to_cache(in , h_node->buffer_id);
 		h_node->list_node->dirty=1;
 		list_prioritize(h_node->list_node);
 	}

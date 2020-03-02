@@ -4,10 +4,11 @@
 #include "db.h"
 
 
-unsigned int db_allocate(){
+int db_allocate(){
 	// Return the bid of a free block
 	sb* super = (sb*)malloc(sizeof(sb));
-	if(sb_read()==-1){
+
+	if(sb_read(super)==-1){
 		free(super);
 		return -1;
 	}
@@ -49,7 +50,7 @@ unsigned int db_allocate(){
 int db_free(unsigned int block_id){
 
         sb* super = (sb*)malloc(sizeof(sb));
-        if(sb_read()==-1){
+        if(sb_read(super)==-1){
                 free(super);
                 return -1;
         }
@@ -75,7 +76,7 @@ int db_free(unsigned int block_id){
 
 int is_db_free(unsigned int block_id){
 	sb* super = (sb*)malloc(sizeof(sb));
-        if(sb_read()==-1){
+        if(sb_read(super)==-1){
                 free(super);
                 return -1;
         }
@@ -105,7 +106,7 @@ int is_db_free(unsigned int block_id){
 
 int db_read(void* out, unsigned int block_id){
         sb* super = (sb*)malloc(sizeof(sb));
-        if(sb_read()==-1){
+        if(sb_read(super)==-1){
                 free(super);
                 return -1;
         }

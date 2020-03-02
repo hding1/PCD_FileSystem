@@ -432,7 +432,7 @@ int main(){
 	
 	
 
-	allocate_disk();
+	allocate_disk("./disk");
 	allocate_cache();
         list_init();
         hash_init();
