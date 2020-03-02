@@ -236,7 +236,7 @@ int test_inode_rootnum(){
 	return PASS;
 }
 
-int test_inode_read_file(){
+int test_inode_read_file_direct_blo(){
 	int inum = inode_allocate();
 	if(inum == -1){
 		printf("Error: inode allocate failed!\n");
@@ -308,11 +308,16 @@ int test_inode_read_file(){
 			return FAIL;
 		}
 	}
-	// read single indir blocks
-
-	// read double indir blocks
 
 	inode_free(inum);
+	return PASS;
+}
+
+int test_inode_read_file_single_indirect_blo(){
+	return PASS;
+}
+
+test_inode_read_file_double_indirect_blo(){
 	return PASS;
 }
 
@@ -419,6 +424,13 @@ int test_inode_write_file_direct_blo(){
 }
 
 int test_inode_write_file_single_indirect_blo(){
+	int inum = inode_allocate();
+	if(inum == -1){
+		printf("Error: inode allocate failed!\n");
+		return FAIL;
+	}
+
+	inode_free(inum);
 	return PASS;
 }
 
@@ -472,87 +484,107 @@ int main(){
 
 
 
+	/*---buffer cache tests---*/
+
+
+
+
+
 	/*---inode tests---*/
 
 	
-	printf("--------Running test 1: test_bitmap_init!--------\n");
+	printf("--------Running INODE Test 1: test_bitmap_init!--------\n");
 	if(!test_bitmap_init()){
 		printf("PASS: test_bitmap_init!\n");
 	}else{
 		printf("FAIL: test_bitmap_init\n");
 	}
 
-	printf("--------Running test 2: test_inode_list_init!--------\n");
+	printf("--------Running INODE Test 2: test_inode_list_init!--------\n");
 	if(!test_inode_list_init()){
 		printf("PASS: test_inode_list_init!\n");
 	}else{
 		printf("FAIL: test_inode_list_init!\n");
 	}
 
-	printf("--------Running test 3: test_inode_allocate!--------\n");
+	printf("--------Running INODE Test 3: test_inode_allocate!--------\n");
 	if(!test_inode_allocate()){
 		printf("PASS: test_inode_allocate!\n");
 	}else{
 		printf("FAIL: test_inode_allocate!\n");
 	}
 
-	printf("--------Running test 4: test_inode_free!--------\n");
+	printf("--------Running INODE Test 4: test_inode_free!--------\n");
 	if(!test_inode_free()){
 		printf("PASS: test_inode_free!\n");
 	}else{
 		printf("FAIL: test_inode_free!\n");
 	}
 
-	printf("--------Running test 5: test_inode_mode_read_write!--------\n");
+	printf("--------Running INODE Test 5: test_inode_mode_read_write!--------\n");
 	if(!test_inode_mode_read_write()){
 		printf("PASS: test_inode_mode_read_write!\n");
 	}else{
 		printf("FAIL: test_inode_mode_read_write!\n");
 	}
 
-	printf("--------Running test 6: test_inode_link_read_reduce!--------\n");
+	printf("--------Running INODE Test 6: test_inode_link_read_reduce!--------\n");
 	if(!test_inode_link_read_reduce()){
 		printf("PASS: test_inode_link_read_reduce!\n");
 	}else{
 		printf("FAIL: test_inode_link_read_reduce!\n");
 	}
 
-	printf("--------Running test 7: test_inode_read_size!--------\n");
+	printf("--------Running INODE Test 7: test_inode_read_size!--------\n");
 	if(!test_inode_read_size()){
 		printf("PASS: test_inode_read_size!\n");
 	}else{
 		printf("FAIL: test_inode_read_size!\n");
 	}
 
-	printf("--------Running test 8: test_inode_rootnum!--------\n");
+	printf("--------Running INODE Test 8: test_inode_rootnum!--------\n");
 	if(!test_inode_rootnum()){
 		printf("PASS: test_inode_rootnum!\n");
 	}else{
 		printf("FAIL: test_inode_rootnum!\n");
 	}
 
-	printf("--------Running test 9: test_inode_read_file!--------\n");
-	if(!test_inode_read_file()){
-		printf("PASS: test_inode_read_file!\n");
+	printf("--------Running INODE Test 9: test_inode_read_file_direct_blo!--------\n");
+	if(!test_inode_read_file_direct_blo()){
+		printf("PASS: test_inode_read_file_direct_blo!\n");
 	}else{
-		printf("FAIL: test_inode_read_file!\n");
+		printf("FAIL: test_inode_read_file_direct_blo!\n");
 	}
 
-	printf("--------Running test 10a: test_inode_write_file_direct_blo!--------\n");
+	printf("--------Running INODE Test 9b: test_inode_read_file_single_indirect_blo!--------\n");
+	if(!test_inode_read_file_single_indirect_blo()){
+		printf("PASS: test_inode_read_file_single_indirect_blo!\n");
+	}else{
+		printf("FAIL: test_inode_read_file_single_indirect_blo!\n");
+	}
+
+	printf("--------Running INODE Test 9c: test_inode_read_file_double_indirect_blo!--------\n");
+	if(!test_inode_read_file_double_indirect_blo()){
+		printf("PASS: test_inode_read_file_double_indirect_blo!\n");
+	}else{
+		printf("FAIL: test_inode_read_file_double_indirect_blo!\n");
+	}
+
+	printf("--------Running INODE Test 10a: test_inode_write_file_direct_blo!--------\n");
 	if(!test_inode_write_file_direct_blo()){
 		printf("PASS: test_inode_write_file_direct_blo!\n");
 	}else{
 		printf("FAIL: test_inode_write_file_direct_blo!\n");
 	}
 
-	printf("--------Running test 10b: test_inode_write_file_single_indirect_blo!--------\n");
+	printf("--------Running INODE Test 10b: test_inode_write_file_single_indirect_blo!--------\n");
 	if(!test_inode_write_file_single_indirect_blo()){
 		printf("PASS: test_inode_write_file_single_indirect_blo!\n");
 	}else{
 		printf("FAIL: test_inode_write_file_single_indirect_blo!\n");
 	}
 
-	printf("--------Running test 10c: test_inode_write_file_double_indirect_blo!--------\n");
+	printf("--------Running INODE Test 10c: test_inode_write_file_double_indirect_blo!--------\n");
 	if(!test_inode_write_file_double_indirect_blo()){
 		printf("PASS: test_inode_write_file_double_indirect_blo!\n");
 	}else{
