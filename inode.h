@@ -17,17 +17,15 @@
 #ifndef INODE_H_
 #define INODE_H_
 
-#define NUM_INODE 4096
-#define DIR_ID_NUM 12
-#define INDIR_ID_NUM 1024
-#define D_INDIR_ID_NUM 1024*1024
-#define T_INDIR_ID_NUM 1024*1024*1024
-#define INODE_SIZE 128
-#define ROOT_INUM 0
-#define MAX_FILE_SIZE 
-
-#define BITMAP_BID 1
-#define ILIST_BID 2
+// #define NUM_INODE 4096
+// #define DIR_ID_NUM 12
+// #define INDIR_ID_NUM 1024
+// #define D_INDIR_ID_NUM 1024*1024
+// #define T_INDIR_ID_NUM 1024*1024*1024
+// #define INODE_SIZE 128
+// #define ROOT_INUM 0
+// #define BITMAP_BID 1
+// #define ILIST_BID 2
 
 typedef struct inode{
      /* Mode: keeps information about two things, 
@@ -94,11 +92,11 @@ int write_file(unsigned int inum, const char* buf, int size, int offset);
 
 
 // TO DO
-// 1. use sb instead hardcoded bid
+// 1. use sb instead hardcoded values        DONE
 // 2. figure out how to set UID GID          DONE
 // 3. free block only free used blocks       DONE
-// 4. safety checks
-// 5. read file boundary
+// 4. safety checks                          DONE  
+// 5. read file boundary                     DONE
 // 6. add new block, the rest of the block should all be zeros
 
 

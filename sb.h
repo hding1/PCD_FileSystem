@@ -33,6 +33,13 @@ typedef struct sb{
 	unsigned int START_ILIST;
 	unsigned int START_BITMAP;
 	unsigned int FREE_LIST;
+
+	unsigned int DIR_ID_NUM;
+	unsigned int INDIR_ID_NUM;
+	unsigned int D_INDIR_ID_NUM;
+	unsigned int T_INDIR_ID_NUM;
+	unsigned int INODE_SIZE;
+	unsigned int ROOT_INUM;
 }sb;
 
 

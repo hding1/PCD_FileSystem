@@ -7,8 +7,17 @@ void mkfs(){
 
 	allocate_disk();
 	sb_init();
-	inode_bitmap_init();
-	inode_list_init();
+	
+	if(inode_bitmap_init() == -1){
+		printf("inode_bitmap_init() FAILED!\n");
+		return;
+	}
+	
+	if(inode_list_init() == -1){
+		printf("inode_list_init() FAILED!\n");
+		return;
+	}
+
 	db_init();
 
 	allocate_cache();

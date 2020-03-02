@@ -14,10 +14,17 @@ void sb_init(){
 	super.filesize = 1073741824;//1GB
 	super.blocksize = 4096;
 	super.MAX_NUM_INODE = 4096;
-       	super.START_ILIST = 3;
+    super.START_ILIST = 3;
 	super.START_DATA_BLOCK = 130;
 	super.START_BITMAP = 1;
-	super.FREE_LIST = 130;	
+	super.FREE_LIST = 130;
+
+	super.DIR_ID_NUM = 12;
+	super.INDIR_ID_NUM = 1024;
+	super.D_INDIR_ID_NUM = 1024*1024;
+	super.T_INDIR_ID_NUM = 1024*1024*1024;
+	super.INODE_SIZE = 128;
+	super.ROOT_INUM = 0;
 	
 	
 	void* input = malloc(sizeof(char) * DB_SIZE);
