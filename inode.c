@@ -99,7 +99,7 @@ int find_free_inode(){
 inode* find_inode_by_inum(unsigned int inum){
 
     sb* super = (sb*) malloc(sizeof(sb));
-    if(sb_read(super) == -1) return -1;
+    if(sb_read(super) == -1) return NULL;
 	unsigned int NUM_INODE  =  super->MAX_NUM_INODE;
     unsigned int ROOT_INUM = super->ROOT_INUM;
     unsigned int BITMAP_BID = super->START_BITMAP;
