@@ -1,7 +1,7 @@
 #include "disk.h"
 
 
-int allocate_disk(){
+int allocate_disk(const char* filename){
 	//add_0 = (void*) malloc(1073741824 * sizeof(char)); // allocate disk (1GB)
 	add = open(filename, O_RDWR|O_CREAT);
 	if(add == -1){
@@ -20,14 +20,18 @@ void free_disk(){
 	return 0;
 }
 
-void disk_read(void* out, unsigned int block_id){
+int disk_read(void* out, unsigned int block_id){
         Hash_Node* h_node = hash_find(block_id);
 	if(h_node == NULL){
 		//void* Disk_Buffer = (void*)((char*)add_0 + block_id*4096);
         	//memcpy(out, Disk_Buffer, DB_SIZE);
 		//list_add(block_id, Disk_Buffer,0);
-		lseek(add, block_id*4086,SEEK_SET);
-		int size = read(add,out,DB_SIZE);
+		if(lseek(add, block_id*4086,SEEK_SET) == -1){
+			return -1;
+		}
+		if(read(add,out,DB_SIZE) == -1){
+			return -1;
+		}
 		list_add(block_id, out, 0);
 	}
 	else{
@@ -35,17 +39,21 @@ void disk_read(void* out, unsigned int block_id){
 		read_from_cache(out, h_node->buffer_id);
 		list_prioritize(h_node->list_node);
 	}
+	return 0;
 }
-void disk_write(void* in, unsigned int block_id){
+int disk_write(void* in, unsigned int block_id){
 	Hash_Node* h_node = hash_find(block_id);
 	if(h_node == NULL){
 		list_add(block_id, in,1);
 	}
 	else{
-		write_to_cache(in , h_node->buffer_id);
+		if(write_to_cache(in , h_node->buffer_id)==-1){
+			return -1;
+		}
 		h_node->list_node->dirty=1;
 		list_prioritize(h_node->list_node);
 	}
+	return 0;
 }
 
 /*
@@ -55,7 +63,10 @@ void sync(){
 	List_Node* head = list_head;
 	while(head!=NULL){
 		if(head->dirty){
-			cache_to_disk(head->buffer_id, head->block_id);
+			if(cache_to_disk(head->buffer_id, head->block_id) == -1){
+				printf("cache to disk in sync failed! \n");
+				return;
+			}
 			head->dirty=0;
 		}
 	}
@@ -74,15 +85,19 @@ void deallocate_cache(){
 /*
  */
 
-void cache_to_disk(unsigned int buffer_id, unsigned int block_id){
+int cache_to_disk(unsigned int buffer_id, unsigned int block_id){
         //void* Disk_Buffer = (void*)((char*)add_0 + block_id * 4096);
 	void* Disk_Buffer = malloc(sizeof(char)*DB_SIZE);
 	void* Cache_Buffer = (void*)((char*)buffer_0 + buffer_id * DB_SIZE); 
         memcpy(Disk_Buffer,Cache_Buffer,DB_SIZE);
 	
 	lseek(add, block_id*DB_SIZE,SEEK_SET);
-        size_t sz = write(add, Disk_Buffer, DB_SIZE);
+        if( write(add, Disk_Buffer, DB_SIZE) == -1){
+		free(Disk_Buffer);
+		return -1;
+	}
 	free(Disk_Buffer);
+	return 0;
 }
 void write_to_cache(void* in, unsigned int buffer_id){
         void* Cache_Buffer = (void*)((char*)buffer_0 + buffer_id*DB_SIZE);
@@ -138,7 +153,10 @@ void list_add(unsigned int block_id, void* buffer, int dirty){
 
 	if(end->in_hash){
 		if(end->dirty){
-			cache_to_disk(end->buffer_id, end->block_id);
+			if(cache_to_disk(end->buffer_id, end->block_id)==-1){
+				printf("list_add cache to disk failed \n");
+				return;
+			}
 		}
 		hash_delete(end->block_id);
 	}

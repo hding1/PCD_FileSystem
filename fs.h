@@ -8,7 +8,7 @@
 #include "db.h"
 #include <stdlib.h>
 
-void mkfs();
+int mkfs();
 
 void freefs();
 

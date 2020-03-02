@@ -442,7 +442,8 @@ int main(){
 
 
 	//sb tests
-	sb* super = sb_read();
+	sb* super = (sb*)malloc(sizeof(sb));
+	sb_read(super);
 	assert(super->NUM_BLOCK == 262144);
 	assert(super->blocksize == 4096);
 	assert(super->filesize == 1073741824);
@@ -451,7 +452,7 @@ int main(){
 	super->NUM_BLOCK-=1;
 	unsigned int new_block = super->NUM_BLOCK;	
 	sb_write(super);
-	super = sb_read();
+	sb_read(super);
 	assert(super->NUM_BLOCK == new_block);
 
 	//db tests
@@ -459,13 +460,13 @@ int main(){
 	
 	new_block = super->FREE_LIST+1;
 	
-	super = sb_read();
+	sb_read(super);
 	//printf("%d \n",super->FREE_LIST);
 	assert(super->FREE_LIST == new_block);
 
 	db_free(new_block-1);
 
-	super=sb_read();
+	sb_read(super);
 	assert(super->FREE_LIST == new_block-1);
 		
 	free(super);
