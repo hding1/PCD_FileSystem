@@ -47,7 +47,7 @@ typedef struct inode{
      time_t last_modified;
 
      // Data blocks
-     unsigned int direct_blo[DIR_ID_NUM];
+     unsigned int direct_blo[12];
      unsigned int single_ind;
      unsigned int double_ind;
      unsigned int triple_ind;
