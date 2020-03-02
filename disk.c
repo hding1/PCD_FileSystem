@@ -1,19 +1,34 @@
 #include "disk.h"
 
 
-void allocate_disk(){
-	add_0 = (void*) malloc(1073741824 * sizeof(char)); // allocate disk (1GB)
+int allocate_disk(){
+	//add_0 = (void*) malloc(1073741824 * sizeof(char)); // allocate disk (1GB)
+	add = open(filename, O_RDWR|O_CREAT);
+	if(add == -1){
+		printf("error in creating disk \n");
+		return -1;	
+	}
+	return 0;
 }
 void free_disk(){
-        free(add_0);
+        //free(add_0);
+	int status = close(add);
+	if(status == -1){
+		printf("error in freeing disk \n");
+		return -1;
+	}
+	return 0;
 }
 
 void disk_read(void* out, unsigned int block_id){
         Hash_Node* h_node = hash_find(block_id);
 	if(h_node == NULL){
-		void* Disk_Buffer = (void*)((char*)add_0 + block_id*4096);
-        	memcpy(out, Disk_Buffer, DB_SIZE);
-		list_add(block_id, Disk_Buffer,0);
+		//void* Disk_Buffer = (void*)((char*)add_0 + block_id*4096);
+        	//memcpy(out, Disk_Buffer, DB_SIZE);
+		//list_add(block_id, Disk_Buffer,0);
+		lseek(add, block_id*4086,SEEK_SET);
+		int size = read(add,out,DB_SIZE);
+		list_add(block_id, out, 0);
 	}
 	else{
 		//we have it inside the buffer
@@ -60,16 +75,21 @@ void deallocate_cache(){
  */
 
 void cache_to_disk(unsigned int buffer_id, unsigned int block_id){
-        void* Disk_Buffer = (void*)((char*)add_0 + block_id * 4096);
-	void* Cache_Buffer = (void*)((char*)buffer_0 + buffer_id * 4096); 
+        //void* Disk_Buffer = (void*)((char*)add_0 + block_id * 4096);
+	void* Disk_Buffer = malloc(sizeof(char)*DB_SIZE);
+	void* Cache_Buffer = (void*)((char*)buffer_0 + buffer_id * DB_SIZE); 
         memcpy(Disk_Buffer,Cache_Buffer,DB_SIZE);
+	
+	lseek(add, block_id*DB_SIZE,SEEK_SET);
+        size_t sz = write(add, Disk_Buffer, DB_SIZE);
+	free(Disk_Buffer);
 }
 void write_to_cache(void* in, unsigned int buffer_id){
-        void* Cache_Buffer = (void*)((char*)buffer_0 + buffer_id*4096);
+        void* Cache_Buffer = (void*)((char*)buffer_0 + buffer_id*DB_SIZE);
         memcpy(Cache_Buffer, in, DB_SIZE);
 }
 void read_from_cache(void* out, unsigned int buffer_id){
-        void* Cache_Buffer = (void*)((char*)buffer_0 + buffer_id*4096);
+        void* Cache_Buffer = (void*)((char*)buffer_0 + buffer_id*DB_SIZE);
         memcpy(out, Cache_Buffer, DB_SIZE);
 }
 
