@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 
-void sb_init(){
+int sb_init(){
 	sb super;
 	super.NUM_BLOCK = 262144;
 	super.NUM_FREE_BLOCK = 262013; // 262144 - 3 - 128
@@ -14,7 +14,7 @@ void sb_init(){
 	super.filesize = 1073741824;//1GB
 	super.blocksize = 4096;
 	super.MAX_NUM_INODE = 4096;
-    super.START_ILIST = 3;
+    	super.START_ILIST = 3;
 	super.START_DATA_BLOCK = 130;
 	super.START_BITMAP = 1;
 	super.FREE_LIST = 130;
@@ -31,32 +31,40 @@ void sb_init(){
 	
 	memcpy(input, &super, sizeof(struct sb)); // dest src size
 
-	disk_write(input, 0);
+	if(disk_write(input, 0) == -1){
+		free(input);
+		return -1;
+	}
 	
 	free(input);
+	return 0;
 }
 
-sb* sb_read(){
+int sb_read(sb* super){
 	void* output = malloc(sizeof(char) * DB_SIZE);
 	
-	disk_read(output, 0);
+	if(disk_read(output, 0) == -1){
+		return -1;
+	}
 	
-	sb* super = (sb*)malloc(sizeof(sb));
 	
 	memcpy(super, output, sizeof(sb));
 
 	free(output);
 
-	return super;
+	return 0;
 }
 
-void sb_write(sb* super){
+int sb_write(sb* super){
 
         void* input = malloc(sizeof(char) * DB_SIZE);
 
         memcpy(input, super, sizeof(sb)); // dest src size
 
-        disk_write(input, 0);
+        if(disk_write(input, 0) == -1){
+		return -1;
+	}
         
         free(input);
+	return 0;
 }

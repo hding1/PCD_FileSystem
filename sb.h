@@ -43,8 +43,8 @@ typedef struct sb{
 }sb;
 
 
-void sb_init();
-sb* sb_read();
-void sb_write();
+int sb_init();
+int sb_read(sb* super);
+int sb_write(sb* super);
 
 #endif

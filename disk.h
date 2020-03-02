@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include<stdio.h> 
 #include <fcntl.h>
+#include <unistd.h>
+#include <sys/types.h>
 #ifndef DISK_H_
 #define DISK_H_
 
@@ -18,8 +20,8 @@ void* buffer_0;
 
 int allocate_disk(const char* filename);
 int free_disk();
-void disk_read(void* out, unsigned int block_id);
-void disk_write(void* in, unsigned int block_id);
+int disk_read(void* out, unsigned int block_id);
+int disk_write(void* in, unsigned int block_id);
 
 /*
  */
@@ -35,7 +37,7 @@ void sync();
 /*
  */
 
-void cache_to_disk(unsigned int buffer_id, unsigned int block_id);
+int cache_to_disk(unsigned int buffer_id, unsigned int block_id);
 void write_to_cache(void* in, unsigned int buffer_id);
 void read_from_cache(void* out, unsigned int buffer_id);
 

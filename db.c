@@ -4,10 +4,14 @@
 #include "db.h"
 
 
-unsigned int db_allocate(){
+int db_allocate(){
 	// Return the bid of a free block
-	
-	struct sb* super = sb_read();
+	sb* super = (sb*)malloc(sizeof(sb));
+
+	if(sb_read(super)==-1){
+		free(super);
+		return -1;
+	}
 	unsigned int bid  =  super->FREE_LIST;
 	if(super->NUM_FREE_BLOCK==0){
 		printf("no free block left \n");
@@ -24,7 +28,9 @@ unsigned int db_allocate(){
 		printf("bid %u too large in allocation\n",bid);
                 bid=-1;
 		super->NUM_FREE_BLOCK =0;
-		sb_write(super);
+		if(sb_write(super) == -1){
+			bid = -1;
+		}
 		free(super);
 		free(buffer);
 		return bid;
@@ -33,8 +39,9 @@ unsigned int db_allocate(){
 	memcpy(new_free_id, buffer, sizeof(unsigned int));
 
 	super->FREE_LIST = *new_free_id;	
-	sb_write(super);
-
+	if(sb_write(super) == -1){
+		bid = -1;
+	}
 	free(super);
 	free(buffer);
 	return bid;
@@ -42,14 +49,21 @@ unsigned int db_allocate(){
 
 int db_free(unsigned int block_id){
 
-	sb* super = sb_read();
+        sb* super = (sb*)malloc(sizeof(sb));
+        if(sb_read(super)==-1){
+                free(super);
+                return -1;
+        }
 	
 	unsigned int temp  =  super->FREE_LIST;
 	unsigned int* temp_ptr = &temp;
 	super->FREE_LIST = block_id;
 	super->NUM_FREE_BLOCK+=1;
 
-	sb_write(super);
+	if(sb_write(super) == -1){
+		free(super);
+		return -1;
+	}
 	free(super);
 
 	void* input = malloc(DB_SIZE*sizeof(char));
@@ -61,7 +75,12 @@ int db_free(unsigned int block_id){
 }
 
 int is_db_free(unsigned int block_id){
-	sb* super = sb_read();
+	sb* super = (sb*)malloc(sizeof(sb));
+        if(sb_read(super)==-1){
+                free(super);
+                return -1;
+        }
+
 	unsigned int F_L = super->FREE_LIST;
 	unsigned int F_B = super->NUM_FREE_BLOCK;
 	void* buffer = malloc(sizeof(char) * DB_SIZE);
@@ -86,28 +105,46 @@ int is_db_free(unsigned int block_id){
 }
 
 int db_read(void* out, unsigned int block_id){
-	sb* super = sb_read();
+        sb* super = (sb*)malloc(sizeof(sb));
+        if(sb_read(super)==-1){
+                free(super);
+                return -1;
+        }
 
 	if(block_id > super->NUM_BLOCK){
 		free(super);
 		printf("block id %u too large to read \n",block_id);
 		return -1;		
 	}
-	disk_read(out,block_id);
+	if(disk_read(out,block_id) == -1){
+		return -1;
+	}
 	free(super);
 	return 0; // Return 0 on success
 }
 int db_write(void* in, unsigned int block_id){
-	sb* super = sb_read();
+	sb* super = (sb*)malloc(sizeof(sb));
+	if(sb_read(super) == -1){
+		free(super);
+		return -1;
+	}
 	if(block_id > super->NUM_BLOCK){
 		free(super);
 		printf("block %u id too large to write \n", block_id);
+		return -1;
 	}
-	disk_write(in, block_id);
+	if(disk_write(in, block_id) == -1){
+		return -1;
+	}
+	free(super);
 	return 0; // Return 0 on success
 }
-void db_init(){
-	sb* super = sb_read();
+int db_init(){
+	sb* super = (sb*)malloc(sizeof(sb));
+	if(sb_read(super) == -1){
+		free(super);
+		return -1;	
+	}
 	unsigned int START_DATA_BLOCK = super->START_DATA_BLOCK;
 	void* input = malloc(sizeof(unsigned int));
 	unsigned int NUM_FREE_BLOCK = super->NUM_FREE_BLOCK;
@@ -117,11 +154,17 @@ void db_init(){
 	for(unsigned int i = 0; i < NUM_FREE_BLOCK; i++){
 		unsigned int id = i+START_DATA_BLOCK + 1;
 		memcpy(input, &id, sizeof(unsigned int));		
-		disk_write(input, id-1);
+		if(disk_write(input, id-1) == -1){
+			free(input);
+			free(super);
+			return -1;
+		
+		}
 	}
 	
 	free(input);
 	free(super);
+	return 0;
 
 }
 

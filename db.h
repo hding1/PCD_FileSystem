@@ -10,8 +10,8 @@
 char Block[4096];
 }db;*/
 
-void db_init();
-unsigned int db_allocate();
+int db_init();
+int db_allocate();
 int db_free(unsigned int block_id);
 
 int is_db_free(unsigned int block_id);
