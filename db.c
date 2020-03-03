@@ -22,7 +22,10 @@ int db_allocate(){
 		super->NUM_FREE_BLOCK-=1;
 	}
 	void* buffer = malloc(sizeof(char) * DB_SIZE);
-	disk_read(buffer,bid);
+	
+	if(disk_read(buffer,bid) == -1){
+		return -1;
+	}
 
 	if(bid>super->NUM_BLOCK){
 		printf("bid %u too large in allocation\n",bid);
@@ -37,9 +40,13 @@ int db_allocate(){
 	}
 	unsigned int* new_free_id = malloc(sizeof(unsigned int));
 	memcpy(new_free_id, buffer, sizeof(unsigned int));
-
+	if(*new_free_id < super->START_DATA_BLOCK){
+		printf("db allocated a bid thats too samll \n");
+		return -1;
+	}
 	super->FREE_LIST = *new_free_id;	
 	if(sb_write(super) == -1){
+		printf("update super in db allocation failed \n");
 		bid = -1;
 	}
 	free(super);
@@ -146,7 +153,7 @@ int db_init(){
 		return -1;	
 	}
 	unsigned int START_DATA_BLOCK = super->START_DATA_BLOCK;
-	void* input = malloc(sizeof(unsigned int));
+	void* input = malloc(sizeof(char)*DB_SIZE);
 	unsigned int NUM_FREE_BLOCK = super->NUM_FREE_BLOCK;
 	
 	//the last free data block will contain a last+1 even tho it can not be used.

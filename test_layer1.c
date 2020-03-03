@@ -317,7 +317,7 @@ int test_inode_read_file_single_indirect_blo(){
 	return PASS;
 }
 
-test_inode_read_file_double_indirect_blo(){
+int test_inode_read_file_double_indirect_blo(){
 	return PASS;
 }
 
@@ -482,13 +482,19 @@ int main(){
 	
 	
 
-	allocate_disk("./disk");
+	if(allocate_disk("./disk") == -1){
+		printf("allocation disk failed in test \n");
+		return -1;
+	}
 	allocate_cache();
         list_init();
         hash_init();
 
         sb_init();        
-	db_init();
+	if(db_init() == -1){
+		printf("dn init error \n");
+		return -1;
+	}
 
 
 	//sb tests

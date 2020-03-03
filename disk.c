@@ -3,9 +3,10 @@
 
 int allocate_disk(const char* filename){
 	//add_0 = (void*) malloc(1073741824 * sizeof(char)); // allocate disk (1GB)
-	add = open(filename, O_RDWR|O_CREAT);
+	
+	add = open(filename, O_RDWR|O_CREAT, 0666);
 	if(add == -1){
-		printf("error in creating disk \n");
+		perror("error in creating disk \n");
 		return -1;	
 	}
 	return 0;
@@ -26,7 +27,7 @@ int disk_read(void* out, unsigned int block_id){
 		//void* Disk_Buffer = (void*)((char*)add_0 + block_id*4096);
         	//memcpy(out, Disk_Buffer, DB_SIZE);
 		//list_add(block_id, Disk_Buffer,0);
-		if(lseek(add, block_id*4086,SEEK_SET) == -1){
+		if(lseek(add, block_id*DB_SIZE,SEEK_SET) == -1){
 			return -1;
 		}
 		if(read(add,out,DB_SIZE) == -1){
@@ -92,6 +93,7 @@ int cache_to_disk(unsigned int buffer_id, unsigned int block_id){
 	lseek(add, block_id*DB_SIZE,SEEK_SET);
         if( write(add, Disk_Buffer, DB_SIZE) == -1){
 		free(Disk_Buffer);
+		printf("write failed \n");
 		return -1;
 	}
 	free(Disk_Buffer);
