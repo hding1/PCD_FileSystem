@@ -17,4 +17,4 @@ syscall_test: test_syscall.c disk.c db.c sb.c inode.c fs.c syscall.c
 	$(CC) $(CFLAGS) $^ `pkg-config fuse3 --cflags --libs` -o $@
 
 clean:
-	$(RM) pcd_fuse test_layer1 inode_test syscall_test
+	$(RM) pcd_fuse test_layer1 inode_test syscall_test disk

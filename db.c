@@ -41,6 +41,7 @@ int db_allocate(){
 	unsigned int* new_free_id = malloc(sizeof(unsigned int));
 	memcpy(new_free_id, buffer, sizeof(unsigned int));
 	if(*new_free_id < super->START_DATA_BLOCK){
+		printf("bid = %d\n", *new_free_id);
 		printf("db allocated a bid thats too samll \n");
 		return -1;
 	}

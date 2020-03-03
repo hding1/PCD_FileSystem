@@ -19,10 +19,9 @@ int inode_bitmap_init(){
     }
 
     // Wirte the bitmap to disk
-    if(is_db_free(BITMAP_BID) == 1)
-        db_write(bitmap, BITMAP_BID);
-    else
+    if(db_write(bitmap, BITMAP_BID) == -1){
         return -1;  // bitmap init failed
+    }  
 
     return 0; 
 }
@@ -54,17 +53,15 @@ int inode_list_init(){
     node.triple_ind = 0;
     node.link_count = 0;
 
-    // Allocate the 3rd to 130th block (block id =2, 129) for inode list
+    // Allocate the 4rd to 131th block (block id =3, 130) for inode list
     char block[BLOCK_SIZE];
     memset(block, 0, BLOCK_SIZE);
     for(int i = 0; i < BLOCK_SIZE / INODE_SIZE; i++){
         memcpy(block + i * INODE_SIZE, &node, sizeof(node));
     }
     for(unsigned int bid = ILIST_BID; bid < ILIST_BID + NUM_INODE / (BLOCK_SIZE / INODE_SIZE); bid++){
-        if(is_db_free(bid) == 1)
-            db_write(block, bid);
-        else
-            return -1;  // ilist init failed  
+        if(db_write(block, bid) == -1)
+            return -1; // ilist init failed  
     }
 
     return 0;

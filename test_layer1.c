@@ -41,13 +41,13 @@ int test_inode_list_init(){
 	}
 	char block[4096];
 	inode node;
-	db_read(block,2);
+	db_read(block,3);
 	memcpy(&node, block, sizeof(inode));
 	if(node.mode != 0 || node.size != 0 || node.link_count != 0){
 		printf("Error: FIRST inode in ilist uninitialized!\n");
 		return FAIL;
 	}
-	db_read(block,129);
+	db_read(block,130);
 	memcpy(&node, block + 128 * 31, sizeof(inode));
 	if(node.mode != 0 || node.size != 0 || node.link_count != 0){
 		printf("Error: LAST inode in ilist uninitialized!\n");
@@ -114,6 +114,7 @@ int test_inode_free(){
 	}
 
 	for(unsigned long i = 0; i < numbs; i++){
+		//printf("adding %lu block\n", i);
 		bid = add_block(inum);
 		if(bid == -1){
 			printf("Error: inode add block failed!\n");
@@ -435,39 +436,79 @@ int test_inode_write_file_single_indirect_blo(){
 	for(int i = 0; i < dir_size; i++){
 		dir_buf[i] = 'A';
 	}
-	write_file(inum, dir_buf, dir_size, 0);
+	if(write_file(inum, dir_buf, dir_size, 0) == -1){
+		printf("Error: inode write file single indirect blo failed!\n");
+		return FAIL;
+	}
 	char indir_buf[100];
 	for(int i = 0; i < 100; i++){
 		indir_buf[i] = 'B';
 	}
-	write_file(inum, indir_buf, 100, dir_size);
+	if(write_file(inum, indir_buf, 100, dir_size) == -1){
+		printf("Error: inode write file single indirect blo failed!\n");
+		return FAIL;
+	}
 
 	inode* target = find_inode_by_inum(inum);
 	unsigned int indbid = target->single_ind;
+	if(indbid == 0){
+		printf("Error: write file single indirect block indbid not allocated!\n");
+		return FAIL;
+	}
 	char indirblo[4096];
 	unsigned int indirblobid[1024];
 	db_read(indirblo, indbid);
 	memcpy(indirblobid, indirblo, 4096);
 	unsigned int firstindbid = indirblobid[0];
 	if(firstindbid == 0){
-		printf("Error: write file single indirect block not allocated!\n");
+		printf("Error: write file single indirect block firstindbid not allocated!\n");
 		return FAIL;
 	}
-	char firstindblo[4096];
-	unsigned int firstindblodata[1024];
-	db_read(firstindblo, firstindbid);
-	memcpy(firstindblodata, firstindblo, 4096);
+	char firstindblodata[4096];
+	db_read(firstindblodata, firstindbid);
+	//printf("indirblodata = %s\n", firstindblodata);
 	for(int i = 0; i < 100; i++){
 		if(firstindblodata[i] != 'B'){
+			//printf("error at index %d\n", i);
 			printf("Error: write file single indirect block file write incorrectly\n");
 			return FAIL;
 		}
 	}
+	free(target);
 
 	// Test using full single indir blocks
+	char full_indir_buf[4096];
+	for(int i = 0; i < 4096; i++){
+		full_indir_buf[i] = 'C';
+	}
+	int offset = 0;
+	for(int i = 0; i < 12 + 1024; i++){
+		write_file(inum, full_indir_buf, 4096, offset);
+		offset += 4096;
+	}
+	inode* target2 = find_inode_by_inum(inum);
+	indbid = target2->single_ind;
+	if(indbid == 0){
+		printf("Error: write file single indirect block indbid not allocated!\n");
+		return FAIL;
+	}
+	db_read(indirblo, indbid);
+	memcpy(indirblobid, indirblo, 4096);
+	for(int i = 0; i < 1024; i++){
+		if(indirblobid[i] == 0){
+			printf("Error: write file single indirect block full firstindbid not allocated!\n");
+			return FAIL;
+		}
+		db_read(firstindblodata, indirblobid[i]);
+		for(int i = 0; i < 4096; i++){
+			if(firstindblodata[i] != 'C'){
+				printf("Error: write file single indirect block full file write incorrectly\n");
+				return FAIL;
+			}
+		}
+	}
 	
-
-	free(target);
+	free(target2);
 	inode_free(inum);
 	return PASS;
 }
@@ -503,7 +544,7 @@ int main(){
 	assert(super->NUM_BLOCK == 262144);
 	assert(super->blocksize == 4096);
 	assert(super->filesize == 1073741824);
-	assert(super->FREE_LIST == 130);
+	assert(super->FREE_LIST == 131);
 
 	super->NUM_BLOCK-=1;
 	unsigned int new_block = super->NUM_BLOCK;	
@@ -512,7 +553,10 @@ int main(){
 	assert(super->NUM_BLOCK == new_block);
 
 	//db tests
-	assert(db_allocate() == super->FREE_LIST);
+	unsigned int bid = db_allocate();
+	// printf("db allocated bid = %u\n", bid);
+	// printf("free list = %u\n", super->FREE_LIST);
+	assert(bid == super->FREE_LIST);
 	
 	new_block = super->FREE_LIST+1;
 	

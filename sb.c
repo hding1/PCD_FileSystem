@@ -15,9 +15,9 @@ int sb_init(){
 	super.blocksize = 4096;
 	super.MAX_NUM_INODE = 4096;
     	super.START_ILIST = 3;
-	super.START_DATA_BLOCK = 130;
+	super.START_DATA_BLOCK = 131;
 	super.START_BITMAP = 1;
-	super.FREE_LIST = 130;
+	super.FREE_LIST = 131;
 
 	super.DIR_ID_NUM = 12;
 	super.INDIR_ID_NUM = 1024;
