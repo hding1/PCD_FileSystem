@@ -429,7 +429,45 @@ int test_inode_write_file_single_indirect_blo(){
 		printf("Error: inode allocate failed!\n");
 		return FAIL;
 	}
+	// Test using one single indir block
+	int dir_size = 4096 * 12;
+	char dir_buf[dir_size];
+	for(int i = 0; i < dir_size; i++){
+		dir_buf[i] = 'A';
+	}
+	write_file(inum, dir_buf, dir_size, 0);
+	char indir_buf[100];
+	for(int i = 0; i < 100; i++){
+		indir_buf[i] = 'B';
+	}
+	write_file(inum, indir_buf, 100, dir_size);
 
+	inode* target = find_inode_by_inum(inum);
+	unsigned int indbid = target->single_ind;
+	char indirblo[4096];
+	unsigned int indirblobid[1024];
+	db_read(indirblo, indbid);
+	memcpy(indirblobid, indirblo, 4096);
+	unsigned int firstindbid = indirblobid[0];
+	if(firstindbid == 0){
+		printf("Error: write file single indirect block not allocated!\n");
+		return FAIL;
+	}
+	char firstindblo[4096];
+	unsigned int firstindblodata[1024];
+	db_read(firstindblo, firstindbid);
+	memcpy(firstindblodata, firstindblo, 4096);
+	for(int i = 0; i < 100; i++){
+		if(firstindblodata[i] != 'B'){
+			printf("Error: write file single indirect block file write incorrectly\n");
+			return FAIL;
+		}
+	}
+
+	// Test using full single indir blocks
+	
+
+	free(target);
 	inode_free(inum);
 	return PASS;
 }
