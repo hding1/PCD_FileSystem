@@ -87,17 +87,3 @@ int read_file(unsigned int inum, char* buf, int size, int offset);
 int write_file(unsigned int inum, const char* buf, int size, int offset);
 
 #endif
-
-
-
-
-// TO DO
-// 1. use sb instead hardcoded values        DONE
-// 2. figure out how to set UID GID          DONE
-// 3. free block only free used blocks       DONE
-// 4. safety checks                          DONE  
-// 5. read file boundary                     DONE
-// 6. add new block, the rest of the block should all be zeros
-
-
-#endif //PCD_FILESYSTEM_INODE_H_
