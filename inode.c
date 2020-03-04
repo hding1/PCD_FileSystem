@@ -311,12 +311,10 @@ int add_block(unsigned int inum){
     if(num < DIR_ID_NUM){
         target_node->direct_blo[num] = newid;
         write_inode_to_disk(inum, target_node);
-        //printf("add_block: add direct blocks!\n");
 
     }else if(num < DIR_ID_NUM + INDIR_ID_NUM){
         index = num - DIR_ID_NUM;
         if(index == 0){
-            //printf("add_block: add new single indirect blocks!\n");
             ind_bid = db_allocate();
             if(ind_bid == -1) return -1;
             target_node->single_ind = ind_bid;
@@ -330,7 +328,6 @@ int add_block(unsigned int inum){
             db_write(block, ind_bid);
             write_inode_to_disk(inum, target_node);
         }else{
-            //printf("add_block: add existed single indirect blocks!\n");
             db_read(block, target_node->single_ind);
             memcpy(ind_block, block, BLOCK_SIZE);
             ind_block[index] = newid;

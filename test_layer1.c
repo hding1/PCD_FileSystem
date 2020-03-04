@@ -315,10 +315,70 @@ int test_inode_read_file_direct_blo(){
 }
 
 int test_inode_read_file_single_indirect_blo(){
+	int inum = inode_allocate();
+	if(inum == -1){
+		printf("Error: inode allocate failed!\n");
+		return FAIL;
+	}
+	//printf("111\n");
+	int buf_size = (12 + 1024) * 4096;
+	char buf[buf_size];
+	for(int i = 0; i < buf_size; i++){
+		buf[i] = 'A';
+	}
+	//printf("222\n");
+	if(write_file(inum, buf, buf_size, 0) == -1){
+		printf("Error: write file failed!\n");
+		return FAIL;
+	}
+	//printf("333\n");
+	int readsize = read_file(inum, buf, buf_size, 0);
+	if( readsize != buf_size){
+		printf("Error: read file readsize incorrect!\n");
+		return FAIL;
+	}
+	for(int i = 0; i < buf_size; i++){
+		if(buf[i] != 'A'){
+			printf("Error: read file all direct blocks incorrectly!\n");
+			return FAIL;
+		}
+	}
+
+	inode_free(inum);
 	return PASS;
 }
 
 int test_inode_read_file_double_indirect_blo(){
+	int inum = inode_allocate();
+	if(inum == -1){
+		printf("Error: inode allocate failed!\n");
+		return FAIL;
+	}
+	//printf("111\n");
+	int buf_size = (12 + 1024 + 100) * 4096;
+	char buf[buf_size];
+	for(int i = 0; i < buf_size; i++){
+		buf[i] = 'A';
+	}
+	//printf("222\n");
+	if(write_file(inum, buf, buf_size, 0) == -1){
+		printf("Error: write file failed!\n");
+		return FAIL;
+	}
+	//printf("333\n");
+	int readsize = read_file(inum, buf, buf_size, 0);
+	if( readsize != buf_size){
+		printf("Error: read file readsize incorrect!\n");
+		return FAIL;
+	}
+	for(int i = 0; i < buf_size; i++){
+		if(buf[i] != 'A'){
+			printf("Error: read file all direct blocks incorrectly!\n");
+			return FAIL;
+		}
+	}
+
+	inode_free(inum);
 	return PASS;
 }
 
@@ -514,6 +574,59 @@ int test_inode_write_file_single_indirect_blo(){
 }
 
 int test_inode_write_file_double_indirect_blo(){
+	int inum = inode_allocate();
+	if(inum == -1){
+		printf("Error: inode allocate failed!\n");
+		return FAIL;
+	}
+	int buf_size = (12 + 1024 + 100) * 4096;
+	char dbuf[buf_size];
+	for(int i = 0; i < buf_size; i++){
+		dbuf[i] = 'A';
+	}
+	if(write_file(inum, dbuf, buf_size, 0) == -1){
+		printf("Error: write file single double indirect block failed!\n");
+		return FAIL;
+	}
+
+	inode* target = find_inode_by_inum(inum);
+	unsigned int dindbid = target->double_ind;
+	//printf("dindbid = %u\n", dindbid);
+	char dindbiddata[4096];
+	db_read(dindbiddata,dindbid);
+	//printf("dindbid data = %s\n", dindbiddata);
+	unsigned int dindbidbids[1024];
+	memcpy(dindbidbids, dindbiddata, 4096);
+	//printf("dindbid bids0 = %u\n", dindbidbids[0]);
+	//printf("dindbid bids1 = %u\n", dindbidbids[1]);
+
+	unsigned int sindbid = dindbidbids[0];
+	//printf("sindbid = %u\n", dindbidbids[0]);
+	char sindbiddata[4096];
+	unsigned int sindbidbids[1024];
+	db_read(sindbiddata, sindbid);
+	//printf("sindbid data = %s\n", sindbiddata);
+	memcpy(sindbidbids, sindbiddata, 4096);
+	//printf("sindbid bids0 = %u\n", sindbidbids[0]);
+	//printf("sindbid bids1 = %u\n", sindbidbids[1]);
+
+
+	char block[4096];
+	for(int i = 0; i < 100; i++){
+		//printf("sindbidbids %dth = %u\n", i, sindbidbids[i]);
+		db_read(block, sindbidbids[i]);
+		//printf("%dth block = %s\n",i,block);
+		for(int z = 0; z < 4096; z++){
+			if(block[z] != 'A'){
+				printf("Error: write file double indirect block full file write incorrectly\n");
+				return FAIL;
+				
+			}
+		}
+	}
+
+	free(target);
+	inode_free(inum);
 	return PASS;
 }
 
@@ -596,54 +709,54 @@ int main(){
 		printf("FAIL: test_inode_list_init!\n");
 	}
 
-	printf("--------Running INODE Test 3: test_inode_allocate!--------\n");
-	if(!test_inode_allocate()){
-		printf("PASS: test_inode_allocate!\n");
-	}else{
-		printf("FAIL: test_inode_allocate!\n");
-	}
+	// printf("--------Running INODE Test 3: test_inode_allocate!--------\n");
+	// if(!test_inode_allocate()){
+	// 	printf("PASS: test_inode_allocate!\n");
+	// }else{
+	// 	printf("FAIL: test_inode_allocate!\n");
+	// }
 
-	printf("--------Running INODE Test 4: test_inode_free!--------\n");
-	if(!test_inode_free()){
-		printf("PASS: test_inode_free!\n");
-	}else{
-		printf("FAIL: test_inode_free!\n");
-	}
+	// printf("--------Running INODE Test 4: test_inode_free!--------\n");
+	// if(!test_inode_free()){
+	// 	printf("PASS: test_inode_free!\n");
+	// }else{
+	// 	printf("FAIL: test_inode_free!\n");
+	// }
 
-	printf("--------Running INODE Test 5: test_inode_mode_read_write!--------\n");
-	if(!test_inode_mode_read_write()){
-		printf("PASS: test_inode_mode_read_write!\n");
-	}else{
-		printf("FAIL: test_inode_mode_read_write!\n");
-	}
+	// printf("--------Running INODE Test 5: test_inode_mode_read_write!--------\n");
+	// if(!test_inode_mode_read_write()){
+	// 	printf("PASS: test_inode_mode_read_write!\n");
+	// }else{
+	// 	printf("FAIL: test_inode_mode_read_write!\n");
+	// }
 
-	printf("--------Running INODE Test 6: test_inode_link_read_reduce!--------\n");
-	if(!test_inode_link_read_reduce()){
-		printf("PASS: test_inode_link_read_reduce!\n");
-	}else{
-		printf("FAIL: test_inode_link_read_reduce!\n");
-	}
+	// printf("--------Running INODE Test 6: test_inode_link_read_reduce!--------\n");
+	// if(!test_inode_link_read_reduce()){
+	// 	printf("PASS: test_inode_link_read_reduce!\n");
+	// }else{
+	// 	printf("FAIL: test_inode_link_read_reduce!\n");
+	// }
 
-	printf("--------Running INODE Test 7: test_inode_read_size!--------\n");
-	if(!test_inode_read_size()){
-		printf("PASS: test_inode_read_size!\n");
-	}else{
-		printf("FAIL: test_inode_read_size!\n");
-	}
+	// printf("--------Running INODE Test 7: test_inode_read_size!--------\n");
+	// if(!test_inode_read_size()){
+	// 	printf("PASS: test_inode_read_size!\n");
+	// }else{
+	// 	printf("FAIL: test_inode_read_size!\n");
+	// }
 
-	printf("--------Running INODE Test 8: test_inode_rootnum!--------\n");
-	if(!test_inode_rootnum()){
-		printf("PASS: test_inode_rootnum!\n");
-	}else{
-		printf("FAIL: test_inode_rootnum!\n");
-	}
+	// printf("--------Running INODE Test 8: test_inode_rootnum!--------\n");
+	// if(!test_inode_rootnum()){
+	// 	printf("PASS: test_inode_rootnum!\n");
+	// }else{
+	// 	printf("FAIL: test_inode_rootnum!\n");
+	// }
 
-	printf("--------Running INODE Test 9: test_inode_read_file_direct_blo!--------\n");
-	if(!test_inode_read_file_direct_blo()){
-		printf("PASS: test_inode_read_file_direct_blo!\n");
-	}else{
-		printf("FAIL: test_inode_read_file_direct_blo!\n");
-	}
+	// printf("--------Running INODE Test 9: test_inode_read_file_direct_blo!--------\n");
+	// if(!test_inode_read_file_direct_blo()){
+	// 	printf("PASS: test_inode_read_file_direct_blo!\n");
+	// }else{
+	// 	printf("FAIL: test_inode_read_file_direct_blo!\n");
+	// }
 
 	printf("--------Running INODE Test 9b: test_inode_read_file_single_indirect_blo!--------\n");
 	if(!test_inode_read_file_single_indirect_blo()){
@@ -659,26 +772,26 @@ int main(){
 		printf("FAIL: test_inode_read_file_double_indirect_blo!\n");
 	}
 
-	printf("--------Running INODE Test 10a: test_inode_write_file_direct_blo!--------\n");
-	if(!test_inode_write_file_direct_blo()){
-		printf("PASS: test_inode_write_file_direct_blo!\n");
-	}else{
-		printf("FAIL: test_inode_write_file_direct_blo!\n");
-	}
+	// printf("--------Running INODE Test 10a: test_inode_write_file_direct_blo!--------\n");
+	// if(!test_inode_write_file_direct_blo()){
+	// 	printf("PASS: test_inode_write_file_direct_blo!\n");
+	// }else{
+	// 	printf("FAIL: test_inode_write_file_direct_blo!\n");
+	// }
 
-	printf("--------Running INODE Test 10b: test_inode_write_file_single_indirect_blo!--------\n");
-	if(!test_inode_write_file_single_indirect_blo()){
-		printf("PASS: test_inode_write_file_single_indirect_blo!\n");
-	}else{
-		printf("FAIL: test_inode_write_file_single_indirect_blo!\n");
-	}
+	// printf("--------Running INODE Test 10b: test_inode_write_file_single_indirect_blo!--------\n");
+	// if(!test_inode_write_file_single_indirect_blo()){
+	// 	printf("PASS: test_inode_write_file_single_indirect_blo!\n");
+	// }else{
+	// 	printf("FAIL: test_inode_write_file_single_indirect_blo!\n");
+	// }
 
-	printf("--------Running INODE Test 10c: test_inode_write_file_double_indirect_blo!--------\n");
-	if(!test_inode_write_file_double_indirect_blo()){
-		printf("PASS: test_inode_write_file_double_indirect_blo!\n");
-	}else{
-		printf("FAIL: test_inode_write_file_double_indirect_blo!\n");
-	}
+	// printf("--------Running INODE Test 10c: test_inode_write_file_double_indirect_blo!--------\n");
+	// if(!test_inode_write_file_double_indirect_blo()){
+	// 	printf("PASS: test_inode_write_file_double_indirect_blo!\n");
+	// }else{
+	// 	printf("FAIL: test_inode_write_file_double_indirect_blo!\n");
+	// }
 	
 	
 
