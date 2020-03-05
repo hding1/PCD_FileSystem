@@ -103,7 +103,7 @@ int test_inode_allocate(){
 }
 
 int test_inode_free(){
-	unsigned long numbs = 12 + 1024 + 1024 * 2;
+	unsigned long numbs = 12 + 1024 + 1024 + 1;
 	unsigned int dbs[numbs];
 	int bid;
 
@@ -134,7 +134,7 @@ int test_inode_free(){
 	// check if data blocks are freed
 	for(unsigned long i = 0; i < numbs; i++){
 		// Tested, passed, now commented due to change of structure of freelist
-		
+
 		// if(!is_db_free(dbs[i])){
 		// 	printf("Error: Used data block is not freed!\n");
 		// 	return FAIL;
@@ -633,41 +633,250 @@ int test_inode_write_file_double_indirect_blo(){
 }
 
 
-/*************************************buffer cache test helpers***************************************/
+/*************************************disk buffer cache test helpers***************************************/
 
 int test_list_init(){
+	List_Node* i;
+	unsigned int acc;
+	for(i = list_head, acc = 0; acc < BUFFER_NUM; i = i->next, acc++){
+		if(i->buffer_id >= BUFFER_NUM || i->buffer_id < 0 ||i->in_hash != 0 || i->dirty != 0 || i->dirty != 0){
+			// printf("acc = %d\n", acc);
+			// printf("buffer_id = %d\n", i->buffer_id);
+			printf("Error: test_list_init failed!\n");
+			return FAIL;
+		}
+	}
 	return PASS;
 }
 
 int test_list_free(){
+	list_free();
+	if(list_head != NULL || list_tail != NULL){
+		//printf("list head id = %u\n", list_head->buffer_id);
+		//printf("list tail id = %u\n", list_tail->buffer_id);
+		printf("Error: test_list_free failed!\n");
+		list_init();
+		return FAIL;
+	}
+	list_init();
 	return PASS;
 }
 
 int test_list_add(){
+	unsigned int bid = 0;
+	char buffer[4096];
+
+	list_add(bid, buffer, 0);
+	if(list_head->block_id != bid){
+		printf("Error: test_list_add failed!\n");
+		return FAIL;
+	}
+
+	for(bid = 1; bid < 1001; bid++){
+		list_add(bid, buffer, 0);
+		if(list_head->block_id != bid){
+			printf("Error: test_list_add failed!\n");
+			return FAIL;
+		}
+	}
 	return PASS;
 }
 
 int test_list_prioritize(){
+	unsigned int bid;
+	char buffer[4096];
+	// prioritize first
+	list_add(0, buffer, 0);
+	bid = list_head->block_id;
+	list_prioritize(list_head);
+	if(list_head->block_id != bid){
+		printf("Error: test_list_prioritize first element failed!\n");
+		return FAIL;
+	}
+
+	for(bid = 1; bid < 1000; bid++){
+		list_add(bid, buffer, 0);
+	}
+
+	// prioritize last
+	bid = list_tail->block_id;
+	list_prioritize(list_tail);
+	if(list_head->block_id != bid){
+		printf("Error: test_list_prioritize last element failed!\n");
+		return FAIL;
+	}
+
+	// prioritize middle
+	bid = list_head->next->next->next->next->next->block_id;
+	list_prioritize(list_head->next->next->next->next->next);
+	if(list_head->block_id != bid){
+		printf("Error: test_list_prioritize middle element failed!\n");
+		return FAIL;
+	}
+
 	return PASS;
 }
 
 int test_hash_init(){
+	hash_free();
+	hash_init();
+	for(int i=0; i<BUFFER_NUM; i++){
+		if(hash_table->list[i] != NULL){
+			printf("Error: test_hash_init failed!\n");
+			return FAIL;
+		}
+	}
 	return PASS;
 }
 
 int test_hash_free(){
+	Hash_Node** l = hash_table->list;
+	hash_free();
+	if(hash_table != NULL){
+		printf("Error: test_hash_free hash_table failed!\n");
+		hash_init();
+		return FAIL;
+	}
+	if(l != NULL){
+		printf("Error: test_hash_free list failed!\n");
+		hash_init();
+		return FAIL;
+	}
+	hash_init();
 	return PASS;
 }
 
 int test_hash_func(){
+	int hash1 = hash_func(1);
+	int hash2 = hash_func(1001);
+	if(hash1 != hash2 || hash1 != 1 % BUFFER_NUM || hash2 != 1001 % BUFFER_NUM){
+		printf("Error: test_hash_func failed!\n");
+		return FAIL;
+	}
 	return PASS;
 }
 
 int test_hash_insert(){
+	List_Node n1, n2, n3;
+	n1.block_id = 1;
+	n2.block_id = 2;
+	n3.block_id = 1001;
+	hash_insert(1,1, &n1);
+	if(hash_table->list[1]->block_id != 1){
+		printf("Error: test_hash_insert n1 failed!\n");
+		return FAIL;
+	}
+	hash_insert(2,2, &n2);
+	if(hash_table->list[2]->block_id != 2){
+		printf("Error: test_hash_insert n2 failed!\n");
+		return FAIL;
+	}
+	hash_insert(1001,3, &n3);
+	if(hash_table->list[1]->block_id != 1001){
+		printf("Error: test_hash_insert n3 failed!\n");
+		return FAIL;
+	}
 	return PASS;
 }
 
 int test_hash_delete(){
+	hash_delete(2);
+	if(hash_table->list[2] != NULL){
+		printf("Error: test_hash_delete n2 failed!\n");
+		return FAIL;
+	}
+	hash_delete(1001);
+	if(hash_table->list[1]->block_id != 1){
+		printf("Error: test_hash_delete n3 failed!\n");
+		return FAIL;
+	}
+	hash_delete(1);
+	if(hash_table->list[1] != NULL){
+		printf("Error: test_hash_delete n1 failed!\n");
+		return FAIL;
+	}
+	return PASS;
+}
+
+int test_allocate_cache(){
+	deallocate_cache();
+	allocate_cache();
+	if(buffer_0 == NULL || sizeof(buffer_0) != BUFFER_NUM*DB_SIZE*sizeof(char)){
+		printf("Error: test_allocate_cache failed!\n");
+		return FAIL;
+	}
+	return PASS;
+}
+
+int test_deallocate_cache(){
+	deallocate_cache();
+	if(buffer_0 != NULL){
+		printf("Error: test_deallocate_cache failed!\n");
+		allocate_cache();
+		return FAIL;
+	}
+	allocate_cache();
+	return PASS;
+}
+
+int test_cache_to_disk(){
+	char in[4096];
+	char out[4096];
+	for(int i = 0; i < 4096; i++){
+		in[i] = 'A';
+	}
+	write_to_cache(in,0);
+	cache_to_disk(0, 250);
+	disk_read(out, 250);
+	for(int i = 0; i < 4096; i++){
+		if(out[i] != 'A'){
+			printf("Error: test_cache_to_disk failed!\n");
+			return FAIL;
+		}
+	}
+	return PASS;
+}
+
+int test_write_to_cache(){
+	char in[4096];
+	for(int i = 0; i < 4096; i++){
+		in[i] = 'A';
+	}
+	write_to_cache(in,0);
+	for(int i = 0; i < 4096; i++){
+		if(((char*)buffer_0)[i] != 'A'){
+			printf("Error: test_write_to_cache failed!\n");
+			return FAIL;
+		}
+	}
+	return PASS;
+}
+
+int test_read_from_cache(){
+	char out[4096];
+	read_from_cache(out,0);
+	for(int i = 0; i < 4096; i++){
+		if(out[i] != 'A'){
+			printf("Error: test_read_from_cache failed!\n");
+			return FAIL;
+		}
+	}
+	return PASS;
+}
+
+int test_sync(){
+	char buffer[4096];
+	buffer[0] = 'D';
+	char out[4096];
+	list_add(251,buffer, 1);
+			printf("111\n");
+	sync();
+			printf("222\n");
+	disk_read(out,251);
+	if(out[0] != 'D'){
+		printf("Error: test_sync failed!\n");
+		return FAIL;
+	}
 	return PASS;
 }
 
@@ -675,230 +884,284 @@ int test_hash_delete(){
 
 /***************************************test main********************************************/
 int main(){
+
+
+	if(allocate_disk("./disk") == -1){
+		printf("allocation disk failed in test!\n");
+		return -1;
+	}
+	allocate_cache();
+    list_init();
+    hash_init();
+   
+
+	/*---disk buffer cache tests---*/
+	printf("-------------DISK BUFFER CACHE Test!-------------\n");
+
+	printf("Test 1: test_list_init!\n");
+	if(!test_list_init()){
+		printf("	PASS: test_list_init!\n");
+	}else{
+		printf("	FAIL: test_list_init!\n");
+	}
+
+	printf("Test 2: test_list_free!\n");
+	if(!test_list_free()){
+		printf("	PASS: test_list_free!\n");
+	}else{
+		printf("	FAIL: test_list_free!\n");
+	}
+
+	printf("Test 3: test_list_add!\n");
+	if(!test_list_add()){
+		printf("	PASS: test_list_add!\n");
+	}else{
+		printf("	FAIL: test_list_add!\n");
+	}
+
+	printf("Test 4: test_list_prioritize!\n");
+	if(!test_list_prioritize()){
+		printf("	PASS: test_list_prioritize!\n");
+	}else{
+		printf("	FAIL: test_list_prioritize!\n");
+	}
+
+	printf("Test 5: test_hash_init!\n");
+	if(!test_hash_init()){
+		printf("	PASS: test_hash_init!\n");
+	}else{
+		printf("	FAIL: test_hash_init!\n");
+	}
+
+	printf("Test 6: test_hash_free!\n");
+	if(!test_hash_free()){
+		printf("	PASS: test_hash_free!\n");
+	}else{
+		printf("	FAIL: test_hash_free!\n");
+	}
+
+	printf("Test 7: test_hash_func!\n");
+	if(!test_hash_func()){
+		printf("	PASS: test_hash_func!\n");
+	}else{
+		printf("	FAIL: test_hash_func!\n");
+	}
+
+	printf("Test 8: test_hash_insert!\n");
+	if(!test_hash_insert()){
+		printf("	PASS: test_hash_insert!\n");
+	}else{
+		printf("	FAIL: test_hash_insert!\n");
+	}
+
+	printf("Test 9: test_hash_delete!\n");
+	if(!test_hash_delete()){
+		printf("	PASS: test_hash_delete!\n");
+	}else{
+		printf("	FAIL: test_hash_delete!\n");
+	}
+
+	printf("Test 10: test_allocate_cache!\n");
+	if(!test_allocate_cache()){
+		printf("	PASS: test_allocate_cache!\n");
+	}else{
+		printf("	FAIL: test_allocate_cache!\n");
+	}
+
+	printf("Test 11: test_deallocate_cache!\n");
+	if(!test_deallocate_cache()){
+		printf("	PASS: test_deallocate_cache!\n");
+	}else{
+		printf("	FAIL: test_deallocate_cache!\n");
+	}
+
+	printf("Test 12: test_cache_to_disk!\n");
+	if(!test_cache_to_disk()){
+		printf("	PASS: test_cache_to_disk!\n");
+	}else{
+		printf("	FAIL: test_cache_to_disk!\n");
+	}
+
+	printf("Test 13: test_write_to_cache!\n");
+	if(!test_write_to_cache()){
+		printf("	PASS: test_write_to_cache!\n");
+	}else{
+		printf("	FAIL: test_write_to_cache!\n");
+	}
+
+	printf("Test 14: test_read_from_cache!\n");
+	if(!test_read_from_cache()){
+		printf("	PASS: test_read_from_cache!\n");
+	}else{
+		printf("	FAIL: test_read_from_cache!\n");
+	}
+
+	printf("Test 15: test_sync!\n");
+	if(!test_sync()){
+		printf("	PASS: test_sync!\n");
+	}else{
+		printf("	FAIL: test_sync!\n");
+	}
+
 	
-	
+	// recreate disk buffer
+	free_disk();
+    deallocate_cache();
+    list_free();
+    hash_free();
 
 	if(allocate_disk("./disk") == -1){
 		printf("allocation disk failed in test \n");
 		return -1;
 	}
 	allocate_cache();
-        list_init();
-        hash_init();
+    list_init();
+    hash_init();
 
-        sb_init();        
+
+	// create sb and db
+	sb_init();        
 	if(db_init() == -1){
 		printf("dn init error \n");
 		return -1;
 	}
 
-
-	/*---disk buffer cache tests---*/
-
-	printf("--------Running DISK BUFFER CACHE Test 1: test_list_init!--------\n");
-	if(!test_list_init()){
-		printf("PASS: test_list_init!\n");
-	}else{
-		printf("FAIL: test_list_init\n");
-	}
-
-	printf("--------Running DISK BUFFER CACHE Test 2: test_list_free!--------\n");
-	if(!test_list_free()){
-		printf("PASS: test_list_free!\n");
-	}else{
-		printf("FAIL: test_list_free\n");
-	}
-
-	printf("--------Running DISK BUFFER CACHE Test 3: test_list_add!--------\n");
-	if(!test_list_add()){
-		printf("PASS: test_list_add!\n");
-	}else{
-		printf("FAIL: test_list_add\n");
-	}
-
-	printf("--------Running DISK BUFFER CACHE Test 4: test_list_prioritize!--------\n");
-	if(!test_list_prioritize()){
-		printf("PASS: test_list_prioritize!\n");
-	}else{
-		printf("FAIL: test_list_prioritize\n");
-	}
-
-	printf("--------Running DISK BUFFER CACHE Test 5: test_hash_init!--------\n");
-	if(!test_hash_init()){
-		printf("PASS: test_hash_init!\n");
-	}else{
-		printf("FAIL: test_hash_init\n");
-	}
-
-	printf("--------Running DISK BUFFER CACHE Test 6: test_hash_free!--------\n");
-	if(!test_hash_free()){
-		printf("PASS: test_hash_free!\n");
-	}else{
-		printf("FAIL: test_hash_free\n");
-	}
-
-	printf("--------Running DISK BUFFER CACHE Test 7: test_hash_func!--------\n");
-	if(!test_hash_func()){
-		printf("PASS: test_hash_func!\n");
-	}else{
-		printf("FAIL: test_hash_func\n");
-	}
-
-	printf("--------Running DISK BUFFER CACHE Test 8: test_hash_insert!--------\n");
-	if(!test_hash_insert()){
-		printf("PASS: test_hash_insert!\n");
-	}else{
-		printf("FAIL: test_hash_insert\n");
-	}
-
-	printf("--------Running DISK BUFFER CACHE Test 9: test_hash_delete!--------\n");
-	if(!test_hash_delete()){
-		printf("PASS: test_hash_delete!\n");
-	}else{
-		printf("FAIL: test_hash_delete\n");
-	}
-
-
-
 	/*---sb tests---*/
 
-	sb* super = (sb*)malloc(sizeof(sb));
-	sb_read(super);
-	assert(super->NUM_BLOCK == 262144);
-	assert(super->blocksize == 4096);
-	assert(super->filesize == 1073741824);
-	assert(super->FREE_LIST == 131);
-	super->NUM_BLOCK-=1;
-	unsigned int new_block = super->NUM_BLOCK;	
-	sb_write(super);
-	sb_read(super);
-	assert(super->NUM_BLOCK == new_block);
+	// sb* super = (sb*)malloc(sizeof(sb));
+	// sb_read(super);
+	// assert(super->NUM_BLOCK == 262144);
+	// assert(super->blocksize == 4096);
+	// assert(super->filesize == 1073741824);
+	// assert(super->FREE_LIST == 131);
+	// super->NUM_BLOCK-=1;
+	// unsigned int new_block = super->NUM_BLOCK;	
+	// sb_write(super);
+	// sb_read(super);
+	// assert(super->NUM_BLOCK == new_block);
 
 
-	/*---db tests---*/
+	// /*---db tests---*/
 
-	unsigned int bid = db_allocate();
-	// printf("db allocated bid = %u\n", bid);
-	// printf("free list = %u\n", super->FREE_LIST);
-	assert(bid == super->FREE_LIST);
-	new_block = super->FREE_LIST+1;
-	sb_read(super);
-	//printf("%d \n",super->FREE_LIST);
-	assert(super->FREE_LIST == new_block);
-	db_free(new_block-1);
-	sb_read(super);
-	assert(super->FREE_LIST == new_block-1);
-	free(super);
+	// //unsigned int bid = db_allocate();
+	// //assert(bid == super->FREE_LIST);
+	// new_block = super->FREE_LIST+1;
+	// sb_read(super);
+	// //printf("%d \n",super->FREE_LIST);
+	// // assert(super->FREE_LIST == new_block);
+	// db_free(new_block-1);
+	// sb_read(super);
+	// assert(super->FREE_LIST == new_block-1);
+	// free(super);
 
 
 	/*---inode tests---*/
-
+	printf("-------------Running INODE Tests!-------------\n");
 	
-	printf("--------Running INODE Test 1: test_bitmap_init!--------\n");
+	printf("Test 1: test_bitmap_init!\n");
 	if(!test_bitmap_init()){
-		printf("PASS: test_bitmap_init!\n");
+		printf("	PASS: test_bitmap_init!\n");
 	}else{
-		printf("FAIL: test_bitmap_init\n");
+		printf("	FAIL: test_bitmap_init\n");
 	}
 
-	printf("--------Running INODE Test 2: test_inode_list_init!--------\n");
+	printf("Test 2: test_inode_list_init!\n");
 	if(!test_inode_list_init()){
-		printf("PASS: test_inode_list_init!\n");
+		printf("	PASS: test_inode_list_init!\n");
 	}else{
-		printf("FAIL: test_inode_list_init!\n");
+		printf("	FAIL: test_inode_list_init!\n");
 	}
 
-	printf("--------Running INODE Test 3: test_inode_allocate!--------\n");
+	printf("Test 3: test_inode_allocate!\n");
 	if(!test_inode_allocate()){
-		printf("PASS: test_inode_allocate!\n");
+		printf("	PASS: test_inode_allocate!\n");
 	}else{
-		printf("FAIL: test_inode_allocate!\n");
+		printf("	FAIL: test_inode_allocate!\n");
 	}
 
-	printf("--------Running INODE Test 4: test_inode_free!--------\n");
+	printf("Test 4: test_inode_free!\n");
 	if(!test_inode_free()){
-		printf("PASS: test_inode_free!\n");
+		printf("	PASS: test_inode_free!\n");
 	}else{
-		printf("FAIL: test_inode_free!\n");
+		printf("	FAIL: test_inode_free!\n");
 	}
 
-	printf("--------Running INODE Test 5: test_inode_mode_read_write!--------\n");
+	printf("Test 5: test_inode_mode_read_write!\n");
 	if(!test_inode_mode_read_write()){
-		printf("PASS: test_inode_mode_read_write!\n");
+		printf("	PASS: test_inode_mode_read_write!\n");
 	}else{
-		printf("FAIL: test_inode_mode_read_write!\n");
+		printf("	FAIL: test_inode_mode_read_write!\n");
 	}
 
-	printf("--------Running INODE Test 6: test_inode_link_read_reduce!--------\n");
+	printf("Test 6: test_inode_link_read_reduce!\n");
 	if(!test_inode_link_read_reduce()){
-		printf("PASS: test_inode_link_read_reduce!\n");
+		printf("	PASS: test_inode_link_read_reduce!\n");
 	}else{
-		printf("FAIL: test_inode_link_read_reduce!\n");
+		printf("	FAIL: test_inode_link_read_reduce!\n");
 	}
 
-	printf("--------Running INODE Test 7: test_inode_read_size!--------\n");
+	printf("Test 7: test_inode_read_size!\n");
 	if(!test_inode_read_size()){
-		printf("PASS: test_inode_read_size!\n");
+		printf("	PASS: test_inode_read_size!\n");
 	}else{
-		printf("FAIL: test_inode_read_size!\n");
+		printf("	FAIL: test_inode_read_size!\n");
 	}
 
-	printf("--------Running INODE Test 8: test_inode_rootnum!--------\n");
+	printf("Test 8: test_inode_rootnum!\n");
 	if(!test_inode_rootnum()){
-		printf("PASS: test_inode_rootnum!\n");
+		printf("	PASS: test_inode_rootnum!\n");
 	}else{
-		printf("FAIL: test_inode_rootnum!\n");
+		printf("	FAIL: test_inode_rootnum!\n");
 	}
 
-	printf("--------Running INODE Test 9: test_inode_read_file_direct_blo!--------\n");
+	printf("Test 9: test_inode_read_file_direct_blo!\n");
 	if(!test_inode_read_file_direct_blo()){
-		printf("PASS: test_inode_read_file_direct_blo!\n");
+		printf("	PASS: test_inode_read_file_direct_blo!\n");
 	}else{
-		printf("FAIL: test_inode_read_file_direct_blo!\n");
+		printf("	FAIL: test_inode_read_file_direct_blo!\n");
 	}
 
-	printf("--------Running INODE Test 9b: test_inode_read_file_single_indirect_blo!--------\n");
+	printf("Test 9b: test_inode_read_file_single_indirect_blo!\n");
 	if(!test_inode_read_file_single_indirect_blo()){
-		printf("PASS: test_inode_read_file_single_indirect_blo!\n");
+		printf("	PASS: test_inode_read_file_single_indirect_blo!\n");
 	}else{
-		printf("FAIL: test_inode_read_file_single_indirect_blo!\n");
+		printf("	FAIL: test_inode_read_file_single_indirect_blo!\n");
 	}
 
-	printf("--------Running INODE Test 9c: test_inode_read_file_double_indirect_blo!--------\n");
+	printf("Test 9c: test_inode_read_file_double_indirect_blo!\n");
 	if(!test_inode_read_file_double_indirect_blo()){
-		printf("PASS: test_inode_read_file_double_indirect_blo!\n");
+		printf("	PASS: test_inode_read_file_double_indirect_blo!\n");
 	}else{
-		printf("FAIL: test_inode_read_file_double_indirect_blo!\n");
+		printf("	FAIL: test_inode_read_file_double_indirect_blo!\n");
 	}
 
-	printf("--------Running INODE Test 10a: test_inode_write_file_direct_blo!--------\n");
+	printf("Test 10a: test_inode_write_file_direct_blo!\n");
 	if(!test_inode_write_file_direct_blo()){
-		printf("PASS: test_inode_write_file_direct_blo!\n");
+		printf("	PASS: test_inode_write_file_direct_blo!\n");
 	}else{
-		printf("FAIL: test_inode_write_file_direct_blo!\n");
+		printf("	FAIL: test_inode_write_file_direct_blo!\n");
 	}
 
-	printf("--------Running INODE Test 10b: test_inode_write_file_single_indirect_blo!--------\n");
+	printf("Test 10b: test_inode_write_file_single_indirect_blo!\n");
 	if(!test_inode_write_file_single_indirect_blo()){
-		printf("PASS: test_inode_write_file_single_indirect_blo!\n");
+		printf("	PASS: test_inode_write_file_single_indirect_blo!\n");
 	}else{
-		printf("FAIL: test_inode_write_file_single_indirect_blo!\n");
+		printf("	FAIL: test_inode_write_file_single_indirect_blo!\n");
 	}
 
-	printf("--------Running INODE Test 10c: test_inode_write_file_double_indirect_blo!--------\n");
+	printf("Test 10c: test_inode_write_file_double_indirect_blo!\n");
 	if(!test_inode_write_file_double_indirect_blo()){
-		printf("PASS: test_inode_write_file_double_indirect_blo!\n");
+		printf("	PASS: test_inode_write_file_double_indirect_blo!\n");
 	}else{
-		printf("FAIL: test_inode_write_file_double_indirect_blo!\n");
+		printf("	FAIL: test_inode_write_file_double_indirect_blo!\n");
 	}
 	
 	
 
 	free_disk();
-        deallocate_cache();
-        list_free();
-        hash_free();
-
+    deallocate_cache();
+    list_free();
+    hash_free();
 
 	return 0;
 }
