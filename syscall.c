@@ -32,7 +32,7 @@ int pcd_mkroot(){
 
 // get parent name, filename and parent path from path
 int get_parent(const char *path, char * parent, char * filename, char ** parentPath){
-	if(debug) fprintf(stderr, "get_parent(%s, parent, filename, parentPath)", path);
+	if(debug) fprintf(stderr, "get_parent(%s, parent, filename, parentPath)\n", path);
 	char* val = strrchr(path, '/');
 	if(val == NULL || strcmp(val,"/")==0){
 		return -1;

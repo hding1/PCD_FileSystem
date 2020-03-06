@@ -21,7 +21,7 @@ static const int debug = 1;
 
 static void *pcd_init(struct fuse_conn_info *conn)
 {
-	if(debug) fprintf(stderr, "pcd_init(fuse_conn_info)");
+	if(debug) fprintf(stderr, "pcd_init(fuse_conn_info)\n");
 	//not using conn
 	(void) conn;
 
@@ -33,11 +33,12 @@ static void *pcd_init(struct fuse_conn_info *conn)
 
 static int pcd_getattr(const char *path, struct stat *stbuf)
 {
-	if(debug) fprintf(stderr, "pcd_getattr(%s, stat)", path);
+	if(debug) fprintf(stderr, "pcd_getattr(%s, stat)\n", path);
 	memset(stbuf, 0, sizeof(struct stat));
 
 	int inum = find_inode(path);
 	if(inum == -1){
+		fprintf(stderr, "cannot find inode (got inum=%d)\n", inum);
 		return -ENOENT;
 	}
 
