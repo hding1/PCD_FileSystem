@@ -17,17 +17,15 @@
 #ifndef INODE_H_
 #define INODE_H_
 
-#define NUM_INODE 4096
-#define DIR_ID_NUM 12
-#define INDIR_ID_NUM 1024
-#define D_INDIR_ID_NUM 1024*1024
-#define T_INDIR_ID_NUM 1024*1024*1024
-#define INODE_SIZE 128
-#define ROOT_INUM 0
-#define MAX_FILE_SIZE 
-
-#define BITMAP_BID 1
-#define ILIST_BID 2
+// #define NUM_INODE 4096
+// #define DIR_ID_NUM 12
+// #define INDIR_ID_NUM 1024
+// #define D_INDIR_ID_NUM 1024*1024
+// #define T_INDIR_ID_NUM 1024*1024*1024
+// #define INODE_SIZE 128
+// #define ROOT_INUM 0
+// #define BITMAP_BID 1
+// #define ILIST_BID 2
 
 typedef struct inode{
      /* Mode: keeps information about two things, 
@@ -49,7 +47,7 @@ typedef struct inode{
      time_t last_modified;
 
      // Data blocks
-     unsigned int direct_blo[DIR_ID_NUM];
+     unsigned int direct_blo[12];
      unsigned int single_ind;
      unsigned int double_ind;
      unsigned int triple_ind;
@@ -89,17 +87,4 @@ int read_file(unsigned int inum, char* buf, int size, int offset);
 int write_file(unsigned int inum, const char* buf, int size, int offset);
 
 #endif
-
-
-
-
-// TO DO
-// 1. use sb instead hardcoded bid
-// 2. figure out how to set UID GID          DONE
-// 3. free block only free used blocks       DONE
-// 4. safety checks
-// 5. read file boundary
-// 6. add new block, the rest of the block should all be zeros
-
-
 #endif //PCD_FILESYSTEM_INODE_H_
