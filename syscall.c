@@ -257,7 +257,7 @@ int is_empty_dir(int inum){
 // Remove a file
 int pcd_unlink(const char *path)
 {
-	if(debug) fprintf(stderr, "pcd_unlink(%s)", path);
+	if(debug) fprintf(stderr, "pcd_unlink(%s)\n", path);
 	int myInum = find_inode(path);
 	if(myInum==-1){
 		perror("Error Cannot Find Inode");
@@ -321,7 +321,7 @@ mode_t FileTypeToModeT (char m) {
 // Create a node (file, device special, or named pipe)
 int pcd_mknod(const char *path, mode_t mode, dev_t rdev)
 {
-	if(debug) fprintf(stderr, "pcd_mknod(%s, mode, rdev)", path);
+	if(debug) fprintf(stderr, "pcd_mknod(%s, mode, rdev)\n", path);
 	int myInum = inode_allocate();
 	if(myInum == -1 ){
 		perror("Error Inode Allocation Failed");
@@ -372,7 +372,7 @@ int pcd_mknod(const char *path, mode_t mode, dev_t rdev)
 int pcd_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 		       off_t offset, struct fuse_file_info *fi)
 {
-	if(debug) fprintf(stderr, "pcd_readdir(%s, ...)", path);
+	if(debug) fprintf(stderr, "pcd_readdir(%s, ...)\n", path);
 	(void) offset;
 	(void) fi;
 
@@ -416,7 +416,7 @@ int pcd_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 int pcd_read(const char *path, char *buf, size_t size, off_t offset,
 		    struct fuse_file_info *fi)
 {
-	if(debug) fprintf(stderr, "pcd_read(%s, ...)", path);
+	if(debug) fprintf(stderr, "pcd_read(%s, ...)\n", path);
 	//path get inode and inum
 	int myInum = find_inode(path);
 	if(myInum==-1){
@@ -436,7 +436,7 @@ int pcd_read(const char *path, char *buf, size_t size, off_t offset,
 int pcd_write(const char *path, const char *buf, size_t size,
 		     off_t offset, struct fuse_file_info *fi)
 {
-	if(debug) fprintf(stderr, "pcd_write(%s, ...)", path);
+	if(debug) fprintf(stderr, "pcd_write(%s, ...)\n", path);
 	//path get inode and inum
 	int myInum = find_inode(path);
 	if(myInum==-1){
@@ -454,7 +454,7 @@ int pcd_write(const char *path, const char *buf, size_t size,
 //(mode & O_ACCMODE) is one of O_RDONLY, O_WRONLY and O_RDWR. The mode can also contain other flags, most notably O_APPEND.
 int pcd_open(const char *path, struct fuse_file_info *fi)
 {
-	if(debug) fprintf(stderr, "pcd_open(%s, fuse_file_info)", path);
+	if(debug) fprintf(stderr, "pcd_open(%s, fuse_file_info)\n", path);
 	int res;
 
 	res = find_inode(path);

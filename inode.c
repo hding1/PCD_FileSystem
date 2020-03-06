@@ -674,7 +674,6 @@ unsigned int get_root_inum(){
         return -1;
     }
     unsigned int ROOT_INUM = super.ROOT_INUM;
-    fprintf(stderr, "Debug: ROOT INUM = %u\n", ROOT_INUM);
     return ROOT_INUM;
 }
 
