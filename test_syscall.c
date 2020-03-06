@@ -161,6 +161,7 @@ int read_dir(void){
 }
 int main(){
 	// init file system
+	initialize("./disk");
 	mkfs();
 	// allocate space
 	test_mkdir();
