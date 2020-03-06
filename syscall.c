@@ -134,7 +134,8 @@ int find_inode(const char *path){
 // Create a directory
 int pcd_mkdir(const char *path, mode_t mode)
 {
-	if(debug) fprintf(stderr, "pcd_mkdir(%s, mode)", path);
+	if(debug) fprintf(stderr, "pcd_mkdir(%s, mode)\n", path);
+	if(debug && (mode & S_IFDIR) == 0) fprintf(stderr, "mode does not contain S_IFDIR");
 	int myInum = inode_allocate();
 	if(myInum == -1 ){
 		perror("Error Inode Allocation Failed");
