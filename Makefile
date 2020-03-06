@@ -30,6 +30,7 @@ syscall_test: test_syscall.c disk.c db.c sb.c inode.c fs.c syscall.c
 
 clean:
 	$(RM) $(targets)
+	$(RM) disk
 
 .PHONY: clean fuse
 
