@@ -5,10 +5,6 @@
 int mkfs(){
 	// init sb, inode, db, root
 
-	if(allocate_disk() == -1){
-		printf("disk allocation failed! \n");
-		return -1;
-	}
 	sb_init();
 	
 	if(inode_bitmap_init() == -1){
@@ -23,17 +19,18 @@ int mkfs(){
 
 	db_init();
 
-	allocate_cache();
-	list_init();
-	hash_init();
-
 	pcd_mkroot();
 
 	return 0;
 
 }
+void initialize(const char* path){
+	allocate_disk(path);
+	allocate_cache();
+	list_init();
+	hash_init();
+}
 void freefs(){
-
 	free_disk();
 	deallocate_cache();
 	list_free();
