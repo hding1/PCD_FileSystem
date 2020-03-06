@@ -81,11 +81,18 @@ int db_allocate(){
 			if(sb_write(super) == -1){
 				bid = -1;
 			}
+			/*
 			if(bid>super->NUM_BLOCK){
+<<<<<<< HEAD
 				//printf("bid too large \n");
 				//printf("bid = %u\n", bid);
 				//exit(0);
 			}
+=======
+				printf("bid too large \n");
+				exit(0);
+			}*/
+>>>>>>> 6cb7ea36e0c7ad64c6fa43c4d40b4265b19a8516
 			free(super);
 			free(buffer);
 			free(new_free_id);
@@ -104,10 +111,11 @@ int db_allocate(){
 		super->FREE_LIST = *new_free_id;
 	}
 	sb_write(super);
+	/*
 	if(bid>super->NUM_BLOCK){
 		printf("bid too large \n");
 		exit(0);
-	}
+	}*/
 	free(super);
 	free(buffer);
 	free(new_free_id);
