@@ -135,14 +135,13 @@ int find_inode(const char *path){
 int pcd_mkdir(const char *path, mode_t mode)
 {
 	if(debug) fprintf(stderr, "pcd_mkdir(%s, mode)\n", path);
-	if(debug && (mode & S_IFDIR) == 0) fprintf(stderr, "mode does not contain S_IFDIR");
 	int myInum = inode_allocate();
 	if(myInum == -1 ){
 		perror("Error Inode Allocation Failed");
 		return -1;
 	}
 	//set inode type
-	inode_write_mode(myInum, mode);
+	inode_write_mode(myInum, S_IFDIR | mode);
 
 	//write current node id into the parent
 	char parentName[MAX_FILE_NAME];
