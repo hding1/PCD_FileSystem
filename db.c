@@ -162,6 +162,7 @@ int db_free(unsigned int block_id){
 	void* new_free_block = calloc(DB_SIZE*sizeof(char),1);
 	memcpy(new_free_block,&bid,sizeof(unsigned int));
 	super->FREE_LIST = block_id;
+	super->NUM_FREE_BLOCK +=1;
 	if(sb_write(super) == -1){
 		return -1;
 	}
