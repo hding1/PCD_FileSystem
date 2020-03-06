@@ -1,6 +1,6 @@
 ### variables ###
 
-CFLAGS += -g -Wall -pedantic -Werror
+CFLAGS += -std=c99 -g -Wall -pedantic -Werror -U__STRICT_ANSI__
 
 files := disk.c db.c sb.c inode.c fs.c syscall.c pcd_fuse.c
 
