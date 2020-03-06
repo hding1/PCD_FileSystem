@@ -292,6 +292,7 @@ int add_block(unsigned int inum){
     free(super);
 
     int newid = db_allocate();
+    //printf("inode add block newid = %u\n", newid);
     if(newid == -1) return -1;
     inode* target_node = find_inode_by_inum(inum);
     int num = target_node->size / BLOCK_SIZE;

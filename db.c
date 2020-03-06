@@ -73,16 +73,18 @@ int db_allocate(){
 			// we found a free spot;
 			bid = *new_free_id;
 			unsigned int t = 0;
+			unsigned int write_back  =  super->FREE_LIST;
 			memcpy(((char*)buffer) + i*sizeof(unsigned int), &t, sizeof(unsigned int));
-			if(disk_write(buffer, bid)==-1){
+			if(disk_write(buffer, write_back)==-1){
 				bid = -1;
 			}
 			if(sb_write(super) == -1){
 				bid = -1;
 			}
 			if(bid>super->NUM_BLOCK){
-				printf("bid too large \n");
-				exit(0);
+				//printf("bid too large \n");
+				//printf("bid = %u\n", bid);
+				//exit(0);
 			}
 			free(super);
 			free(buffer);
@@ -93,7 +95,8 @@ int db_allocate(){
 	}
 	// now all recorded data blocks are used therefore it become a new data block;
 	memcpy(new_free_id, (buffer), sizeof(unsigned int));
-	if(*new_free_id == bid){
+	unsigned int prev  =  super->FREE_LIST;
+	if(*new_free_id == prev){
 		super->NUM_FREE_BLOCK = 0;
 		super->FREE_LIST = UINT_MAX;
 	}
@@ -108,16 +111,20 @@ int db_allocate(){
 	free(super);
 	free(buffer);
 	free(new_free_id);
-	return bid;
+	return prev;
 }
 
 int db_free(unsigned int block_id){
-
+		//printf("db free bid = %u\n", block_id);
         sb* super = (sb*)malloc(sizeof(sb));
         if(sb_read(super)==-1){
                 free(super);
                 return -1;
         }
+		if(block_id>super->NUM_BLOCK){
+			printf("db_free input bid = %u\n", block_id);
+			return -1;
+		}
 	
 	/*unsigned int temp  =  super->FREE_LIST;
 	unsigned int* temp_ptr = &temp;
@@ -150,13 +157,16 @@ int db_free(unsigned int block_id){
 	}
 	disk_read(buffer,bid);
 	unsigned int MAX_ENTRY = DB_SIZE/sizeof(unsigned int);
+	unsigned int* temp = malloc(sizeof(unsigned int));
 	for(unsigned int i = 1; i<MAX_ENTRY;i++){
-		unsigned int* temp = malloc(sizeof(unsigned int));
 		memcpy(temp, ((char*)buffer)+i*sizeof(unsigned int), sizeof(unsigned int));
 		if(*temp == 0){
 			//we found a free entry
-			memcpy(((char*)buffer) + i*sizeof(unsigned int), &block_id, sizeof(unsigned int));
-			disk_write(buffer,bid);
+			unsigned int bl_id = block_id;
+			memcpy(((char*)buffer) + i*sizeof(unsigned int), &bl_id, sizeof(unsigned int));
+			unsigned int write_back  =  super->FREE_LIST;
+			disk_write(buffer,write_back);
+			// printf("i = %d\n", i);
 			free(buffer);
 			super->NUM_FREE_BLOCK +=1;
 			sb_write(super);
@@ -169,7 +179,8 @@ int db_free(unsigned int block_id){
 	//this block is full
 	//block_id block becomes the new freeblock;
 	void* new_free_block = calloc(DB_SIZE*sizeof(char),1);
-	memcpy(new_free_block,&bid,sizeof(unsigned int));
+	unsigned int prev  =  super->FREE_LIST;
+	memcpy(new_free_block,&prev,sizeof(unsigned int));
 	super->FREE_LIST = block_id;
 	super->NUM_FREE_BLOCK +=1;
 	if(sb_write(super) == -1){
@@ -278,12 +289,12 @@ int db_init(){
 	*/
 
 	unsigned int START_DATA_BLOCK = super->START_DATA_BLOCK;
-        void* input = malloc(sizeof(char)*DB_SIZE);
+    void* input = malloc(sizeof(char)*DB_SIZE);
 	unsigned int NUM_FREE_BLOCK = super->NUM_FREE_BLOCK;
 	unsigned int MAX_ENTRY = DB_SIZE/sizeof(unsigned int);
 	unsigned int MAX_INDEX = NUM_FREE_BLOCK / MAX_ENTRY;
 	for(unsigned int i=0; i<MAX_INDEX;i++){
-		unsigned int id = (i+1)*MAX_ENTRY;
+		unsigned int id = START_DATA_BLOCK+(i+1)*MAX_ENTRY;
 		memcpy((input), &id, sizeof(unsigned int));
 		for(unsigned int j=1; j<MAX_ENTRY;j++){
 			id = START_DATA_BLOCK+i*MAX_ENTRY+j;
