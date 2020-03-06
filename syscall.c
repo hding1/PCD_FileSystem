@@ -448,7 +448,8 @@ int pcd_write(const char *path, const char *buf, size_t size,
 		perror("Error Writing File");
 		return -1;
 	}
-	return 0;
+
+	return size;
 }
 //Open path. mode is as for the system call open. 
 //(mode & O_ACCMODE) is one of O_RDONLY, O_WRONLY and O_RDWR. The mode can also contain other flags, most notably O_APPEND.
