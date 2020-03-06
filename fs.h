@@ -9,7 +9,7 @@
 #include <stdlib.h>
 
 int mkfs();
-
+void initialize(const char* path);
 void freefs();
 
 #endif //PCD_FILESYSTEM_FS_H_
