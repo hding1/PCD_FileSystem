@@ -425,11 +425,12 @@ int pcd_read(const char *path, char *buf, size_t size, off_t offset,
 	}
 	//read to buf
 	memset(buf, 0, size);
-	if(read_file(myInum, buf, size, offset)==-1){
+	int numRead = read_file(myInum, buf, size, offset);
+	if(numRead == -1){
 		perror("Error Reading File");
 		return -1;
 	}
-	return 0;
+	return numRead;
 }
 
 //Write data to the file. Should write all data.
