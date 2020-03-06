@@ -291,16 +291,16 @@ int add_block(unsigned int inum){
     unsigned int BLOCK_SIZE = super->blocksize;
     free(super);
 
-    unsigned int newid = db_allocate();
+    int newid = db_allocate();
     if(newid == -1) return -1;
     inode* target_node = find_inode_by_inum(inum);
     int num = target_node->size / BLOCK_SIZE;
     if(target_node->size % BLOCK_SIZE != 0) num++;
 
     char block[BLOCK_SIZE];
-    unsigned int ind_bid;
-    unsigned int dind_bid;
-    unsigned int tind_bid;
+    int ind_bid;
+    int dind_bid;
+    int tind_bid;
     unsigned int index;
     unsigned int d_index;
     unsigned int t_index;
