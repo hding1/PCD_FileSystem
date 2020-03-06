@@ -633,6 +633,80 @@ int test_inode_write_file_double_indirect_blo(){
 }
 
 
+/*************************************super block test helpers***************************************/
+
+int test_sb_init(){
+	char super[4096];
+	sb s;
+	db_read(super,0);
+	memcpy(&s, super, sizeof(sb));
+	if(s.NUM_BLOCK != 262144 || s.filesize != 1073741824 || s.DIR_ID_NUM != 12){
+		printf("Error: sb_init incorrectly\n");
+		return FAIL;
+	}
+	return PASS;
+}
+
+int test_sb_read(){
+	sb s;
+	if(sb_read(&s) == -1){
+		printf("Error: sb_read failed\n");
+		return FAIL;
+	}
+	if(s.NUM_BLOCK != 262144 || s.filesize != 1073741824 || s.DIR_ID_NUM != 12){
+		printf("Error: sb_init incorrectly\n");
+		return FAIL;
+	}
+	return PASS;
+}
+
+int test_sb_write(){
+	sb s;
+	if(sb_read(&s) == -1){
+		printf("Error: sb_read failed\n");
+		return FAIL;
+	}
+	s.ROOT_INUM = 1;
+	if(sb_write(&s) == -1){
+		printf("Error: sb_write failed\n");
+		return FAIL;
+	}
+	if(sb_read(&s) == -1){
+		printf("Error: sb_read failed\n");
+		return FAIL;
+	}
+	if(s.ROOT_INUM != 1){
+		printf("Error: sb_write incorrectly\n");
+		return FAIL;
+	}
+
+	return PASS;
+}
+
+
+/*************************************data block test helpers***************************************/
+
+int test_db_init(){
+	return PASS;
+}
+
+int test_db_allocate(){
+	return PASS;
+}
+
+int test_db_free(){
+	return PASS;
+}
+
+int test_db_read(){
+	return PASS;
+}
+
+int test_db_write(){
+	return PASS;
+}
+
+
 /*************************************disk buffer cache test helpers***************************************/
 
 int test_list_init(){
@@ -896,112 +970,112 @@ int main(){
    
 
 	/*---disk buffer cache tests---*/
-	printf("-------------DISK BUFFER CACHE Test!-------------\n");
+	// printf("-------------DISK BUFFER CACHE Test!-------------\n");
 
-	printf("Test 1: test_list_init!\n");
-	if(!test_list_init()){
-		printf("	PASS: test_list_init!\n");
-	}else{
-		printf("	FAIL: test_list_init!\n");
-	}
+	// printf("Test 1: test_list_init!\n");
+	// if(!test_list_init()){
+	// 	printf("	PASS: test_list_init!\n");
+	// }else{
+	// 	printf("	FAIL: test_list_init!\n");
+	// }
 
-	printf("Test 2: test_list_free!\n");
-	if(!test_list_free()){
-		printf("	PASS: test_list_free!\n");
-	}else{
-		printf("	FAIL: test_list_free!\n");
-	}
+	// printf("Test 2: test_list_free!\n");
+	// if(!test_list_free()){
+	// 	printf("	PASS: test_list_free!\n");
+	// }else{
+	// 	printf("	FAIL: test_list_free!\n");
+	// }
 
-	printf("Test 3: test_list_add!\n");
-	if(!test_list_add()){
-		printf("	PASS: test_list_add!\n");
-	}else{
-		printf("	FAIL: test_list_add!\n");
-	}
+	// printf("Test 3: test_list_add!\n");
+	// if(!test_list_add()){
+	// 	printf("	PASS: test_list_add!\n");
+	// }else{
+	// 	printf("	FAIL: test_list_add!\n");
+	// }
 
-	printf("Test 4: test_list_prioritize!\n");
-	if(!test_list_prioritize()){
-		printf("	PASS: test_list_prioritize!\n");
-	}else{
-		printf("	FAIL: test_list_prioritize!\n");
-	}
+	// printf("Test 4: test_list_prioritize!\n");
+	// if(!test_list_prioritize()){
+	// 	printf("	PASS: test_list_prioritize!\n");
+	// }else{
+	// 	printf("	FAIL: test_list_prioritize!\n");
+	// }
 
-	printf("Test 5: test_hash_init!\n");
-	if(!test_hash_init()){
-		printf("	PASS: test_hash_init!\n");
-	}else{
-		printf("	FAIL: test_hash_init!\n");
-	}
+	// printf("Test 5: test_hash_init!\n");
+	// if(!test_hash_init()){
+	// 	printf("	PASS: test_hash_init!\n");
+	// }else{
+	// 	printf("	FAIL: test_hash_init!\n");
+	// }
 
-	printf("Test 6: test_hash_free!\n");
-	if(!test_hash_free()){
-		printf("	PASS: test_hash_free!\n");
-	}else{
-		printf("	FAIL: test_hash_free!\n");
-	}
+	// printf("Test 6: test_hash_free!\n");
+	// if(!test_hash_free()){
+	// 	printf("	PASS: test_hash_free!\n");
+	// }else{
+	// 	printf("	FAIL: test_hash_free!\n");
+	// }
 
-	printf("Test 7: test_hash_func!\n");
-	if(!test_hash_func()){
-		printf("	PASS: test_hash_func!\n");
-	}else{
-		printf("	FAIL: test_hash_func!\n");
-	}
+	// printf("Test 7: test_hash_func!\n");
+	// if(!test_hash_func()){
+	// 	printf("	PASS: test_hash_func!\n");
+	// }else{
+	// 	printf("	FAIL: test_hash_func!\n");
+	// }
 
-	printf("Test 8: test_hash_insert!\n");
-	if(!test_hash_insert()){
-		printf("	PASS: test_hash_insert!\n");
-	}else{
-		printf("	FAIL: test_hash_insert!\n");
-	}
+	// printf("Test 8: test_hash_insert!\n");
+	// if(!test_hash_insert()){
+	// 	printf("	PASS: test_hash_insert!\n");
+	// }else{
+	// 	printf("	FAIL: test_hash_insert!\n");
+	// }
 
-	printf("Test 9: test_hash_delete!\n");
-	if(!test_hash_delete()){
-		printf("	PASS: test_hash_delete!\n");
-	}else{
-		printf("	FAIL: test_hash_delete!\n");
-	}
+	// printf("Test 9: test_hash_delete!\n");
+	// if(!test_hash_delete()){
+	// 	printf("	PASS: test_hash_delete!\n");
+	// }else{
+	// 	printf("	FAIL: test_hash_delete!\n");
+	// }
 
-	printf("Test 10: test_allocate_cache!\n");
-	if(!test_allocate_cache()){
-		printf("	PASS: test_allocate_cache!\n");
-	}else{
-		printf("	FAIL: test_allocate_cache!\n");
-	}
+	// printf("Test 10: test_allocate_cache!\n");
+	// if(!test_allocate_cache()){
+	// 	printf("	PASS: test_allocate_cache!\n");
+	// }else{
+	// 	printf("	FAIL: test_allocate_cache!\n");
+	// }
 
-	printf("Test 11: test_deallocate_cache!\n");
-	if(!test_deallocate_cache()){
-		printf("	PASS: test_deallocate_cache!\n");
-	}else{
-		printf("	FAIL: test_deallocate_cache!\n");
-	}
+	// printf("Test 11: test_deallocate_cache!\n");
+	// if(!test_deallocate_cache()){
+	// 	printf("	PASS: test_deallocate_cache!\n");
+	// }else{
+	// 	printf("	FAIL: test_deallocate_cache!\n");
+	// }
 
-	printf("Test 12: test_cache_to_disk!\n");
-	if(!test_cache_to_disk()){
-		printf("	PASS: test_cache_to_disk!\n");
-	}else{
-		printf("	FAIL: test_cache_to_disk!\n");
-	}
+	// printf("Test 12: test_cache_to_disk!\n");
+	// if(!test_cache_to_disk()){
+	// 	printf("	PASS: test_cache_to_disk!\n");
+	// }else{
+	// 	printf("	FAIL: test_cache_to_disk!\n");
+	// }
 
-	printf("Test 13: test_write_to_cache!\n");
-	if(!test_write_to_cache()){
-		printf("	PASS: test_write_to_cache!\n");
-	}else{
-		printf("	FAIL: test_write_to_cache!\n");
-	}
+	// printf("Test 13: test_write_to_cache!\n");
+	// if(!test_write_to_cache()){
+	// 	printf("	PASS: test_write_to_cache!\n");
+	// }else{
+	// 	printf("	FAIL: test_write_to_cache!\n");
+	// }
 
-	printf("Test 14: test_read_from_cache!\n");
-	if(!test_read_from_cache()){
-		printf("	PASS: test_read_from_cache!\n");
-	}else{
-		printf("	FAIL: test_read_from_cache!\n");
-	}
+	// printf("Test 14: test_read_from_cache!\n");
+	// if(!test_read_from_cache()){
+	// 	printf("	PASS: test_read_from_cache!\n");
+	// }else{
+	// 	printf("	FAIL: test_read_from_cache!\n");
+	// }
 
-	printf("Test 15: test_sync!\n");
-	if(!test_sync()){
-		printf("	PASS: test_sync!\n");
-	}else{
-		printf("	FAIL: test_sync!\n");
-	}
+	// printf("Test 15: test_sync!\n");
+	// if(!test_sync()){
+	// 	printf("	PASS: test_sync!\n");
+	// }else{
+	// 	printf("	FAIL: test_sync!\n");
+	// }
 
 	
 	// recreate disk buffer
@@ -1028,133 +1102,171 @@ int main(){
 
 	/*---sb tests---*/
 
-	// sb* super = (sb*)malloc(sizeof(sb));
-	// sb_read(super);
-	// assert(super->NUM_BLOCK == 262144);
-	// assert(super->blocksize == 4096);
-	// assert(super->filesize == 1073741824);
-	// assert(super->FREE_LIST == 131);
-	// super->NUM_BLOCK-=1;
-	// unsigned int new_block = super->NUM_BLOCK;	
-	// sb_write(super);
-	// sb_read(super);
-	// assert(super->NUM_BLOCK == new_block);
+	printf("-------------Running SB Tests!-------------\n");
+	
+	printf("Test 1: test_sb_init!\n");
+	if(!test_sb_init()){
+		printf("	PASS: test_sb_init!\n");
+	}else{
+		printf("	FAIL: test_sb_init\n");
+	}
+
+	printf("Test 2: test_sb_read!\n");
+	if(!test_sb_read()){
+		printf("	PASS: test_sb_read!\n");
+	}else{
+		printf("	FAIL: test_sb_read\n");
+	}
+
+	printf("Test 3: test_sb_write!\n");
+	if(!test_sb_write()){
+		printf("	PASS: test_sb_write!\n");
+	}else{
+		printf("	FAIL: test_sb_write\n");
+	}
 
 
 	// /*---db tests---*/
 
-	// //unsigned int bid = db_allocate();
-	// //assert(bid == super->FREE_LIST);
-	// new_block = super->FREE_LIST+1;
-	// sb_read(super);
-	// //printf("%d \n",super->FREE_LIST);
-	// // assert(super->FREE_LIST == new_block);
-	// db_free(new_block-1);
-	// sb_read(super);
-	// assert(super->FREE_LIST == new_block-1);
-	// free(super);
+	printf("-------------Running DB Tests!-------------\n");
+
+		printf("Test 1: test_db_init!\n");
+	if(!test_db_init()){
+		printf("	PASS: test_db_init!\n");
+	}else{
+		printf("	FAIL: test_db_init\n");
+	}
+
+		printf("Test 2: test_db_allocate!\n");
+	if(!test_db_allocate()){
+		printf("	PASS: test_db_allocate!\n");
+	}else{
+		printf("	FAIL: test_db_allocate\n");
+	}
+
+		printf("Test 3: test_db_free!\n");
+	if(!test_db_free()){
+		printf("	PASS: test_db_free!\n");
+	}else{
+		printf("	FAIL: test_db_free\n");
+	}
+
+		printf("Test 4: test_db_read!\n");
+	if(!test_db_read()){
+		printf("	PASS: test_db_read!\n");
+	}else{
+		printf("	FAIL: test_db_read\n");
+	}
+
+		printf("Test 5: test_db_write!\n");
+	if(!test_db_write()){
+		printf("	PASS: test_db_write!\n");
+	}else{
+		printf("	FAIL: test_db_write\n");
+	}
+	
 
 
 	/*---inode tests---*/
 	printf("-------------Running INODE Tests!-------------\n");
 	
-	printf("Test 1: test_bitmap_init!\n");
-	if(!test_bitmap_init()){
-		printf("	PASS: test_bitmap_init!\n");
-	}else{
-		printf("	FAIL: test_bitmap_init\n");
-	}
+	// printf("Test 1: test_bitmap_init!\n");
+	// if(!test_bitmap_init()){
+	// 	printf("	PASS: test_bitmap_init!\n");
+	// }else{
+	// 	printf("	FAIL: test_bitmap_init\n");
+	// }
 
-	printf("Test 2: test_inode_list_init!\n");
-	if(!test_inode_list_init()){
-		printf("	PASS: test_inode_list_init!\n");
-	}else{
-		printf("	FAIL: test_inode_list_init!\n");
-	}
+	// printf("Test 2: test_inode_list_init!\n");
+	// if(!test_inode_list_init()){
+	// 	printf("	PASS: test_inode_list_init!\n");
+	// }else{
+	// 	printf("	FAIL: test_inode_list_init!\n");
+	// }
 
-	printf("Test 3: test_inode_allocate!\n");
-	if(!test_inode_allocate()){
-		printf("	PASS: test_inode_allocate!\n");
-	}else{
-		printf("	FAIL: test_inode_allocate!\n");
-	}
+	// printf("Test 3: test_inode_allocate!\n");
+	// if(!test_inode_allocate()){
+	// 	printf("	PASS: test_inode_allocate!\n");
+	// }else{
+	// 	printf("	FAIL: test_inode_allocate!\n");
+	// }
 
-	printf("Test 4: test_inode_free!\n");
-	if(!test_inode_free()){
-		printf("	PASS: test_inode_free!\n");
-	}else{
-		printf("	FAIL: test_inode_free!\n");
-	}
+	// printf("Test 4: test_inode_free!\n");
+	// if(!test_inode_free()){
+	// 	printf("	PASS: test_inode_free!\n");
+	// }else{
+	// 	printf("	FAIL: test_inode_free!\n");
+	// }
 
-	printf("Test 5: test_inode_mode_read_write!\n");
-	if(!test_inode_mode_read_write()){
-		printf("	PASS: test_inode_mode_read_write!\n");
-	}else{
-		printf("	FAIL: test_inode_mode_read_write!\n");
-	}
+	// printf("Test 5: test_inode_mode_read_write!\n");
+	// if(!test_inode_mode_read_write()){
+	// 	printf("	PASS: test_inode_mode_read_write!\n");
+	// }else{
+	// 	printf("	FAIL: test_inode_mode_read_write!\n");
+	// }
 
-	printf("Test 6: test_inode_link_read_reduce!\n");
-	if(!test_inode_link_read_reduce()){
-		printf("	PASS: test_inode_link_read_reduce!\n");
-	}else{
-		printf("	FAIL: test_inode_link_read_reduce!\n");
-	}
+	// printf("Test 6: test_inode_link_read_reduce!\n");
+	// if(!test_inode_link_read_reduce()){
+	// 	printf("	PASS: test_inode_link_read_reduce!\n");
+	// }else{
+	// 	printf("	FAIL: test_inode_link_read_reduce!\n");
+	// }
 
-	printf("Test 7: test_inode_read_size!\n");
-	if(!test_inode_read_size()){
-		printf("	PASS: test_inode_read_size!\n");
-	}else{
-		printf("	FAIL: test_inode_read_size!\n");
-	}
+	// printf("Test 7: test_inode_read_size!\n");
+	// if(!test_inode_read_size()){
+	// 	printf("	PASS: test_inode_read_size!\n");
+	// }else{
+	// 	printf("	FAIL: test_inode_read_size!\n");
+	// }
 
-	printf("Test 8: test_inode_rootnum!\n");
-	if(!test_inode_rootnum()){
-		printf("	PASS: test_inode_rootnum!\n");
-	}else{
-		printf("	FAIL: test_inode_rootnum!\n");
-	}
+	// printf("Test 8: test_inode_rootnum!\n");
+	// if(!test_inode_rootnum()){
+	// 	printf("	PASS: test_inode_rootnum!\n");
+	// }else{
+	// 	printf("	FAIL: test_inode_rootnum!\n");
+	// }
 
-	printf("Test 9: test_inode_read_file_direct_blo!\n");
-	if(!test_inode_read_file_direct_blo()){
-		printf("	PASS: test_inode_read_file_direct_blo!\n");
-	}else{
-		printf("	FAIL: test_inode_read_file_direct_blo!\n");
-	}
+	// printf("Test 9: test_inode_read_file_direct_blo!\n");
+	// if(!test_inode_read_file_direct_blo()){
+	// 	printf("	PASS: test_inode_read_file_direct_blo!\n");
+	// }else{
+	// 	printf("	FAIL: test_inode_read_file_direct_blo!\n");
+	// }
 
-	printf("Test 9b: test_inode_read_file_single_indirect_blo!\n");
-	if(!test_inode_read_file_single_indirect_blo()){
-		printf("	PASS: test_inode_read_file_single_indirect_blo!\n");
-	}else{
-		printf("	FAIL: test_inode_read_file_single_indirect_blo!\n");
-	}
+	// printf("Test 9b: test_inode_read_file_single_indirect_blo!\n");
+	// if(!test_inode_read_file_single_indirect_blo()){
+	// 	printf("	PASS: test_inode_read_file_single_indirect_blo!\n");
+	// }else{
+	// 	printf("	FAIL: test_inode_read_file_single_indirect_blo!\n");
+	// }
 
-	printf("Test 9c: test_inode_read_file_double_indirect_blo!\n");
-	if(!test_inode_read_file_double_indirect_blo()){
-		printf("	PASS: test_inode_read_file_double_indirect_blo!\n");
-	}else{
-		printf("	FAIL: test_inode_read_file_double_indirect_blo!\n");
-	}
+	// printf("Test 9c: test_inode_read_file_double_indirect_blo!\n");
+	// if(!test_inode_read_file_double_indirect_blo()){
+	// 	printf("	PASS: test_inode_read_file_double_indirect_blo!\n");
+	// }else{
+	// 	printf("	FAIL: test_inode_read_file_double_indirect_blo!\n");
+	// }
 
-	printf("Test 10a: test_inode_write_file_direct_blo!\n");
-	if(!test_inode_write_file_direct_blo()){
-		printf("	PASS: test_inode_write_file_direct_blo!\n");
-	}else{
-		printf("	FAIL: test_inode_write_file_direct_blo!\n");
-	}
+	// printf("Test 10a: test_inode_write_file_direct_blo!\n");
+	// if(!test_inode_write_file_direct_blo()){
+	// 	printf("	PASS: test_inode_write_file_direct_blo!\n");
+	// }else{
+	// 	printf("	FAIL: test_inode_write_file_direct_blo!\n");
+	// }
 
-	printf("Test 10b: test_inode_write_file_single_indirect_blo!\n");
-	if(!test_inode_write_file_single_indirect_blo()){
-		printf("	PASS: test_inode_write_file_single_indirect_blo!\n");
-	}else{
-		printf("	FAIL: test_inode_write_file_single_indirect_blo!\n");
-	}
+	// printf("Test 10b: test_inode_write_file_single_indirect_blo!\n");
+	// if(!test_inode_write_file_single_indirect_blo()){
+	// 	printf("	PASS: test_inode_write_file_single_indirect_blo!\n");
+	// }else{
+	// 	printf("	FAIL: test_inode_write_file_single_indirect_blo!\n");
+	// }
 
-	printf("Test 10c: test_inode_write_file_double_indirect_blo!\n");
-	if(!test_inode_write_file_double_indirect_blo()){
-		printf("	PASS: test_inode_write_file_double_indirect_blo!\n");
-	}else{
-		printf("	FAIL: test_inode_write_file_double_indirect_blo!\n");
-	}
+	// printf("Test 10c: test_inode_write_file_double_indirect_blo!\n");
+	// if(!test_inode_write_file_double_indirect_blo()){
+	// 	printf("	PASS: test_inode_write_file_double_indirect_blo!\n");
+	// }else{
+	// 	printf("	FAIL: test_inode_write_file_double_indirect_blo!\n");
+	// }
 	
 	
 
