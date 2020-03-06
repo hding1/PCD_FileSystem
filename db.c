@@ -288,7 +288,7 @@ int db_init(){
 	}
 	int any_left = NUM_FREE_BLOCK - MAX_INDEX * MAX_ENTRY;
 	free(input);
-	void* input = calloc(sizeof(char)*DB_SIZE, 1); 
+	input = calloc(sizeof(char)*DB_SIZE, 1); 
 	if(any_left > 0){
 		//there are a few blocks left
 		for(unsigned int i = 0; i<any_left; i++){
