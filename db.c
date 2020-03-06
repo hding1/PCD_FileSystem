@@ -29,7 +29,7 @@ int db_allocate(){
 	else{	
 		super->NUM_FREE_BLOCK-=1;
 	}
-	void* buffer = malloc(sizeof(char) * DB_SIZE);
+	void* buffer = calloc(sizeof(char) * DB_SIZE,1);
 	
 	if(disk_read(buffer,bid) == -1){
 		return -1;
@@ -64,6 +64,7 @@ int db_allocate(){
 	free(buffer);
 	free(new_free_id);
 	return bid;*/
+
 	unsigned int MAX_ENTRY = DB_SIZE/sizeof(unsigned int);
 	unsigned int i;
 	for(i=1; i<MAX_ENTRY;i++){
@@ -161,6 +162,7 @@ int db_free(unsigned int block_id){
 	void* new_free_block = calloc(DB_SIZE*sizeof(char),1);
 	memcpy(new_free_block,&bid,sizeof(unsigned int));
 	super->FREE_LIST = block_id;
+	super->NUM_FREE_BLOCK +=1;
 	if(sb_write(super) == -1){
 		return -1;
 	}
