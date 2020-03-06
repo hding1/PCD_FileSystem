@@ -104,7 +104,7 @@ int test_inode_allocate(){
 
 int test_inode_free(){
 	unsigned long numbs = 12 + 1024 + 1024 + 1;
-	unsigned int dbs[numbs];
+	//unsigned int dbs[numbs];
 	int bid;
 
 	int inum = inode_allocate();
@@ -125,7 +125,7 @@ int test_inode_free(){
 		target_node->size += 4096;
 		write_inode_to_disk(inum,target_node);
 
-		dbs[i] = bid;
+		//dbs[i] = bid;
 		//printf("test_inode_free: bid%lu = %d\n", i, dbs[i]);
 	}
 

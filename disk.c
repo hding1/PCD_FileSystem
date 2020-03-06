@@ -68,6 +68,7 @@ void sync(){
 			}
 			head->dirty=0;
 		}
+		head = head->next;
 	}
 }
 
@@ -137,13 +138,13 @@ void list_init(){
 }
 
 void list_free(){
-	List_Node* temp;
-	for(unsigned int i = 1; i<BUFFER_NUM; i++){
-		temp = list_head;
-		list_head = list_head->next;
-		free(temp);
+	List_Node* curr = list_head;
+	List_Node* next;
+	while(curr!=NULL){
+		next = curr->next;
+		free(curr);
+		curr = next;
 	}
-	free(list_head);
 }
 void list_add(unsigned int block_id, void* buffer, int dirty){
 	List_Node* end = list_tail;
