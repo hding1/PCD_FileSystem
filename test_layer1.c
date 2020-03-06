@@ -691,10 +691,40 @@ int test_db_init(){
 }
 
 int test_db_allocate(){
+	unsigned int bid;
+	for(int i = 0; i < 262013; i++){
+		bid = db_allocate();
+		if(bid < 0 || bid > 262144){
+			printf("Error: db_allocate failed at %dth block!\n", i);
+			return FAIL;
+		}
+	}
+	sb mysb;
+	if(sb_read(&mysb) == -1){
+		printf("Error: sb_read failed!\n");
+		return FAIL;
+	}
+	if(mysb.NUM_FREE_BLOCK != 0){
+		printf("Error: num free block incorrect!\n");
+		return FAIL;
+	}
 	return PASS;
 }
 
 int test_db_free(){
+	for(unsigned int bid = 131; bid < 262144; bid++){
+		db_free(bid);
+	}
+	sb mysb;
+	if(sb_read(&mysb) == -1){
+		printf("Error: sb_read failed!\n");
+		return FAIL;
+	}
+	if(mysb.NUM_FREE_BLOCK != 262013){
+		printf("Error: num free block incorrect!\n");
+		return FAIL;
+	}
+
 	return PASS;
 }
 
@@ -943,9 +973,7 @@ int test_sync(){
 	buffer[0] = 'D';
 	char out[4096];
 	list_add(251,buffer, 1);
-			printf("111\n");
 	sync();
-			printf("222\n");
 	disk_read(out,251);
 	if(out[0] != 'D'){
 		printf("Error: test_sync failed!\n");
@@ -970,7 +998,7 @@ int main(){
    
 
 	/*---disk buffer cache tests---*/
-	// printf("-------------DISK BUFFER CACHE Test!-------------\n");
+	printf("-------------DISK BUFFER CACHE Test!-------------\n");
 
 	// printf("Test 1: test_list_init!\n");
 	// if(!test_list_init()){
@@ -1104,26 +1132,26 @@ int main(){
 
 	printf("-------------Running SB Tests!-------------\n");
 	
-	printf("Test 1: test_sb_init!\n");
-	if(!test_sb_init()){
-		printf("	PASS: test_sb_init!\n");
-	}else{
-		printf("	FAIL: test_sb_init\n");
-	}
+	// printf("Test 1: test_sb_init!\n");
+	// if(!test_sb_init()){
+	// 	printf("	PASS: test_sb_init!\n");
+	// }else{
+	// 	printf("	FAIL: test_sb_init\n");
+	// }
 
-	printf("Test 2: test_sb_read!\n");
-	if(!test_sb_read()){
-		printf("	PASS: test_sb_read!\n");
-	}else{
-		printf("	FAIL: test_sb_read\n");
-	}
+	// printf("Test 2: test_sb_read!\n");
+	// if(!test_sb_read()){
+	// 	printf("	PASS: test_sb_read!\n");
+	// }else{
+	// 	printf("	FAIL: test_sb_read\n");
+	// }
 
-	printf("Test 3: test_sb_write!\n");
-	if(!test_sb_write()){
-		printf("	PASS: test_sb_write!\n");
-	}else{
-		printf("	FAIL: test_sb_write\n");
-	}
+	// printf("Test 3: test_sb_write!\n");
+	// if(!test_sb_write()){
+	// 	printf("	PASS: test_sb_write!\n");
+	// }else{
+	// 	printf("	FAIL: test_sb_write\n");
+	// }
 
 
 	// /*---db tests---*/

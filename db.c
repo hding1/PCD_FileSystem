@@ -212,7 +212,7 @@ int db_read(void* out, unsigned int block_id){
 
 	if(block_id > super->NUM_BLOCK){
 		free(super);
-		printf("block id %u too large to read \n",block_id);
+		//printf("block id %u too large to read \n",block_id);
 		return -1;		
 	}
 	if(disk_read(out,block_id) == -1){
@@ -229,7 +229,7 @@ int db_write(void* in, unsigned int block_id){
 	}
 	if(block_id > super->NUM_BLOCK){
 		free(super);
-		printf("block %u id too large to write \n", block_id);
+		//printf("block %u id too large to write \n", block_id);
 		return -1;
 	}
 	if(disk_write(in, block_id) == -1){
