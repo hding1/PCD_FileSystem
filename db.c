@@ -83,16 +83,9 @@ int db_allocate(){
 			}
 			/*
 			if(bid>super->NUM_BLOCK){
-<<<<<<< HEAD
-				//printf("bid too large \n");
-				//printf("bid = %u\n", bid);
-				//exit(0);
-			}
-=======
 				printf("bid too large \n");
 				exit(0);
 			}*/
->>>>>>> 6cb7ea36e0c7ad64c6fa43c4d40b4265b19a8516
 			free(super);
 			free(buffer);
 			free(new_free_id);
