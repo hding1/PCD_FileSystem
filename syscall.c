@@ -13,7 +13,7 @@
 static const int debug = 1;
 
 int pcd_mkroot(){
-	if(debug) fprintf(stderr, "pcd_mkroot()");
+	if(debug) fprintf(stderr, "pcd_mkroot()\n");
 	int myInum = inode_allocate();
 	//write . and .. to the inode
 	dirent dir1 = {myInum,'d',"."};
@@ -27,6 +27,8 @@ int pcd_mkroot(){
 		perror("Error Writing to File");
 		return -EIO;
 	}
+
+	inode_write_mode(myInum, S_IFDIR | 0755);
 	return 0;
 }
 
