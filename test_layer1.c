@@ -679,7 +679,11 @@ int test_sb_write(){
 		printf("Error: sb_write incorrectly\n");
 		return FAIL;
 	}
-
+	s.ROOT_INUM = 0;
+	if(sb_write(&s) == -1){
+		printf("Error: sb_write failed\n");
+		return FAIL;
+	}
 	return PASS;
 }
 

@@ -668,10 +668,13 @@ int inode_reduce_link_count(unsigned int inum){
 }
 
 unsigned int get_root_inum(){
-    sb* super = (sb*) malloc(sizeof(sb));
-    if(sb_read(super) == -1) return -1;
-    unsigned int ROOT_INUM = super->ROOT_INUM;
-    free(super);
+    sb super;
+    if(sb_read(&super) == -1){
+        //printf("sb read failed\n");
+        return -1;
+    }
+    unsigned int ROOT_INUM = super.ROOT_INUM;
+    //printf("ROOT INUM = %u\n", ROOT_INUM);
     return ROOT_INUM;
 }
 
