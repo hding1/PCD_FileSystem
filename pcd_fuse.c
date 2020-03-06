@@ -1,5 +1,5 @@
 
-#define FUSE_USE_VERSION 31
+#define FUSE_USE_VERSION 29
 
 #include <fuse.h>
 #include <stdio.h>
@@ -17,8 +17,11 @@
 #include "syscall.h"
 #include "dir.h"
 
+static const int debug = 1;
+
 static void *pcd_init(struct fuse_conn_info *conn)
 {
+	if(debug) fprintf(stderr, "pcd_init(fuse_conn_info)");
 	//not using conn
 	(void) conn;
 
@@ -30,7 +33,7 @@ static void *pcd_init(struct fuse_conn_info *conn)
 
 static int pcd_getattr(const char *path, struct stat *stbuf)
 {
-
+	if(debug) fprintf(stderr, "pcd_getattr(%s, stat)", path);
 	memset(stbuf, 0, sizeof(struct stat));
 
 	int inum = find_inode(path);

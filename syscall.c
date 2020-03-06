@@ -1,4 +1,4 @@
-#define FUSE_USE_VERSION 31
+#define FUSE_USE_VERSION 29
 
 #include <fuse.h>
 #include <string.h>
@@ -10,7 +10,10 @@
 #include "dir.h"
 #include "inode.h"
 
+static const int debug = 1;
+
 int pcd_mkroot(){
+	if(debug) fprintf(stderr, "pcd_mkroot()");
 	int myInum = inode_allocate();
 	//write . and .. to the inode
 	dirent dir1 = {myInum,'d',"."};
@@ -29,6 +32,7 @@ int pcd_mkroot(){
 
 // get parent name, filename and parent path from path
 int get_parent(const char *path, char * parent, char * filename, char ** parentPath){
+	if(debug) fprintf(stderr, "get_parent(%s, parent, filename, parentPath)", path);
 	char* val = strrchr(path, '/');
 	if(val == NULL || strcmp(val,"/")==0){
 		return -1;
@@ -128,6 +132,7 @@ int find_inode(const char *path){
 // Create a directory
 int pcd_mkdir(const char *path, mode_t mode)
 {
+	if(debug) fprintf(stderr, "pcd_mkdir(%s, mode)", path);
 	int myInum = inode_allocate();
 	if(myInum == -1 ){
 		perror("Error Inode Allocation Failed");
@@ -250,6 +255,7 @@ int is_empty_dir(int inum){
 // Remove a file
 int pcd_unlink(const char *path)
 {
+	if(debug) fprintf(stderr, "pcd_unlink(%s)", path);
 	int myInum = find_inode(path);
 	if(myInum==-1){
 		perror("Error Cannot Find Inode");
@@ -313,6 +319,7 @@ mode_t FileTypeToModeT (char m) {
 // Create a node (file, device special, or named pipe)
 int pcd_mknod(const char *path, mode_t mode, dev_t rdev)
 {
+	if(debug) fprintf(stderr, "pcd_mknod(%s, mode, rdev)", path);
 	int myInum = inode_allocate();
 	if(myInum == -1 ){
 		perror("Error Inode Allocation Failed");
@@ -363,6 +370,7 @@ int pcd_mknod(const char *path, mode_t mode, dev_t rdev)
 int pcd_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 		       off_t offset, struct fuse_file_info *fi)
 {
+	if(debug) fprintf(stderr, "pcd_readdir(%s, ...)", path);
 	(void) offset;
 	(void) fi;
 
@@ -406,6 +414,7 @@ int pcd_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 int pcd_read(const char *path, char *buf, size_t size, off_t offset,
 		    struct fuse_file_info *fi)
 {
+	if(debug) fprintf(stderr, "pcd_read(%s, ...)", path);
 	//path get inode and inum
 	int myInum = find_inode(path);
 	if(myInum==-1){
@@ -425,6 +434,7 @@ int pcd_read(const char *path, char *buf, size_t size, off_t offset,
 int pcd_write(const char *path, const char *buf, size_t size,
 		     off_t offset, struct fuse_file_info *fi)
 {
+	if(debug) fprintf(stderr, "pcd_write(%s, ...)", path);
 	//path get inode and inum
 	int myInum = find_inode(path);
 	if(myInum==-1){
@@ -442,6 +452,7 @@ int pcd_write(const char *path, const char *buf, size_t size,
 //(mode & O_ACCMODE) is one of O_RDONLY, O_WRONLY and O_RDWR. The mode can also contain other flags, most notably O_APPEND.
 int pcd_open(const char *path, struct fuse_file_info *fi)
 {
+	if(debug) fprintf(stderr, "pcd_open(%s, fuse_file_info)", path);
 	int res;
 
 	res = find_inode(path);

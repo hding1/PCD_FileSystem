@@ -1023,5 +1023,6 @@ dkms.conf
 # custom .gitignore rules
 *_test
 pcd_fuse
+disk
 
 !Makefile
