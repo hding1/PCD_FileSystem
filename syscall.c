@@ -413,6 +413,7 @@ int pcd_read(const char *path, char *buf, size_t size, off_t offset,
 		return -1;
 	}
 	//read to buf
+	memset(buf, 0, size);
 	if(read_file(myInum, buf, size, offset)==-1){
 		perror("Error Reading File");
 		return -1;

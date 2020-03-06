@@ -113,11 +113,12 @@ int test_read(void){
 	printf("Testing read\n");
 	const char* path1 = "/dir1/dir2/test.txt";
 	printf("Reading from path '%s'\n",path1);
-	char* buf1 = (char *)malloc(20);
+	char* buf1 = (char *)malloc(21);
 	if(pcd_read(path1, buf1, 20, 0, 0)){
 		printf("Read Failed");
 		return -1;
 	}
+	buf1[20] = '\0';
 	printf("Message Read: '%s'\n",buf1);
 	const char* path2 = "/dir1/dir2";
 	printf("Directory Read: %s\n",path2);
