@@ -6,11 +6,10 @@
 /*********************************Init functions************************************/
 int inode_bitmap_init(){
 
-    sb* super = (sb*) malloc(sizeof(sb));
-    if(sb_read(super) == -1) return -1;
-	unsigned int NUM_INODE = super->MAX_NUM_INODE;
-    unsigned int BITMAP_BID = super->START_BITMAP;
-    free(super);
+    sb super;
+    if(sb_read(&super) == -1) return -1;
+	unsigned int NUM_INODE = super.MAX_NUM_INODE;
+    unsigned int BITMAP_BID = super.START_BITMAP;
 
     // Create a bitmap of size NUM_INODE, set all inodes to be free
     unsigned short bitmap[NUM_INODE];
@@ -28,14 +27,13 @@ int inode_bitmap_init(){
 
 int inode_list_init(){
 
-    sb* super = (sb*) malloc(sizeof(sb));
-    if(sb_read(super) == -1) return -1;
-	unsigned int NUM_INODE  =  super->MAX_NUM_INODE;
-    unsigned int DIR_ID_NUM = super->DIR_ID_NUM;
-    unsigned int INODE_SIZE = super->INODE_SIZE;
-    unsigned int ILIST_BID = super->START_ILIST;
-    unsigned int BLOCK_SIZE = super->blocksize;
-    free(super);
+    sb super;
+    if(sb_read(&super) == -1) return -1;
+	unsigned int NUM_INODE  =  super.MAX_NUM_INODE;
+    unsigned int DIR_ID_NUM = super.DIR_ID_NUM;
+    unsigned int INODE_SIZE = super.INODE_SIZE;
+    unsigned int ILIST_BID = super.START_ILIST;
+    unsigned int BLOCK_SIZE = super.blocksize;
 
     // Create a default inode struct
     inode node;
@@ -72,11 +70,10 @@ int inode_list_init(){
 
 int find_free_inode(){
 
-    sb* super = (sb*) malloc(sizeof(sb));
-    if(sb_read(super) == -1) return -1;
-	unsigned int NUM_INODE  =  super->MAX_NUM_INODE;
-    unsigned int BITMAP_BID = super->START_BITMAP;
-    free(super);
+    sb super;
+    if(sb_read(&super) == -1) return -1;
+	unsigned int NUM_INODE  =  super.MAX_NUM_INODE;
+    unsigned int BITMAP_BID = super.START_BITMAP;
 
     // Bring the bitmap from disk to memory
     unsigned short bitmap[NUM_INODE];
@@ -95,15 +92,14 @@ int find_free_inode(){
 
 inode* find_inode_by_inum(unsigned int inum){
 
-    sb* super = (sb*) malloc(sizeof(sb));
-    if(sb_read(super) == -1) return NULL;
-	unsigned int NUM_INODE  =  super->MAX_NUM_INODE;
-    unsigned int ROOT_INUM = super->ROOT_INUM;
-    unsigned int BITMAP_BID = super->START_BITMAP;
-    unsigned int ILIST_BID = super->START_ILIST;
-    unsigned int INODE_SIZE = super->INODE_SIZE;
-    unsigned int BLOCK_SIZE = super->blocksize;
-    free(super);
+    sb super;
+    if(sb_read(&super) == -1) return NULL;
+	unsigned int NUM_INODE  =  super.MAX_NUM_INODE;
+    unsigned int ROOT_INUM = super.ROOT_INUM;
+    unsigned int BITMAP_BID = super.START_BITMAP;
+    unsigned int ILIST_BID = super.START_ILIST;
+    unsigned int INODE_SIZE = super.INODE_SIZE;
+    unsigned int BLOCK_SIZE = super.blocksize;
 
     if(inum < ROOT_INUM || inum > NUM_INODE - 1){
         return NULL;
@@ -129,14 +125,13 @@ inode* find_inode_by_inum(unsigned int inum){
 
 int write_inode_to_disk(unsigned int inum, inode* target_node){
     
-    sb* super = (sb*) malloc(sizeof(sb));
-    if(sb_read(super) == -1) return -1;
-	unsigned int NUM_INODE  =  super->MAX_NUM_INODE;
-    unsigned int ROOT_INUM = super->ROOT_INUM;
-    unsigned int ILIST_BID = super->START_ILIST;
-    unsigned int INODE_SIZE = super->INODE_SIZE;
-    unsigned int BLOCK_SIZE = super->blocksize;
-    free(super);
+    sb super;
+    if(sb_read(&super) == -1) return -1;
+	unsigned int NUM_INODE  =  super.MAX_NUM_INODE;
+    unsigned int ROOT_INUM = super.ROOT_INUM;
+    unsigned int ILIST_BID = super.START_ILIST;
+    unsigned int INODE_SIZE = super.INODE_SIZE;
+    unsigned int BLOCK_SIZE = super.blocksize;
 
     if(inum < ROOT_INUM || inum > NUM_INODE - 1){
         return -1;
@@ -155,11 +150,10 @@ int write_inode_to_disk(unsigned int inum, inode* target_node){
 }
 
 int free_indblo_by_bid(unsigned int bid){
-    sb* super = (sb*) malloc(sizeof(sb));
-    if(sb_read(super) == -1) return -1;
-    unsigned int INDIR_ID_NUM = super->INDIR_ID_NUM;
-    unsigned int BLOCK_SIZE = super->blocksize;
-    free(super);
+    sb super;
+    if(sb_read(&super) == -1) return -1;
+    unsigned int INDIR_ID_NUM = super.INDIR_ID_NUM;
+    unsigned int BLOCK_SIZE = super.blocksize;
 
     if(bid == 0) return 0;  // Unused
     char block[BLOCK_SIZE];
@@ -177,11 +171,10 @@ int free_indblo_by_bid(unsigned int bid){
 }
 
 int free_dindblo_by_bid(unsigned int bid){
-    sb* super = (sb*) malloc(sizeof(sb));
-    if(sb_read(super) == -1) return -1;
-    unsigned int INDIR_ID_NUM = super->INDIR_ID_NUM;
-    unsigned int BLOCK_SIZE = super->blocksize;
-    free(super);
+    sb super;
+    if(sb_read(&super) == -1) return -1;
+    unsigned int INDIR_ID_NUM = super.INDIR_ID_NUM;
+    unsigned int BLOCK_SIZE = super.blocksize;
 
     if(bid == 0) return 0;  // Unused
     char block[BLOCK_SIZE];
@@ -197,11 +190,10 @@ int free_dindblo_by_bid(unsigned int bid){
 }
 
 int free_tindblo_by_bid(unsigned int bid){
-    sb* super = (sb*) malloc(sizeof(sb));
-    if(sb_read(super) == -1) return -1;
-    unsigned int INDIR_ID_NUM = super->INDIR_ID_NUM;
-    unsigned int BLOCK_SIZE = super->blocksize;
-    free(super);
+    sb super;
+    if(sb_read(&super) == -1) return -1;
+    unsigned int INDIR_ID_NUM = super.INDIR_ID_NUM;
+    unsigned int BLOCK_SIZE = super.blocksize;
 
     if(bid == 0) return 0;  // Unused
     char block[BLOCK_SIZE];
@@ -217,14 +209,13 @@ int free_tindblo_by_bid(unsigned int bid){
 }
 
 unsigned int find_block_by_num(unsigned int inum, unsigned int num){
-    sb* super = (sb*) malloc(sizeof(sb));
-    if(sb_read(super) == -1) return -1;
-    unsigned int DIR_ID_NUM = super->DIR_ID_NUM;
-    unsigned int INDIR_ID_NUM = super->INDIR_ID_NUM;
-    unsigned int D_INDIR_ID_NUM = super->D_INDIR_ID_NUM;
-    unsigned int T_INDIR_ID_NUM = super->T_INDIR_ID_NUM;
-    unsigned int BLOCK_SIZE = super->blocksize;
-    free(super);
+    sb super;
+    if(sb_read(&super) == -1) return -1;
+    unsigned int DIR_ID_NUM = super.DIR_ID_NUM;
+    unsigned int INDIR_ID_NUM = super.INDIR_ID_NUM;
+    unsigned int D_INDIR_ID_NUM = super.D_INDIR_ID_NUM;
+    unsigned int T_INDIR_ID_NUM = super.T_INDIR_ID_NUM;
+    unsigned int BLOCK_SIZE = super.blocksize;
 
     inode* target_node = find_inode_by_inum(inum);
     char block[BLOCK_SIZE];
@@ -282,14 +273,13 @@ int write_block_by_num(unsigned int inum, unsigned int num, char* block){
 }
 
 int add_block(unsigned int inum){
-    sb* super = (sb*) malloc(sizeof(sb));
-    if(sb_read(super) == -1) return -1;
-    unsigned int DIR_ID_NUM = super->DIR_ID_NUM;
-    unsigned int INDIR_ID_NUM = super->INDIR_ID_NUM;
-    unsigned int D_INDIR_ID_NUM = super->D_INDIR_ID_NUM;
-    unsigned int T_INDIR_ID_NUM = super->T_INDIR_ID_NUM;
-    unsigned int BLOCK_SIZE = super->blocksize;
-    free(super);
+    sb super;
+    if(sb_read(&super) == -1) return -1;
+    unsigned int DIR_ID_NUM = super.DIR_ID_NUM;
+    unsigned int INDIR_ID_NUM = super.INDIR_ID_NUM;
+    unsigned int D_INDIR_ID_NUM = super.D_INDIR_ID_NUM;
+    unsigned int T_INDIR_ID_NUM = super.T_INDIR_ID_NUM;
+    unsigned int BLOCK_SIZE = super.blocksize;
 
     int newid = db_allocate();
     //printf("inode add block newid = %u\n", newid);
@@ -512,10 +502,9 @@ int set_inode_size(unsigned int inum, unsigned long size){
 /******************************************Inode opertaions***********************************************/
 
 int inode_allocate(){
-    sb* super = (sb*) malloc(sizeof(sb));
-    if(sb_read(super) == -1) return -1;
-    unsigned int DIR_ID_NUM = super->DIR_ID_NUM;
-    free(super);
+    sb super;
+    if(sb_read(&super) == -1) return -1;
+    unsigned int DIR_ID_NUM = super.DIR_ID_NUM;
 
     // Find a opening in the bitmap
     unsigned int inum = find_free_inode();
@@ -552,16 +541,15 @@ int inode_allocate(){
 }
 
 int inode_free(unsigned int inum){
-    sb* super = (sb*) malloc(sizeof(sb));
-    if(sb_read(super) == -1) return -1;
-    unsigned int DIR_ID_NUM = super->DIR_ID_NUM;
-    unsigned int INDIR_ID_NUM = super->INDIR_ID_NUM;
-    unsigned int D_INDIR_ID_NUM = super->D_INDIR_ID_NUM;
-    unsigned int T_INDIR_ID_NUM = super->T_INDIR_ID_NUM;
-    unsigned int NUM_INODE = super->MAX_NUM_INODE;
-    unsigned int BITMAP_BID = super->START_BITMAP;
-    unsigned int BLOCK_SIZE = super->blocksize;
-    free(super);
+    sb super;
+    if(sb_read(&super) == -1) return -1;
+    unsigned int DIR_ID_NUM = super.DIR_ID_NUM;
+    unsigned int INDIR_ID_NUM = super.INDIR_ID_NUM;
+    unsigned int D_INDIR_ID_NUM = super.D_INDIR_ID_NUM;
+    unsigned int T_INDIR_ID_NUM = super.T_INDIR_ID_NUM;
+    unsigned int NUM_INODE = super.MAX_NUM_INODE;
+    unsigned int BITMAP_BID = super.START_BITMAP;
+    unsigned int BLOCK_SIZE = super.blocksize;
 
     // Free data blocks used    
     inode* target_node = find_inode_by_inum(inum);
@@ -679,10 +667,9 @@ unsigned int get_root_inum(){
 }
 
 int read_file(unsigned int inum, char* buf, int size, int offset){
-    sb* super = (sb*) malloc(sizeof(sb));
-    if(sb_read(super) == -1) return -1;
-    unsigned int BLOCK_SIZE = super->blocksize;
-    free(super);
+    sb super;
+    if(sb_read(&super) == -1) return -1;
+    unsigned int BLOCK_SIZE = super.blocksize;
 
     // Read inode
     if(buf == NULL) return -1;
@@ -732,12 +719,11 @@ int read_file(unsigned int inum, char* buf, int size, int offset){
 
 int write_file(unsigned int inum, const char* buf, int size, int offset){
 
-    sb* super = (sb*) malloc(sizeof(sb));
-    if(sb_read(super) == -1) return -1;
-    unsigned int ROOT_INUM = super->ROOT_INUM;
-    unsigned int NUM_INODE = super->MAX_NUM_INODE;
-    unsigned int BLOCK_SIZE = super->blocksize;
-    free(super);
+    sb super;
+    if(sb_read(&super) == -1) return -1;
+    unsigned int ROOT_INUM = super.ROOT_INUM;
+    unsigned int NUM_INODE = super.MAX_NUM_INODE;
+    unsigned int BLOCK_SIZE = super.blocksize;
 
     // Read inode
     if(inum < ROOT_INUM || inum > NUM_INODE - 1) return -1;

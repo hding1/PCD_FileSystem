@@ -103,9 +103,14 @@ int test_inode_allocate(){
 }
 
 int test_inode_free(){
-	unsigned long numbs = 12 + 1024 + 1024 + 1;
+	unsigned long numbs = 12 + 1024 + 1024*250;
 	//unsigned int dbs[numbs];
 	int bid;
+
+	sb super;
+	sb_read(&super);
+	int numfree = super.NUM_FREE_BLOCK;
+	//printf("numfree before add = %d\n", numfree);
 
 	int inum = inode_allocate();
 	if(inum == -1){
@@ -129,17 +134,26 @@ int test_inode_free(){
 		//printf("test_inode_free: bid%lu = %d\n", i, dbs[i]);
 	}
 
+	sb_read(&super);
+	numfree = super.NUM_FREE_BLOCK;
+	//printf("numfree after add = %d\n", numfree);
+
 	inode_free(inum);
 
+	sb_read(&super);
+	numfree = super.NUM_FREE_BLOCK;
+	//printf("numfree after free = %d\n", numfree);
+
 	// check if data blocks are freed
-	for(unsigned long i = 0; i < numbs; i++){
+	// for(unsigned long i = 0; i < numbs; i++){
 		// Tested, passed, now commented due to change of structure of freelist
 
 		// if(!is_db_free(dbs[i])){
 		// 	printf("Error: Used data block is not freed!\n");
 		// 	return FAIL;
 		// }
-	}
+	//}
+
 	// check if bitmap is freed
 	unsigned short bitmap[4096];
 	char block[4096];
@@ -357,7 +371,7 @@ int test_inode_read_file_double_indirect_blo(){
 		return FAIL;
 	}
 	//printf("111\n");
-	int buf_size = (12 + 1024 + 100) * 4096;
+	int buf_size = (12 + 1024 + 250) * 4096;
 	char buf[buf_size];
 	for(int i = 0; i < buf_size; i++){
 		buf[i] = 'A';
@@ -581,7 +595,7 @@ int test_inode_write_file_double_indirect_blo(){
 		printf("Error: inode allocate failed!\n");
 		return FAIL;
 	}
-	int buf_size = (12 + 1024 + 100) * 4096;
+	int buf_size = (12 + 1024 + 250) * 4096;
 	char dbuf[buf_size];
 	for(int i = 0; i < buf_size; i++){
 		dbuf[i] = 'A';
@@ -690,7 +704,70 @@ int test_sb_write(){
 
 /*************************************data block test helpers***************************************/
 
-int test_db_init(){
+int test_db_multiple_allocate_free(){
+	// First time allocate
+	unsigned int bid;
+	sb mysb;
+	for(int i = 0; i < 262013; i++){
+		bid = db_allocate();
+		if(bid < 0 || bid > 262144){
+			printf("Error: db_allocate failed at %dth block!\n", i);
+			return FAIL;
+		}
+	}
+	if(sb_read(&mysb) == -1){
+		printf("Error: sb_read failed!\n");
+		return FAIL;
+	}
+	if(mysb.NUM_FREE_BLOCK != 0){
+		printf("Error: num free block incorrect!\n");
+		return FAIL;
+	}
+
+	// First time free
+	for(bid = 131; bid < 262144; bid++){
+		db_free(bid);
+	}
+	if(sb_read(&mysb) == -1){
+		printf("Error: sb_read failed!\n");
+		return FAIL;
+	}
+	if(mysb.NUM_FREE_BLOCK != 262013){
+		printf("Error: num free block incorrect!\n");
+		return FAIL;
+	}
+
+	// Second time allocate
+	for(int i = 0; i < 262013; i++){
+		bid = db_allocate();
+		if(bid < 0 || bid > 262144){
+			printf("Error: db_allocate failed at %dth block!\n", i);
+			return FAIL;
+		}
+	}
+	if(sb_read(&mysb) == -1){
+		printf("Error: sb_read failed!\n");
+		return FAIL;
+	}
+	if(mysb.NUM_FREE_BLOCK != 0){
+		printf("Error: num free block incorrect!\n");
+		return FAIL;
+	}
+
+	// Second time free
+	for(bid = 131; bid < 262144; bid++){
+		db_free(bid);
+	}
+	if(sb_read(&mysb) == -1){
+		printf("Error: sb_read failed!\n");
+		return FAIL;
+	}
+	if(mysb.NUM_FREE_BLOCK != 262013){
+		printf("Error: num free block incorrect!\n");
+		return FAIL;
+	}
+
+
 	return PASS;
 }
 
@@ -1162,11 +1239,11 @@ int main(){
 
 	printf("-------------Running DB Tests!-------------\n");
 
-		printf("Test 1: test_db_init!\n");
-	if(!test_db_init()){
-		printf("	PASS: test_db_init!\n");
+		printf("Test 1: test_db_multiple_allocate_free!\n");
+	if(!test_db_multiple_allocate_free()){
+		printf("	PASS: test_db_multiple_allocate_free!\n");
 	}else{
-		printf("	FAIL: test_db_init\n");
+		printf("	FAIL: test_db_multiple_allocate_free\n");
 	}
 
 		printf("Test 2: test_db_allocate!\n");
