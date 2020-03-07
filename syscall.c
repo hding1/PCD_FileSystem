@@ -291,6 +291,42 @@ int pcd_unlink(const char *path)
 	return 0;
 }
 
+int pcd_rmdir(const char *path)
+{
+	if(debug) fprintf(stderr, "pcd_rmdir(%s)\n", path);
+	int myInum = find_inode(path);
+	if(myInum==-1){
+		perror("Error Cannot Find Inode");
+		return -ENOENT;
+	}
+
+	if((is_dir(myInum) && is_empty_dir(myInum))){
+		char parentName[MAX_FILE_NAME];
+		char fileName[MAX_FILE_NAME];
+		char * parentPath;
+		get_parent(path,parentName,fileName,&parentPath);
+
+		// find inode of the parent
+		int parentInum = find_inode(parentPath);
+		free(parentPath);
+
+		if(parentInum==-1){
+			perror("Error Cannot Find Directory Inode");
+			return -ENOENT;
+		}
+
+		// remove from parent
+		delete_dirent(parentInum, fileName);
+		// reduce link count and delete inode if necessary
+		inode_reduce_link_count(myInum);
+	}
+	else{
+		perror("cannot delete non-empty directory");
+		return -ENOTEMPTY;
+	}
+	return 0;
+}
+
 char FileType (mode_t m) {
     switch (m & S_IFMT) {   //bitwise AND to determine file type
         case S_IFSOCK: return 's';     //socket

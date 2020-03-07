@@ -68,7 +68,8 @@ static struct fuse_operations pcd_oper = {
 	.readdir	= pcd_readdir,
 	.read		= pcd_read,
 	.write		= pcd_write,
-	.open		= pcd_open
+	.open		= pcd_open,
+	.rmdir		= pcd_rmdir
 };
 
 /*
