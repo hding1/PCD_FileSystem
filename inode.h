@@ -62,7 +62,7 @@ int inode_list_init();
 
 // Helper function
 int find_free_inode();
-inode* find_inode_by_inum(unsigned int inum);
+int find_inode_by_inum(unsigned int inum, inode* node);
 int write_inode_to_disk(unsigned int inum, inode* target_node);
 int free_indblo_by_bid(unsigned int bid);
 int free_dindblo_by_bid(unsigned int bid);

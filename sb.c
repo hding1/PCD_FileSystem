@@ -5,19 +5,21 @@
 int sb_init(){
 	sb super;
 	super.NUM_BLOCK = 262144;
-	super.NUM_FREE_BLOCK = 262013; // 262144 - 3 - 128
+	super.NUM_FREE_BLOCK = 260853; // 262144 - 1 - 10 - 1280
 	super.INODE_PER_BLOCK = 32;
-	super.NUM_DATABLOCK = 262013;//
+	super.NUM_DATABLOCK = 260722;//
 	super.NUM_MOUNT_TIME = 0;
 	super.MOUNT_TIME = time(NULL);
 
+	super.START_BITMAP = 1;
+	super.START_ILIST = 11;		// 1 + 10
+	super.START_DATA_BLOCK = 1291;	// 11 + 128*10
+
 	super.filesize = 1073741824;//1GB
 	super.blocksize = 4096;
-	super.MAX_NUM_INODE = 4096;
-    	super.START_ILIST = 3;
-	super.START_DATA_BLOCK = 131;
-	super.START_BITMAP = 1;
-	super.FREE_LIST = 131;
+	super.MAX_NUM_INODE = 4096 * 10;
+
+	super.FREE_LIST = 1291;
 
 	super.DIR_ID_NUM = 12;
 	super.INDIR_ID_NUM = 1024;

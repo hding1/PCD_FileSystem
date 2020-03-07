@@ -21,13 +21,16 @@ int test_bitmap_init(){
 		return FAIL;
 	}
 	char block[4096];
-	unsigned int bitmap[1024];
-	db_read(block, 1);
-	memcpy(bitmap, block, 4096);
-	for(int i = 0; i < 1024; i++){
-		if(bitmap[i] != 0){
-			printf("Error: bitmap uninitialized at index %d !\n",i);
-			return FAIL;
+	unsigned char bitmap[4096];
+
+	for(int i = 1; i < 11; i++){
+		db_read(block, i);
+		memcpy(bitmap, block, 4096);
+		for(int j = 0; j < 4096; j++){
+			if(bitmap[j] != 0){
+				printf("Error: bitmap uninitialized at i = %d, j = %d, bitmap[j] = %d!\n",i,j,bitmap[j]);
+				return FAIL;
+			}
 		}
 	}
 	return PASS;
@@ -57,33 +60,56 @@ int test_inode_list_init(){
 }
 
 int test_inode_allocate(){
-	inode* node;
+	inode node;
+	unsigned char bitmap[4096];
 	int inum = inode_allocate();
 	if(inum == -1){
 		printf("Error: inode allocate failed!\n");
 		return FAIL;
 	}
-	node = find_inode_by_inum(inum);
-	if(node->link_count != 1){
-		printf("Error: a single inode incorrectly initialized!\n");
-		free(node);
+	int status = find_inode_by_inum(inum, &node);
+	if(status == -1){
+		printf("Error: a single inode not found!\n");
 		return FAIL;
-	}else{
-		free(node);
+	}
+	if(node.link_count != 1){
+		printf("Error: a single inode incorrectly initialized!\n");
+		return FAIL;
+	}
+	int bitmap_num = inum / 4096;
+    int bitmap_off = inum % 4096;
+	db_read(bitmap, bitmap_num+1);
+	if(bitmap[bitmap_off] != 1){
+		printf("Error: inode allocate bitmap not occupied!\n");
 	}
 
-	int inums[32];
-	for(int i = 0; i < 32; i++){
+	int inums[1000];
+	for(int i = 0; i < 1000; i++){
 		inums[i] = inode_allocate();
-	}
-	for(int i = 0; i < 32; i++){
-		node = find_inode_by_inum(inums[i]);
-		if(node->link_count != 1){
-			printf("Error: a block of inode incorrectly initialized!\n");
-			free(node);
+		if(inums[i] == -1){
+			printf("Error: inode allocate failed!!\n");
 			return FAIL;
-		}else{
-			free(node);
+		}
+	}
+	for(int i = 0; i < 1000; i++){
+		int status = find_inode_by_inum(inums[i], &node);
+		if(status == -1){
+			printf("Error: a single inode not found!\n");
+			return FAIL;
+		}
+		if(node.link_count != 1){
+			printf("Error: a block of inode incorrectly initialized!\n");
+
+			return FAIL;
+		}
+	}
+	for(int i = 0; i < 1000; i++){
+		//printf("%u ", inums[i]);
+		bitmap_num = inum / 4096;
+    	bitmap_off = inum % 4096;
+		db_read(bitmap, bitmap_num+1);
+		if(bitmap[bitmap_off] != 1){
+			printf("Error: inode allocate bitmap not occupied!\n");
 		}
 	}
 
@@ -93,9 +119,9 @@ int test_inode_allocate(){
 		printf("Error: freed inode recycle failed!\n");
 		return FAIL;
 	}
-
 	inode_free(recycle);
-	for(int i = 0; i < 32; i++){
+	for(int i = 0; i < 1000; i++){
+		//printf("free %d ", inums[i]);
 		inode_free(inums[i]);
 	}
 
@@ -126,9 +152,10 @@ int test_inode_free(){
 			return FAIL;
 		}
 		// Simulate file write, increase size
-		inode* target_node = find_inode_by_inum(inum);
-		target_node->size += 4096;
-		write_inode_to_disk(inum,target_node);
+		inode target_node;
+		find_inode_by_inum(inum, &target_node);
+		target_node.size += 4096;
+		write_inode_to_disk(inum,&target_node);
 
 		//dbs[i] = bid;
 		//printf("test_inode_free: bid%lu = %d\n", i, dbs[i]);
@@ -155,11 +182,13 @@ int test_inode_free(){
 	//}
 
 	// check if bitmap is freed
-	unsigned short bitmap[4096];
+	unsigned char bitmap[4096];
 	char block[4096];
-	db_read(block, 1);
+	int bitmap_num = inum / 4096;
+    int bitmap_off = inum % 4096;
+	db_read(block, 1 + bitmap_num);
 	memcpy(bitmap, block, 4096);
-	if(bitmap[inum] != 0){
+	if(bitmap[inum + bitmap_off] != 0){
 		printf("Error: bitmap free failed!\n");
 		return FAIL;
 	}
@@ -219,8 +248,9 @@ int test_inode_link_read_reduce(){
 		printf("Error: inode reduce link count failed!\n");
 		return FAIL;
 	}
-	inode* target = find_inode_by_inum(inum);
-	if(target != NULL){
+	inode node;
+	int status = find_inode_by_inum(inum, &node);
+	if(status != -1){
 		printf("Error: inode reduce link count incorrectly!\n");
 		return FAIL;
 	}
@@ -421,11 +451,12 @@ int test_inode_write_file_direct_blo(){
 		printf("Error: write file failed!\n");
 		return FAIL;
 	}
-	inode* target = find_inode_by_inum(inum);
+	inode target;
+	find_inode_by_inum(inum, &target);
 	int bid;
 	char result[4096];
 	for(int i = 0; i < 12; i++){
-		bid = target->direct_blo[i];
+		bid = target.direct_blo[i];
 		db_read(result, bid);
 		//printf("test bufA: block%d = %s\n", i, result);
 		for(int j = 0; j < 4096; j++){
@@ -440,9 +471,9 @@ int test_inode_write_file_direct_blo(){
 		printf("Error: write file failed!\n");
 		return FAIL;
 	}
-	target = find_inode_by_inum(inum);
-	int bid0 = target->direct_blo[0];
-	int bid1 = target->direct_blo[1];
+	find_inode_by_inum(inum, &target);
+	int bid0 = target.direct_blo[0];
+	int bid1 = target.direct_blo[1];
 	char r0[4096];
 	char r1[4096];
 	db_read(r0, bid0);
@@ -476,9 +507,10 @@ int test_inode_write_file_direct_blo(){
 		printf("Error: write file failed!\n");
 		return FAIL;
 	}
-	target = find_inode_by_inum(newinum);
-	int newbid0 = target->direct_blo[0];
-	int newbid1 = target->direct_blo[1];
+
+	find_inode_by_inum(newinum, &target);
+	int newbid0 = target.direct_blo[0];
+	int newbid1 = target.direct_blo[1];
 	char newr0[4096];
 	char newr1[4096];
 	//printf("test bufCD: bid0 = %d\n", newbid0);
@@ -496,7 +528,6 @@ int test_inode_write_file_direct_blo(){
 
 	inode_free(inum);
 	inode_free(newinum);
-	free(target);
 	return PASS;
 }
 
@@ -525,8 +556,9 @@ int test_inode_write_file_single_indirect_blo(){
 		return FAIL;
 	}
 
-	inode* target = find_inode_by_inum(inum);
-	unsigned int indbid = target->single_ind;
+	inode target;
+	find_inode_by_inum(inum, &target);
+	unsigned int indbid = target.single_ind;
 	if(indbid == 0){
 		printf("Error: write file single indirect block indbid not allocated!\n");
 		return FAIL;
@@ -550,7 +582,6 @@ int test_inode_write_file_single_indirect_blo(){
 			return FAIL;
 		}
 	}
-	free(target);
 
 	// Test using full single indir blocks
 	char full_indir_buf[4096];
@@ -562,8 +593,9 @@ int test_inode_write_file_single_indirect_blo(){
 		write_file(inum, full_indir_buf, 4096, offset);
 		offset += 4096;
 	}
-	inode* target2 = find_inode_by_inum(inum);
-	indbid = target2->single_ind;
+	inode target2;
+	find_inode_by_inum(inum, &target2);
+	indbid = target2.single_ind;
 	if(indbid == 0){
 		printf("Error: write file single indirect block indbid not allocated!\n");
 		return FAIL;
@@ -583,8 +615,7 @@ int test_inode_write_file_single_indirect_blo(){
 			}
 		}
 	}
-	
-	free(target2);
+
 	inode_free(inum);
 	return PASS;
 }
@@ -605,8 +636,9 @@ int test_inode_write_file_double_indirect_blo(){
 		return FAIL;
 	}
 
-	inode* target = find_inode_by_inum(inum);
-	unsigned int dindbid = target->double_ind;
+	inode target;
+	find_inode_by_inum(inum, &target);
+	unsigned int dindbid = target.double_ind;
 	//printf("dindbid = %u\n", dindbid);
 	char dindbiddata[4096];
 	db_read(dindbiddata,dindbid);
@@ -641,7 +673,6 @@ int test_inode_write_file_double_indirect_blo(){
 		}
 	}
 
-	free(target);
 	inode_free(inum);
 	return PASS;
 }
@@ -654,7 +685,7 @@ int test_sb_init(){
 	sb s;
 	db_read(super,0);
 	memcpy(&s, super, sizeof(sb));
-	if(s.NUM_BLOCK != 262144 || s.filesize != 1073741824 || s.DIR_ID_NUM != 12){
+	if(s.DIR_ID_NUM != 12){
 		printf("Error: sb_init incorrectly\n");
 		return FAIL;
 	}
@@ -667,7 +698,7 @@ int test_sb_read(){
 		printf("Error: sb_read failed\n");
 		return FAIL;
 	}
-	if(s.NUM_BLOCK != 262144 || s.filesize != 1073741824 || s.DIR_ID_NUM != 12){
+	if(s.DIR_ID_NUM != 12){
 		printf("Error: sb_init incorrectly\n");
 		return FAIL;
 	}
@@ -708,7 +739,7 @@ int test_db_multiple_allocate_free(){
 	// First time allocate
 	unsigned int bid;
 	sb mysb;
-	for(int i = 0; i < 262013; i++){
+	for(int i = 0; i < 260853; i++){
 		bid = db_allocate();
 		if(bid < 0 || bid > 262144){
 			printf("Error: db_allocate failed at %dth block!\n", i);
@@ -720,25 +751,26 @@ int test_db_multiple_allocate_free(){
 		return FAIL;
 	}
 	if(mysb.NUM_FREE_BLOCK != 0){
+		printf("mysb.NUM_FREE_BLOCK = %d\n", mysb.NUM_FREE_BLOCK);
 		printf("Error: num free block incorrect!\n");
 		return FAIL;
 	}
 
 	// First time free
-	for(bid = 131; bid < 262144; bid++){
+	for(bid = 1291; bid < 262144; bid++){
 		db_free(bid);
 	}
 	if(sb_read(&mysb) == -1){
 		printf("Error: sb_read failed!\n");
 		return FAIL;
 	}
-	if(mysb.NUM_FREE_BLOCK != 262013){
+	if(mysb.NUM_FREE_BLOCK != 260853){
 		printf("Error: num free block incorrect!\n");
 		return FAIL;
 	}
 
 	// Second time allocate
-	for(int i = 0; i < 262013; i++){
+	for(int i = 0; i < 260853; i++){
 		bid = db_allocate();
 		if(bid < 0 || bid > 262144){
 			printf("Error: db_allocate failed at %dth block!\n", i);
@@ -755,14 +787,14 @@ int test_db_multiple_allocate_free(){
 	}
 
 	// Second time free
-	for(bid = 131; bid < 262144; bid++){
+	for(bid = 1291; bid < 262144; bid++){
 		db_free(bid);
 	}
 	if(sb_read(&mysb) == -1){
 		printf("Error: sb_read failed!\n");
 		return FAIL;
 	}
-	if(mysb.NUM_FREE_BLOCK != 262013){
+	if(mysb.NUM_FREE_BLOCK != 260853){
 		printf("Error: num free block incorrect!\n");
 		return FAIL;
 	}
@@ -773,7 +805,7 @@ int test_db_multiple_allocate_free(){
 
 int test_db_allocate(){
 	unsigned int bid;
-	for(int i = 0; i < 262013; i++){
+	for(int i = 0; i < 260853; i++){
 		bid = db_allocate();
 		if(bid < 0 || bid > 262144){
 			printf("Error: db_allocate failed at %dth block!\n", i);
@@ -793,7 +825,7 @@ int test_db_allocate(){
 }
 
 int test_db_free(){
-	for(unsigned int bid = 131; bid < 262144; bid++){
+	for(unsigned int bid = 1291; bid < 262144; bid++){
 		db_free(bid);
 	}
 	sb mysb;
@@ -801,7 +833,7 @@ int test_db_free(){
 		printf("Error: sb_read failed!\n");
 		return FAIL;
 	}
-	if(mysb.NUM_FREE_BLOCK != 262013){
+	if(mysb.NUM_FREE_BLOCK != 260853){
 		printf("Error: num free block incorrect!\n");
 		return FAIL;
 	}
