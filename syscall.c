@@ -264,8 +264,7 @@ int pcd_unlink(const char *path)
 		return -ENOENT;
 	}
 
-
-	if(is_dir(myInum) && is_empty_dir(myInum)){
+	if(!is_dir(myInum) || (is_dir(myInum) && is_empty_dir(myInum))){
 		char parentName[MAX_FILE_NAME];
 		char fileName[MAX_FILE_NAME];
 		char * parentPath;
