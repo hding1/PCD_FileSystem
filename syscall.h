@@ -16,6 +16,7 @@
 int pcd_mkroot();
 int pcd_mkdir(const char *path, mode_t mode);
 int pcd_unlink(const char *path);
+int pcd_rmdir(const char *path);
 int pcd_mknod(const char *path, mode_t mode, dev_t rdev);
 int pcd_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 		       off_t offset, struct fuse_file_info *fi);
