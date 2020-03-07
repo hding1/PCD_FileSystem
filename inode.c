@@ -3,12 +3,13 @@
 #include "inode.h"
 
 static unsigned char bitmap[4096];
+static inode target_node;
+static sb super;
 
 
 /*********************************Init functions************************************/
 int inode_bitmap_init(){
 
-    sb super;
     if(sb_read(&super) == -1) return -1;
     unsigned int BITMAP_BID = super.START_BITMAP;
     unsigned int ILIST_BID = super.START_ILIST;
@@ -32,7 +33,6 @@ int inode_bitmap_init(){
 
 int inode_list_init(){
 
-    sb super;
     if(sb_read(&super) == -1) return -1;
 	unsigned int DB_BID  =  super.START_DATA_BLOCK;
     unsigned int DIR_ID_NUM = super.DIR_ID_NUM;
@@ -75,7 +75,6 @@ int inode_list_init(){
 
 int find_free_inode(){
 
-    sb super;
     if(sb_read(&super) == -1) return -1;
     unsigned int BITMAP_BID = super.START_BITMAP;
     unsigned int ILIST_BID = super.START_ILIST;
@@ -101,7 +100,6 @@ int find_free_inode(){
 
 int find_inode_by_inum(unsigned int inum, inode* node){
 
-    sb super;
     if(sb_read(&super) == -1) return -1;
 	unsigned int NUM_INODE  =  super.MAX_NUM_INODE;
     unsigned int ROOT_INUM = super.ROOT_INUM;
@@ -137,7 +135,6 @@ int find_inode_by_inum(unsigned int inum, inode* node){
 
 int write_inode_to_disk(unsigned int inum, inode* target_node){
     
-    sb super;
     if(sb_read(&super) == -1) return -1;
 	unsigned int NUM_INODE  =  super.MAX_NUM_INODE;
     unsigned int ROOT_INUM = super.ROOT_INUM;
@@ -162,7 +159,6 @@ int write_inode_to_disk(unsigned int inum, inode* target_node){
 }
 
 int free_indblo_by_bid(unsigned int bid){
-    sb super;
     if(sb_read(&super) == -1) return -1;
     unsigned int INDIR_ID_NUM = super.INDIR_ID_NUM;
     unsigned int BLOCK_SIZE = super.blocksize;
@@ -183,7 +179,6 @@ int free_indblo_by_bid(unsigned int bid){
 }
 
 int free_dindblo_by_bid(unsigned int bid){
-    sb super;
     if(sb_read(&super) == -1) return -1;
     unsigned int INDIR_ID_NUM = super.INDIR_ID_NUM;
     unsigned int BLOCK_SIZE = super.blocksize;
@@ -202,7 +197,6 @@ int free_dindblo_by_bid(unsigned int bid){
 }
 
 int free_tindblo_by_bid(unsigned int bid){
-    sb super;
     if(sb_read(&super) == -1) return -1;
     unsigned int INDIR_ID_NUM = super.INDIR_ID_NUM;
     unsigned int BLOCK_SIZE = super.blocksize;
@@ -221,7 +215,6 @@ int free_tindblo_by_bid(unsigned int bid){
 }
 
 unsigned int find_block_by_num(unsigned int inum, unsigned int num){
-    sb super;
     if(sb_read(&super) == -1) return -1;
     unsigned int DIR_ID_NUM = super.DIR_ID_NUM;
     unsigned int INDIR_ID_NUM = super.INDIR_ID_NUM;
@@ -229,7 +222,6 @@ unsigned int find_block_by_num(unsigned int inum, unsigned int num){
     unsigned int T_INDIR_ID_NUM = super.T_INDIR_ID_NUM;
     unsigned int BLOCK_SIZE = super.blocksize;
 
-    inode target_node;
     find_inode_by_inum(inum, &target_node);
     char block[BLOCK_SIZE];
     unsigned int bid;
@@ -285,7 +277,6 @@ int write_block_by_num(unsigned int inum, unsigned int num, char* block){
 }
 
 int add_block(unsigned int inum){
-    sb super;
     if(sb_read(&super) == -1) return -1;
     unsigned int DIR_ID_NUM = super.DIR_ID_NUM;
     unsigned int INDIR_ID_NUM = super.INDIR_ID_NUM;
@@ -296,7 +287,6 @@ int add_block(unsigned int inum){
     int newid = db_allocate();
     //printf("inode add block newid = %u\n", newid);
     if(newid == -1) return -1;
-    inode target_node;
     find_inode_by_inum(inum, &target_node);
     int num = target_node.size / BLOCK_SIZE;
     if(target_node.size % BLOCK_SIZE != 0) num++;
@@ -312,9 +302,11 @@ int add_block(unsigned int inum){
     unsigned int dind_block[INDIR_ID_NUM];
     unsigned int tind_block[INDIR_ID_NUM];
 
+    int status;
     if(num < DIR_ID_NUM){
         target_node.direct_blo[num] = newid;
-        write_inode_to_disk(inum, &target_node);
+        status = write_inode_to_disk(inum, &target_node);
+        if(status == -1) return -1;
 
     }else if(num < DIR_ID_NUM + INDIR_ID_NUM){
         index = num - DIR_ID_NUM;
@@ -330,7 +322,8 @@ int add_block(unsigned int inum){
             }
             memcpy(block, ind_block, BLOCK_SIZE);
             db_write(block, ind_bid);
-            write_inode_to_disk(inum, &target_node);
+            status = write_inode_to_disk(inum, &target_node);
+            if(status == -1) return -1;
         }else{
             db_read(block, target_node.single_ind);
             memcpy(ind_block, block, BLOCK_SIZE);
@@ -364,7 +357,8 @@ int add_block(unsigned int inum){
             db_write(block, ind_bid);
             memcpy(block, dind_block, BLOCK_SIZE);
             db_write(block, dind_bid);
-            write_inode_to_disk(inum, &target_node);
+            status = write_inode_to_disk(inum, &target_node);
+            if(status == -1) return -1;
         }else if(index == 0){
             db_read(block, target_node.double_ind);
             memcpy(dind_block, block, BLOCK_SIZE);
@@ -428,7 +422,8 @@ int add_block(unsigned int inum){
             db_write(block, dind_bid);
             memcpy(block, tind_block, BLOCK_SIZE);
             db_write(block, tind_bid);
-            write_inode_to_disk(inum, &target_node);
+            status = write_inode_to_disk(inum, &target_node);
+            if(status == -1) return -1;
         }else if(d_index == 0 && index == 0){
             db_read(block, target_node.triple_ind);
             memcpy(tind_block, block, BLOCK_SIZE);
@@ -495,18 +490,81 @@ int add_block(unsigned int inum){
 }
 
 unsigned long get_inode_size(unsigned int inum){
-    inode target_node;
     find_inode_by_inum(inum, &target_node);
     unsigned long size = target_node.size;
     return size;
 }
 
 int set_inode_size(unsigned int inum, unsigned long size){
-    inode target_node;
     int status = find_inode_by_inum(inum, &target_node);
     if(status == -1) return -1;
     target_node.size = size;
-    write_inode_to_disk(inum, &target_node);
+    status = write_inode_to_disk(inum, &target_node);
+    if(status == -1) return -1;
+    return 0;
+}
+
+int inode_read_UID(unsigned int inum, uid_t* out){
+    int status = find_inode_by_inum(inum, &target_node);
+    if(status == -1) return -1;
+    *out = target_node.UID;
+    return 0;
+}
+
+int inode_write_UID(unsigned int inum, uid_t in){
+    int status = find_inode_by_inum(inum, &target_node);
+    if(status == -1) return -1;
+    target_node.UID = in;
+    status = write_inode_to_disk(inum, &target_node);
+    if(status == -1) return -1;
+    return 0;
+}
+
+int inode_read_GID(unsigned int inum, gid_t* out){
+    int status = find_inode_by_inum(inum, &target_node);
+    if(status == -1) return -1;
+    *out = target_node.GID;
+    return 0;
+}
+
+int inode_write_GID(unsigned int inum, gid_t in){
+    int status = find_inode_by_inum(inum, &target_node);
+    if(status == -1) return -1;
+    target_node.GID = in;
+    status = write_inode_to_disk(inum, &target_node);
+    if(status == -1) return -1;
+    return 0;
+}
+
+int inode_read_last_accessed(unsigned int inum, time_t* out){
+    int status = find_inode_by_inum(inum, &target_node);
+    if(status == -1) return -1;
+    *out = target_node.last_accessed;
+    return 0;
+}
+
+int inode_write_last_accessed(unsigned int inum, time_t in){
+    int status = find_inode_by_inum(inum, &target_node);
+    if(status == -1) return -1;
+    target_node.last_accessed = in;
+    status = write_inode_to_disk(inum, &target_node);
+    if(status == -1) return -1;
+    return 0;
+}
+
+int inode_read_last_modified(unsigned int inum, time_t* out){
+    int status = find_inode_by_inum(inum, &target_node);
+    if(status == -1) return -1;
+    *out = target_node.last_modified;
+    return 0;
+}
+
+int inode_write_last_modified(unsigned int inum, time_t in){
+    int status = find_inode_by_inum(inum, &target_node);
+    if(status == -1) return -1;
+    target_node.last_modified = in;
+    status = write_inode_to_disk(inum, &target_node);
+    if(status == -1) return -1;
     return 0;
 }
 
@@ -514,7 +572,6 @@ int set_inode_size(unsigned int inum, unsigned long size){
 /******************************************Inode opertaions***********************************************/
 
 int inode_allocate(){
-    sb super;
     if(sb_read(&super) == -1) return -1;
     unsigned int DIR_ID_NUM = super.DIR_ID_NUM;
 
@@ -523,7 +580,6 @@ int inode_allocate(){
     if(inum == -1) return -1;   // Error
 
     // Get the inode, set initial values
-    inode target_node;
     int status = find_inode_by_inum(inum, &target_node);
     if(status == -1) return -1;  // Error
     target_node.mode = 0666;
@@ -554,7 +610,6 @@ int inode_allocate(){
 }
 
 int inode_free(unsigned int inum){
-    sb super;
     if(sb_read(&super) == -1) return -1;
     unsigned int DIR_ID_NUM = super.DIR_ID_NUM;
     unsigned int INDIR_ID_NUM = super.INDIR_ID_NUM;
@@ -564,7 +619,6 @@ int inode_free(unsigned int inum){
     unsigned int BLOCK_SIZE = super.blocksize;
 
     // Free data blocks used
-    inode target_node;
     int status = find_inode_by_inum(inum, &target_node);
     if(status == -1) return -1;
     // Find how many blocks used
@@ -617,7 +671,6 @@ int inode_free(unsigned int inum){
 }
 
 int inode_read_mode(unsigned int inum, mode_t* mode_out){
-    inode target_node;
     int status = find_inode_by_inum(inum, &target_node);
     if(status == -1) return -1;   // Error
     *mode_out = target_node.mode;
@@ -628,7 +681,6 @@ int inode_read_mode(unsigned int inum, mode_t* mode_out){
 int inode_write_mode(unsigned int inum, mode_t mode_in){
     
     // Modify mode of target inode
-    inode target_node;
     int status = find_inode_by_inum(inum, &target_node);
     if(status == -1) return -1; // Error
     target_node.mode = mode_in;
@@ -640,7 +692,6 @@ int inode_write_mode(unsigned int inum, mode_t mode_in){
 }
 
 int inode_read_size(unsigned int inum, unsigned long* size){
-    inode target_node;
     int status = find_inode_by_inum(inum, &target_node);
     if(status == -1) return -1;   // Error
     *size = target_node.size;
@@ -649,7 +700,6 @@ int inode_read_size(unsigned int inum, unsigned long* size){
 }
 
 int inode_read_link_count(unsigned int inum, unsigned int* count){
-    inode target_node;
     int status = find_inode_by_inum(inum, &target_node);
     if(status == -1) return -1;   // Error
     *count = target_node.link_count;
@@ -658,7 +708,6 @@ int inode_read_link_count(unsigned int inum, unsigned int* count){
 }
 
 int inode_reduce_link_count(unsigned int inum){
-    inode target_node;
     int status = find_inode_by_inum(inum, &target_node);
     if(status == -1) return -1;   // Error
     target_node.link_count =  target_node.link_count -1;
@@ -673,7 +722,6 @@ int inode_reduce_link_count(unsigned int inum){
 }
 
 unsigned int get_root_inum(){
-    sb super;
     if(sb_read(&super) == -1){
         fprintf(stderr, "Error: sb read failed\n");
         return -1;
@@ -683,7 +731,6 @@ unsigned int get_root_inum(){
 }
 
 int read_file(unsigned int inum, char* buf, int size, int offset){
-    sb super;
     if(sb_read(&super) == -1) return -1;
     unsigned int BLOCK_SIZE = super.blocksize;
 
@@ -735,7 +782,6 @@ int read_file(unsigned int inum, char* buf, int size, int offset){
 
 int write_file(unsigned int inum, const char* buf, int size, int offset){
 
-    sb super;
     if(sb_read(&super) == -1) return -1;
     unsigned int ROOT_INUM = super.ROOT_INUM;
     unsigned int NUM_INODE = super.MAX_NUM_INODE;

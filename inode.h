@@ -35,7 +35,7 @@ typedef struct inode{
 
      /* Owner info: Access details like owner of the file, 
                     group of the file etc */
-     uid_t UID;     // 4 bytes
+     gid_t UID;     // 4 bytes
      gid_t GID;     // 4 bytes
 
      /* Size: size of the file in terms of bytes */
@@ -80,7 +80,17 @@ int inode_read_mode(unsigned int inum, mode_t* mode_out);
 int inode_write_mode(unsigned int inum, mode_t mode_in);
 int inode_read_size(unsigned int inum, unsigned long* size); 
 int inode_read_link_count(unsigned int inum, unsigned int* count); 
-int inode_reduce_link_count(unsigned int inum); 
+int inode_reduce_link_count(unsigned int inum);
+
+int inode_read_UID(unsigned int inum, uid_t* out);
+int inode_write_UID(unsigned int inum, uid_t in);
+int inode_read_GID(unsigned int inum, gid_t* out);
+int inode_write_GID(unsigned int inum, gid_t in);
+int inode_read_last_accessed(unsigned int inum, time_t* out);
+int inode_write_last_accessed(unsigned int inum, time_t in);
+int inode_read_last_modified(unsigned int inum, time_t* out);
+int inode_write_last_modified(unsigned int inum, time_t in);
+
 
 unsigned int get_root_inum();
 int read_file(unsigned int inum, char* buf, int size, int offset);
