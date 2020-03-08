@@ -199,7 +199,7 @@ int pcd_mkdir(const char *path, mode_t mode)
 // read in an inum parernt directory and target
 // delete the dirent under parent
 // return 0 if success, if not return -1
-int delete_dirent(int inum, char * target){
+int delete_dirent(int inum, char * target, char * dirent_out){
 	// start number = 2, since 0 and 1 are for . and ..
 	unsigned int start = 2;
 	unsigned int offset = start*DIRENT_SIZE;
@@ -218,6 +218,10 @@ int delete_dirent(int inum, char * target){
 		dirent * mydirent = (dirent *) tempbuf;
 		// compare the dirent with target
 		if(strcmp(mydirent->name,target)==0){
+			//if found, copy it to the output buffer
+			if(dirent_out != NULL){
+				memcpy(dirent_out, mydirent, DIRENT_SIZE);
+			}
 			//if found, rename the entry to empty ""
 			strcpy(mydirent->name, "");
 			mydirent->inum = -1;
@@ -295,7 +299,7 @@ int pcd_unlink(const char *path)
 		}
 
 		// remove from parent
-		delete_dirent(parentInum, fileName);
+		delete_dirent(parentInum, fileName, NULL);
 		// reduce link count and delete inode if necessary
 		inode_reduce_link_count(myInum);
 	}
@@ -331,7 +335,7 @@ int pcd_rmdir(const char *path)
 		}
 
 		// remove from parent
-		delete_dirent(parentInum, fileName);
+		delete_dirent(parentInum, fileName, NULL);
 		// reduce link count and delete inode if necessary
 		inode_reduce_link_count(myInum);
 	}
@@ -593,10 +597,61 @@ int pcd_utimens(const char *path, const struct timespec tv[2]){
 	return 0;
 }
 
+int get_parent_inum(const char *path, int *inum){
+	char parentName[MAX_FILE_NAME];
+	char fileName[MAX_FILE_NAME];
+	char * parentPath;
+	get_parent(oldpath, parentName, fileName, &parentPath);
+
+	// find inode of the parent
+	inum = find_inode(parentPath);
+	free(parentPath);
+
+	if(parentInum==-1){
+		fprintf(stderr, "Error: Cannot Find Parent Inode for path \"%s\"\n", path);
+		return -ENOENT;
+	}
+
+	reutrn 0;
+}
+
 int pcd_rename(const char *oldpath, const char *newpath){
+	if(debug) fprintf(stderr, "pcd_rename(%s, %s)\n", oldpath, newpath);
+	int myInum = find_inode(oldpath);
+	if(myInum==-1){
+		fprintf(stderr, "Error: Cannot Find Inode for path \"%s\"\n", path);
+		return -ENOENT;
+	}
+
+	int oldParentInum = 0;
+	int status = 0;
+	status = get_parent_inum(oldpath, oldParentInum);
+	if(status < 0){return status;}
+
+	char dirent[DIRENT_SIZE] = {0};
+	// rename from parent
+	status = delete_dirent(parentInum, fileName, dirent);
+	if(status < 0){return status;}
+
+	int newParentInum = 0;
+	status = get_parent_inum(newpath, newParentInum);
+	if(status < 0){return status;}
+
+	unsigned long parentInodeSize = 0;
+	inode_read_size(newParentInum, &parentInodeSize);
+	if(write_file(newParentInum, dirent, DIRENT_SIZE, parentInodeSize)==-1){
+		perror("Error Writing to File");
+		return -1;
+	}
 	return 0;
 }
 
 int pcd_link(const char *oldpath, const char *newpath){
+	if(debug) fprintf(stderr, "pcd_link(%s, %s)\n", oldpath, newpath);
+	int myInum = find_inode(oldpath);
+	if(myInum==-1){
+		fprintf(stderr, "Error: Cannot Find Inode for path \"%s\"\n", path);
+		return -ENOENT;
+	}
 	return 0;
 }
