@@ -696,6 +696,8 @@ int pcd_truncate(const char *path, off_t size){
 	}
 
 	truncate_file(myInum, size);
+	int status = inode_write_last_modified(myInum, time(NULL));
+	if(status < 0){return status;}
 
 	return 0;
 }
