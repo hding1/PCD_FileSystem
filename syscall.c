@@ -488,6 +488,8 @@ int pcd_read(const char *path, char *buf, size_t size, off_t offset,
 		perror("Error Reading File");
 		return -1;
 	}
+
+	inode_write_last_accessed(myInum, time(NULL));
 	return numRead;
 }
 
@@ -508,6 +510,7 @@ int pcd_write(const char *path, const char *buf, size_t size,
 		return -1;
 	}
 
+	inode_write_last_modified(myInum, time(NULL));
 	return size;
 }
 //Open path. mode is as for the system call open. 
