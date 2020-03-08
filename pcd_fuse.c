@@ -77,7 +77,9 @@ static struct fuse_operations pcd_oper = {
 	.rmdir      = pcd_rmdir,
 	.chmod      = pcd_chmod,
 	.chown      = pcd_chown,
-	.utimens    = pcd_utimens
+	.utimens    = pcd_utimens,
+	.rename     = pcd_rename,
+	.link       = pcd_link
 };
 
 /*

@@ -592,3 +592,11 @@ int pcd_utimens(const char *path, const struct timespec tv[2]){
 	}
 	return 0;
 }
+
+int pcd_rename(const char *oldpath, const char *newpath){
+	return 0;
+}
+
+int pcd_link(const char *oldpath, const char *newpath){
+	return 0;
+}
