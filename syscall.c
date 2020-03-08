@@ -701,3 +701,25 @@ int pcd_truncate(const char *path, off_t size){
 
 	return 0;
 }
+
+int pcd_symlink(const char *linkname, const char *path){
+	if(debug) fprintf(stderr, "symlink(%s, %s)\n", linkname, path);
+	int myInum = find_inode(path);
+	if(myInum < 0){
+		fprintf(stderr, "Error: Cannot Find Inode for path \"%s\"\n", path);
+		return -ENOENT;
+	}
+
+	return 0;
+}
+
+int pcd_readlink(const char *path, char *buf, size_t len){
+	if(debug) fprintf(stderr, "readlink(%s, buf, %d)\n", path, len);
+	int myInum = find_inode(path);
+	if(myInum < 0){
+		fprintf(stderr, "Error: Cannot Find Inode for path \"%s\"\n", path);
+		return -ENOENT;
+	}
+
+	return 0;
+}

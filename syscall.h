@@ -31,6 +31,8 @@ int pcd_utimens(const char *, const struct timespec tv[2]);
 int pcd_rename(const char *oldpath, const char *newpath);
 int pcd_link(const char *oldpath, const char *newpath);
 int pcd_truncate(const char *, off_t size);
+int pcd_symlink(const char *linkname, const char *path);
+int pcd_readlink(const char *path, char *buf, size_t len);
 int find_inode(const char *path);
 
 #endif //PCD_FILESYSTEM_SYSCALL_H_
