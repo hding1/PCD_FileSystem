@@ -681,5 +681,8 @@ int pcd_link(const char *oldpath, const char *newpath){
 		return status;
 	}
 
+	status = inode_increase_link_count(myInum);
+	if(status < 0){return status;}
+
 	return 0;
 }
