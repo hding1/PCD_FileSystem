@@ -111,7 +111,8 @@ static void show_help(const char *progname)
 {
 	printf("usage: %s [options] <mountpoint>\n\n", progname);
 	printf("File-system specific options:\n"
-	       "    --device=<s>          Path of the block device\n"
+	       "    -d, --device=<s>       Path of the block device\n"
+	       "    -m, --mkfs             Create a new filesystem on top of the device\n"
 	       "\n");
 }
 
