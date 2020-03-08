@@ -139,10 +139,10 @@ int main(int argc, char *argv[])
 	ret = fuse_main(args.argc, args.argv, &pcd_oper, NULL);
 	fuse_opt_free_args(&args);
 
-	printf("syncing...");
+	printf("syncing...\n");
 	sync();
 
-	printf("freeing in memory stuff...");
+	printf("freeing in memory stuff...\n");
 	freefs();
 
 	return ret;
