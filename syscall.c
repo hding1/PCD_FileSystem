@@ -686,3 +686,16 @@ int pcd_link(const char *oldpath, const char *newpath){
 
 	return 0;
 }
+
+int pcd_truncate(const char *path, off_t size){
+	if(debug) fprintf(stderr, "pcd_truncate(%s, %ld)\n", path, size);
+	int myInum = find_inode(path);
+	if(myInum < 0){
+		fprintf(stderr, "Error: Cannot Find Inode for path \"%s\"\n", path);
+		return -ENOENT;
+	}
+
+	truncate_file(myInum, size);
+
+	return 0;
+}
