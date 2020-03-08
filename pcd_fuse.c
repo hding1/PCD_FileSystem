@@ -66,15 +66,17 @@ static int pcd_getattr(const char *path, struct stat *stbuf)
 
 static struct fuse_operations pcd_oper = {
 	.init       = pcd_init,
-	.getattr	= pcd_getattr,
+	.getattr    = pcd_getattr,
 	.mkdir      = pcd_mkdir,
 	.unlink     = pcd_unlink,
 	.mknod      = pcd_mknod,
-	.readdir	= pcd_readdir,
-	.read		= pcd_read,
-	.write		= pcd_write,
-	.open		= pcd_open,
-	.rmdir		= pcd_rmdir
+	.readdir    = pcd_readdir,
+	.read       = pcd_read,
+	.write      = pcd_write,
+	.open       = pcd_open,
+	.rmdir      = pcd_rmdir,
+	.chmod      = pcd_chmod,
+	.chown      = pcd_chown
 };
 
 /*

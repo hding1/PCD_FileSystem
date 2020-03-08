@@ -530,7 +530,7 @@ int pcd_open(const char *path, struct fuse_file_info *fi)
 }
 
 
-int chmod(const char *path, mode_t mode){
+int pcd_chmod(const char *path, mode_t mode){
 	if(debug) fprintf(stderr, "chmod(%s, mode)\n", path);
 	int myInum = find_inode(path);
 	if(myInum==-1){
@@ -550,7 +550,7 @@ int chmod(const char *path, mode_t mode){
 	return 0;
 }
 
-int chown(const char *path, uid_t uid, gid_t gid){
+int pcd_chown(const char *path, uid_t uid, gid_t gid){
 	if(debug) fprintf(stderr, "chown(%s, uid, gid)\n", path);
 	int myInum = find_inode(path);
 	if(myInum==-1){
