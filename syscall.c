@@ -714,9 +714,9 @@ int pcd_symlink(const char *linkname, const char *path){
 }
 
 int pcd_readlink(const char *path, char *buf, size_t len){
-	if(debug) fprintf(stderr, "readlink(%s, buf, %d)\n", path, len);
+	if(debug) fprintf(stderr, "readlink(%s, buf, %lud)\n", path, len);
 
-	pcd_read(linkname, buf, len, 0, NULL);
+	pcd_read(path, buf, len, 0, NULL);
 
 	return 0;
 }
