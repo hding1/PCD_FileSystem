@@ -92,8 +92,7 @@ static struct fuse_operations pcd_oper = {
 static struct options {
 	const char *device;
 	int show_help;
-	int mount;
-	int format;
+	int mkfs;
 } options;
 
 #define OPTION(t, p)                           \
@@ -101,10 +100,8 @@ static struct options {
 static const struct fuse_opt option_spec[] = {
 	OPTION("-d %s", device),
 	OPTION("--device=%s", device),
-	OPTION("-m", mount),
-	OPTION("--mount", mount),
-	OPTION("-f", format),
-	OPTION("--format", format),
+	OPTION("-m", mkfs),
+	OPTION("--mkfs", mkfs),
 	OPTION("-h", show_help),
 	OPTION("--help", show_help),
 	FUSE_OPT_END
@@ -115,8 +112,7 @@ static void show_help(const char *progname)
 	printf("usage: %s [options] <mountpoint>\n\n", progname);
 	printf("File-system specific options:\n"
 	       "    -d, --device=<s>       Path of the block device\n"
-	       "    -m, --mount            Mount an existing filesytem\n"
-	       "    -f, --format           Create a new filesytem\n"
+	       "    -m, --mkfs             Create a new filesytem\n"
 	       "\n");
 }
 
@@ -148,16 +144,10 @@ int main(int argc, char *argv[])
 		return ret;
 	}
 
-	if(!(options.format ^ options.mount)){
-		printf("Please specify either -m or -f.\n");
-		fuse_opt_free_args(&args);
-		return 0;
-	}
-
 	printf("initialize(%s)\n", options.device);
 	initialize(options.device);
 
-	if(options.format && !options.mount){
+	if(options.mkfs){
 		printf("mkfs()\n");
 		mkfs();
 	}
