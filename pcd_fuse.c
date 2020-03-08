@@ -47,8 +47,8 @@ static int pcd_getattr(const char *path, struct stat *stbuf)
 	inode_read_link_count(inum, &linkCount);
 
 	stbuf->st_nlink = linkCount;
-	inode_read_UID(inum, stbuf->st_uid);
-	inode_read_GID(inum, stbuf->st_gid);
+	inode_read_UID(inum, &(stbuf->st_uid));
+	inode_read_GID(inum, &(stbuf->st_gid));
 	inode_read_last_accessed(inum, &(stbuf->st_atime));
 	inode_read_last_modified(inum, &(stbuf->st_mtime));
 	if(stbuf->st_mode & S_IFREG){
