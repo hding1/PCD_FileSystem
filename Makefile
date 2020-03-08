@@ -28,11 +28,14 @@ layer1_test: test_layer1.c disk.c db.c sb.c inode.c
 syscall_test: test_syscall.c disk.c db.c sb.c inode.c fs.c syscall.c
 	$(CC) $(CFLAGS) $^ $(FUSE_LIB) -o $@
 
+default_mount:
+	./pcd_fuse -f -s -o default_permissions -o allow_other -d disk --mkfs mnt
+
 clean:
 	$(RM) $(targets)
 	$(RM) disk
 
-.PHONY: clean fuse
+.PHONY: clean fuse default_mount
 
 
 
