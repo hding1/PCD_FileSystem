@@ -999,7 +999,12 @@ int truncate_file(unsigned int inum, int offset){
             db_free(bid);
             if(free_block_by_num(inum, num_block_total - 1) == -1) return -1;
             num_block_total--;
-            inode_size -= BLOCK_SIZE;
+            if(inode_size >= BLOCK_SIZE){
+                inode_size -= BLOCK_SIZE;
+            }else{
+                inode_size = 0;
+            }
+            
         }
 
         if(num_block_total == num_block_keep){
