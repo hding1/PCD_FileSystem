@@ -678,6 +678,39 @@ int test_inode_write_file_double_indirect_blo(){
 }
 
 
+int test_inode_truncate_file(){
+	int inum = inode_allocate();
+	if(inum == -1){
+		printf("Error: inode allocate failed!\n");
+		return FAIL;
+	}
+	char block[11];
+	char result[11];
+	for(int i = 0; i < 11; i++){
+		block[i] = 'A';
+	}
+	write_file(inum, block, 11, 0);
+
+	truncate_file(inum, 0);
+
+	read_file(inum, result, 11, 0);
+
+	printf("result = %s\n", result);
+
+	inode target;
+	if(find_inode_by_inum(inum, &target) == -1){
+		return -1;
+	}
+	
+	if(target.size != 0){
+		printf("Error: size incorrect!\n");
+		return FAIL;
+	}
+
+	return PASS;
+}
+
+
 /*************************************super block test helpers***************************************/
 
 int test_sb_init(){
@@ -1409,6 +1442,12 @@ int main(){
 		printf("	FAIL: test_inode_write_file_double_indirect_blo!\n");
 	}
 	
+	printf("Test 11: test_inode_truncate_file!\n");
+	if(!test_inode_truncate_file()){
+		printf("	PASS: test_inode_truncate_file!\n");
+	}else{
+		printf("	FAIL: test_inode_truncate_file!\n");
+	}
 	
 
 	free_disk();
