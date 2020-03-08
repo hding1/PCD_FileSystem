@@ -81,6 +81,7 @@ int inode_write_mode(unsigned int inum, mode_t mode_in);
 int inode_read_size(unsigned int inum, unsigned long* size); 
 int inode_read_link_count(unsigned int inum, unsigned int* count); 
 int inode_reduce_link_count(unsigned int inum);
+int inode_increase_link_count(unsigned int inum);
 
 int inode_read_UID(unsigned int inum, uid_t* out);
 int inode_write_UID(unsigned int inum, uid_t in);
