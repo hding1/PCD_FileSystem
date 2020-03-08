@@ -710,7 +710,7 @@ int inode_read_link_count(unsigned int inum, unsigned int* count){
 int inode_reduce_link_count(unsigned int inum){
     int status = find_inode_by_inum(inum, &target_node);
     if(status == -1) return -1;   // Error
-    target_node.link_count =  target_node.link_count -1;
+    target_node.link_count =  target_node.link_count - 1;
     if(target_node.link_count <= 0){
         //printf("inode freed due to low link count!\n");
         inode_free(inum);
@@ -718,6 +718,16 @@ int inode_reduce_link_count(unsigned int inum){
         int status = write_inode_to_disk(inum, &target_node);
         if(status == -1) return -1;
     }
+    return 0;
+}
+
+int inode_increase_link_count(unsigned int inum){
+    int status = find_inode_by_inum(inum, &target_node);
+    if(status == -1) return -1;   // Error
+    target_node.link_count =  target_node.link_count + 1;
+    status = write_inode_to_disk(inum, &target_node);
+    if(status == -1) return -1;
+
     return 0;
 }
 
