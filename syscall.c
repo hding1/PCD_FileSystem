@@ -557,12 +557,35 @@ int pcd_chown(const char *path, uid_t uid, gid_t gid){
 		fprintf(stderr, "Error: Cannot Find Inode for path \"%s\"\n", path);
 		return -ENOENT;
 	}
-
-	if(inode_write_UID(myInum, uid) < 0){
-		return -1;
+	
+	int status = 0;
+	status = inode_write_UID(myInum, uid);
+	if(status < 0){
+		return status;
 	}
-	if(inode_write_GID(myInum, gid) < 0){
-		return -1;
+	status = inode_write_UID(myInum, uid);
+	if(status < 0){
+		return status;
+	}
+	return 0;
+}
+
+int pcd_utimens(const char *path, const struct timespec tv[2]){
+	if(debug) fprintf(stderr, "pcd_utimens(%s, struct timespec tv[2])\n", path);
+	int myInum = find_inode(path);
+	if(myInum==-1){
+		fprintf(stderr, "Error: Cannot Find Inode for path \"%s\"\n", path);
+		return -ENOENT;
+	}
+
+	int status = 0;
+	status = inode_write_last_accessed(myInum, tv[0].tv_sec);
+	if(status < 0){
+		return status;
+	}
+	status = inode_write_last_modified(myInum, tv[1].tv_sec);
+	if(status < 0){
+		return status;
 	}
 	return 0;
 }

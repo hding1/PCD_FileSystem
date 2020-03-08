@@ -27,6 +27,7 @@ int pcd_write(const char *path, const char *buf, size_t size,
 int pcd_open(const char *path, struct fuse_file_info *fi);
 int pcd_chmod(const char *path, mode_t mode);
 int pcd_chown(const char *path, uid_t uid, gid_t gid);
+int pcd_utimens(const char *, const struct timespec tv[2]);
 int find_inode(const char *path);
 
 #endif //PCD_FILESYSTEM_SYSCALL_H_
