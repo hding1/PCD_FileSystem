@@ -617,7 +617,7 @@ int get_parent_inum_and_filename(const char *path, int *inum, char* fileName){
 int pcd_rename(const char *oldpath, const char *newpath){
 	if(debug) fprintf(stderr, "pcd_rename(%s, %s)\n", oldpath, newpath);
 	int myInum = find_inode(oldpath);
-	if(myInum==-1){
+	if(myInum < 0){
 		fprintf(stderr, "Error: Cannot Find Inode for path \"%s\"\n", oldpath);
 		return -ENOENT;
 	}
@@ -634,27 +634,52 @@ int pcd_rename(const char *oldpath, const char *newpath){
 	if(status < 0){return status;}
 
 	int newParentInum = 0;
-	char newFileName[MAX_FILE_NAME] = {0};
-	status = get_parent_inum_and_filename(newpath, &newParentInum, newFileName);
+	status = get_parent_inum_and_filename(newpath, &newParentInum, entry.name);
 	if(status < 0){return status;}
 
-	strcpy(entry.name, newFileName);
-
 	unsigned long parentInodeSize = 0;
-	inode_read_size(newParentInum, &parentInodeSize);
-	if(write_file(newParentInum, (void*) &entry, DIRENT_SIZE, parentInodeSize)==-1){
-		perror("Error Writing to File");
-		return -1;
+	status = inode_read_size(newParentInum, &parentInodeSize);
+	if(status < 0){return status;}
+
+	status = write_file(newParentInum, (void*) &entry, DIRENT_SIZE, parentInodeSize);
+	if(status < 0){
+		fprintf(stderr, "Error Writing to File\n");
+		return status;
 	}
+
 	return 0;
 }
 
 int pcd_link(const char *oldpath, const char *newpath){
 	if(debug) fprintf(stderr, "pcd_link(%s, %s)\n", oldpath, newpath);
 	int myInum = find_inode(oldpath);
-	if(myInum==-1){
+	if(myInum < 0){
 		fprintf(stderr, "Error: Cannot Find Inode for path \"%s\"\n", oldpath);
 		return -ENOENT;
 	}
+
+	dirent entry = {0};
+
+	int status = 0;
+	int newParentInum = 0;
+	status = get_parent_inum_and_filename(newpath, &newParentInum, entry.name);
+	if(status < 0){return status;}
+
+	mode_t mode;
+	status = inode_read_mode(myInum, &mode);
+	if(status < 0){return status;}
+	entry.inum = myInum;
+	entry.file_type = FileType(mode);
+
+	unsigned long parentInodeSize = 0;
+	status = inode_read_size(newParentInum, &parentInodeSize);
+	if(status < 0){return status;}
+
+	status = write_file(newParentInum, (void*) &entry, DIRENT_SIZE, parentInodeSize);
+	if(status < 0){
+		fprintf(stderr, "Error Writing to File\n");
+		return status;
+	}
+
 	return 0;
 }
