@@ -79,7 +79,9 @@ static struct fuse_operations pcd_oper = {
 	.utimens    = pcd_utimens,
 	.rename     = pcd_rename,
 	.link       = pcd_link,
-	.truncate   = pcd_truncate
+	.truncate   = pcd_truncate,
+	.symlink    = pcd_symlink,
+	.readlink   = pcd_readlink
 };
 
 /*

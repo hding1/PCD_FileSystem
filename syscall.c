@@ -528,7 +528,9 @@ int pcd_open(const char *path, struct fuse_file_info *fi)
 	if (res == -1)
 		return -1;
 
-	fi->fh = res;
+	if(fi != NULL){
+		fi->fh = res;
+	}
 
 	return 0;
 }
@@ -704,22 +706,17 @@ int pcd_truncate(const char *path, off_t size){
 
 int pcd_symlink(const char *linkname, const char *path){
 	if(debug) fprintf(stderr, "symlink(%s, %s)\n", linkname, path);
-	int myInum = find_inode(path);
-	if(myInum < 0){
-		fprintf(stderr, "Error: Cannot Find Inode for path \"%s\"\n", path);
-		return -ENOENT;
-	}
+
+	pcd_mknod(linkname, S_IFLNK| 777, 0);
+	pcd_write(linkname, path, strlen(path)+1, 0, NULL);
 
 	return 0;
 }
 
 int pcd_readlink(const char *path, char *buf, size_t len){
 	if(debug) fprintf(stderr, "readlink(%s, buf, %d)\n", path, len);
-	int myInum = find_inode(path);
-	if(myInum < 0){
-		fprintf(stderr, "Error: Cannot Find Inode for path \"%s\"\n", path);
-		return -ENOENT;
-	}
+
+	pcd_read(linkname, buf, len, 0, NULL);
 
 	return 0;
 }
