@@ -749,6 +749,12 @@ int read_file(unsigned int inum, char* buf, int size, int offset){
     if(buf == NULL) return -1;
     if(size < 0) return -1;
     unsigned long inode_size = get_inode_size(inum);
+
+    if(inode_size == 0){    // read a empty inode
+        *buf = '\0';
+        return 0;
+    }
+
     if(offset < 0 || offset > inode_size) return -1;
 
     // Locate offset 
@@ -802,6 +808,7 @@ int write_file(unsigned int inum, const char* buf, int size, int offset){
     if(inum < ROOT_INUM || inum > NUM_INODE - 1) return -1;
     if(buf == NULL) return -1;
     if(size < 0) return -1;
+    if(size == 0) return 0;
     unsigned long inode_size = get_inode_size(inum);
     if(offset < 0 || offset > inode_size) return -1;
 
