@@ -29,12 +29,10 @@ int pcd_mkroot(){
 		return -EIO;
 	}
 
-	struct fuse_context* context = fuse_get_context();
-
 	//set inode fields
 	inode_write_mode(myInum, S_IFDIR | 0755);
-	inode_write_UID(myInum, context->uid);
-	inode_write_GID(myInum, context->gid);
+	inode_write_UID(myInum, getuid());
+	inode_write_GID(myInum, getgid());
 	inode_write_last_accessed(myInum, time(NULL));
 	inode_write_last_modified(myInum, time(NULL));
 	return 0;
