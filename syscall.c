@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <errno.h>
+#include <time.h>
 
 #include "dir.h"
 #include "inode.h"
@@ -28,7 +29,14 @@ int pcd_mkroot(){
 		return -EIO;
 	}
 
+	struct fuse_context* context = fuse_get_context();
+
+	//set inode fields
 	inode_write_mode(myInum, S_IFDIR | 0755);
+	inode_write_UID(myInum, context->uid);
+	inode_write_GID(myInum, context->gid);
+	inode_write_last_accessed(myInum, time(NULL));
+	inode_write_last_modified(myInum, time(NULL));
 	return 0;
 }
 
@@ -140,8 +148,15 @@ int pcd_mkdir(const char *path, mode_t mode)
 		perror("Error Inode Allocation Failed");
 		return -1;
 	}
-	//set inode type
+
+	struct fuse_context* context = fuse_get_context();
+
+	//set inode fields
 	inode_write_mode(myInum, S_IFDIR | mode);
+	inode_write_UID(myInum, context->uid);
+	inode_write_GID(myInum, context->gid);
+	inode_write_last_accessed(myInum, time(NULL));
+	inode_write_last_modified(myInum, time(NULL));
 
 	//write current node id into the parent
 	char parentName[MAX_FILE_NAME];
@@ -362,8 +377,16 @@ int pcd_mknod(const char *path, mode_t mode, dev_t rdev)
 		perror("Error Inode Allocation Failed");
 		return -1;
 	}
-	//set inode type
+
+	struct fuse_context* context = fuse_get_context();
+
+	//set inode fields
 	inode_write_mode(myInum, mode);
+	inode_write_UID(myInum, context->uid);
+	inode_write_GID(myInum, context->gid);
+	inode_write_last_accessed(myInum, time(NULL));
+	inode_write_last_modified(myInum, time(NULL));
+
 	char fileType = FileType(mode);
 	//write current node id into the parent directory
 	char parentName[MAX_FILE_NAME];
