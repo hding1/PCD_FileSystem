@@ -528,3 +528,41 @@ int pcd_open(const char *path, struct fuse_file_info *fi)
 
 	return 0;
 }
+
+
+int chmod(const char *path, mode_t mode){
+	if(debug) fprintf(stderr, "chmod(%s, mode)\n", path);
+	int myInum = find_inode(path);
+	if(myInum==-1){
+		fprintf(stderr, "Error: Cannot Find Inode for path \"%s\"\n", path);
+		return -ENOENT;
+	}
+
+	mode_t oldMode;
+	if(inode_read_mode(myInum, &oldMode) < 0){
+		return -1;
+	};
+	mode_t newFilePermission = mode & (!S_IFMT);
+	mode_t oldFileType = oldMode & (S_IFMT);
+	if(inode_write_mode(myInum, newFilePermission | oldFileType) < 0){
+		return -1;
+	};
+	return 0;
+}
+
+int chown(const char *path, uid_t uid, gid_t gid){
+	if(debug) fprintf(stderr, "chown(%s, uid, gid)\n", path);
+	int myInum = find_inode(path);
+	if(myInum==-1){
+		fprintf(stderr, "Error: Cannot Find Inode for path \"%s\"\n", path);
+		return -ENOENT;
+	}
+
+	if(inode_write_UID(myInum, uid) < 0){
+		return -1;
+	}
+	if(inode_write_GID(myInum, gid) < 0){
+		return -1;
+	}
+	return 0;
+}
