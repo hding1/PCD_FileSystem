@@ -25,7 +25,6 @@ static void *pcd_init(struct fuse_conn_info *conn)
 	//not using conn
 	(void) conn;
 
-	mkfs();
 	//could also allocate here
 	//return calloc(1, 16*1024*1024 /*allocate 16MB*/);
 	return NULL;
@@ -93,6 +92,7 @@ static struct fuse_operations pcd_oper = {
 static struct options {
 	const char *device;
 	int show_help;
+	int mkfs;
 } options;
 
 #define OPTION(t, p)                           \
@@ -100,6 +100,8 @@ static struct options {
 static const struct fuse_opt option_spec[] = {
 	OPTION("-d %s", device),
 	OPTION("--device=%s", device),
+	OPTION("-m", mkfs),
+	OPTION("--mkfs", mkfs),
 	OPTION("-h", show_help),
 	OPTION("--help", show_help),
 	FUSE_OPT_END
@@ -136,8 +138,18 @@ int main(int argc, char *argv[])
 		show_help(argv[0]);
 		assert(fuse_opt_add_arg(&args, "--help") == 0);
 		args.argv[0][0] = '\0';
+		ret = fuse_main(args.argc, args.argv, &pcd_oper, NULL);
+		fuse_opt_free_args(&args);
+		return ret;
 	}
+
+	printf("initialize(%s)\n", options.device);
 	initialize(options.device);
+
+	if(options.mkfs){
+		printf("mkfs()\n");
+		mkfs();
+	}
 
 	ret = fuse_main(args.argc, args.argv, &pcd_oper, NULL);
 	fuse_opt_free_args(&args);
