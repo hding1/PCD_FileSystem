@@ -538,15 +538,18 @@ int pcd_chmod(const char *path, mode_t mode){
 		return -ENOENT;
 	}
 
+	int status = 0;
 	mode_t oldMode;
-	if(inode_read_mode(myInum, &oldMode) < 0){
-		return -1;
-	};
+	status = inode_read_mode(myInum, &oldMode);
+	if(status < 0){
+		return status;
+	}
 	mode_t newFilePermission = mode & (!S_IFMT);
 	mode_t oldFileType = oldMode & (S_IFMT);
-	if(inode_write_mode(myInum, newFilePermission | oldFileType) < 0){
-		return -1;
-	};
+	status = inode_write_mode(myInum, newFilePermission | oldFileType);
+	if(status < 0){
+		return status;
+	}
 	return 0;
 }
 
