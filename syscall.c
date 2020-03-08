@@ -563,7 +563,7 @@ int pcd_chown(const char *path, uid_t uid, gid_t gid){
 	if(status < 0){
 		return status;
 	}
-	status = inode_write_UID(myInum, uid);
+	status = inode_write_GID(myInum, gid);
 	if(status < 0){
 		return status;
 	}
