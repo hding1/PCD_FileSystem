@@ -42,7 +42,16 @@ int disk_read(void* out, unsigned int block_id){
 	}
 	return 0;
 }
-int disk_write(void* in, unsigned int block_id){
+int disk_write(void* in, unsigned int block_id, int access_disk){
+	if(access_disk!=0){
+		lseek(add, block_id*DB_SIZE,SEEK_SET);
+        	if( write(add, in, DB_SIZE) == -1){
+                	printf("write failed \n");
+                	return -1;
+        	}
+        	return 0;
+	}
+
 	Hash_Node* h_node = hash_find(block_id);
 	if(h_node == NULL){
 		list_add(block_id, in,1);

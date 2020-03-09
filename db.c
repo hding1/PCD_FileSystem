@@ -291,7 +291,7 @@ int db_init(){
 	*/
 
 	unsigned int START_DATA_BLOCK = super->START_DATA_BLOCK;
-    void* input = malloc(sizeof(char)*DB_SIZE);
+    	void* input = malloc(sizeof(char)*DB_SIZE);
 	unsigned int NUM_FREE_BLOCK = super->NUM_FREE_BLOCK;
 	unsigned int MAX_ENTRY = DB_SIZE/sizeof(unsigned int);
 	unsigned int MAX_INDEX = NUM_FREE_BLOCK / MAX_ENTRY;
@@ -302,7 +302,7 @@ int db_init(){
 			id = START_DATA_BLOCK+i*MAX_ENTRY+j;
 			memcpy(((char*)input)+j*sizeof(unsigned int), &id, sizeof(unsigned int));
 		}
-		if(disk_write(input, START_DATA_BLOCK + i*MAX_ENTRY)==-1){
+		if(disk_write(input, START_DATA_BLOCK + i*MAX_ENTRY,1)==-1){
 			free(input);
 			free(super);
 			return -1;
@@ -317,7 +317,7 @@ int db_init(){
 			unsigned int id = START_DATA_BLOCK + MAX_INDEX * MAX_ENTRY + i;
 			memcpy(((char*)input)+i*sizeof(unsigned int), &id, sizeof(unsigned int));
 		}
-		if(disk_write(input, START_DATA_BLOCK + MAX_INDEX * MAX_ENTRY)==-1){
+		if(disk_write(input, START_DATA_BLOCK + MAX_INDEX * MAX_ENTRY, 1)==-1){
                         free(input);
                         free(super);
                         return -1;
