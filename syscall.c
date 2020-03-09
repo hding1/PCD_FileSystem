@@ -50,10 +50,10 @@ int get_parent(const char *path, char * parent, char * filename, char ** parentP
 
     //obtain parent name
     int length = strlen(path)-strlen(val);
-	*parentPath = (char*)malloc(length);
+	*parentPath = (char*)malloc(length+1);
     if(length==0){
     	strcpy(*parentPath,"/");
-    	strcpy( parent, "root");
+    	strcpy( parent, "/");
     	return 0;
     }
     strncpy(*parentPath,path,length);
