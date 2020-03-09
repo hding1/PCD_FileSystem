@@ -50,7 +50,7 @@ int get_parent(const char *path, char * parent, char * filename, char ** parentP
 
     //obtain parent name
     int length = strlen(path)-strlen(val);
-	*parentPath = (char*)malloc(length+1);
+	*parentPath = (char*)malloc(length+2);
     if(length==0){
     	strcpy(*parentPath,"/");
     	strcpy( parent, "/");
@@ -66,10 +66,11 @@ int get_parent(const char *path, char * parent, char * filename, char ** parentP
 // get first dir of a path
 // e.g. /User/peter, return User
 char * get_dir(char *path){
-	char * copy = malloc(strlen(path) + 1); 
-	strcpy(copy, path);
-	copy = strtok(copy,"/");
-	return copy;
+	char * copy = strdup(path);
+	char * tok1 = strtok(copy, "/");
+	char * out = strdup(tok1);
+	free(copy);
+	return out;
 }
 
 // read in an inum parent directory and target
@@ -126,13 +127,16 @@ int find_inode(const char *path){
 			printf("%s\n",path);
 			perror("Error Cannot Find Directory");
 			free(pathCopyStart);
+			free(dir);
 			return -1;
 		}
 		if(strlen(pathCopy)==strlen(dir)){
+			free(dir);
 			free(pathCopyStart);
 			return myInum;
 		}
 		pathCopy = pathCopy+strlen(dir)+1;
+		free(dir);
 	}
 	free(pathCopyStart);
 	return myInum;
