@@ -7,7 +7,7 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <time.h>
-
+#include <limits.h>
 #include "dir.h"
 #include "inode.h"
 
@@ -571,13 +571,17 @@ int pcd_chown(const char *path, uid_t uid, gid_t gid){
 	}
 	
 	int status = 0;
-	status = inode_write_UID(myInum, uid);
-	if(status < 0){
-		return status;
+	if(uid!=UINT_MAX){
+		status = inode_write_UID(myInum, uid);
+		if(status < 0){
+			return status;
+		}
 	}
-	status = inode_write_GID(myInum, gid);
-	if(status < 0){
-		return status;
+	if(gid!=UINT_MAX){
+		status = inode_write_GID(myInum, gid);
+		if(status < 0){
+			return status;
+		}
 	}
 	return 0;
 }

@@ -4,6 +4,7 @@
 #define FUSE_USE_VERSION 29
 
 #include <fuse.h>
+#include <limits.h>
 #include <sys/stat.h>
 
 // mkdir: makes a directory
