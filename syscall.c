@@ -78,7 +78,7 @@ int find_inode_index(int inum, char * target){
 	// start number = 2, since 0 and 1 are for . and ..
 	unsigned int start = 2;
 	unsigned int offset = start*DIRENT_SIZE;
-	char * tempbuf = (char*)malloc(DIRENT_SIZE);
+	char * tempbuf[DIRENT_SIZE];
 	unsigned long inodeSize = 0;
 	inode_read_size(inum, &inodeSize);
 	while(offset < inodeSize){
@@ -92,14 +92,12 @@ int find_inode_index(int inum, char * target){
 		// compare the dirent with target
 		if(strcmp(mydirent->name,target)==0){
 			int num = mydirent->inum;
-			free(tempbuf);
 			return num;
 		}
 		start++;
 		offset = start*DIRENT_SIZE;
 	}
 	// no target found
-	free(tempbuf);
 	return -1;
 }
 
@@ -107,8 +105,8 @@ int find_inode_index(int inum, char * target){
 // return -1 if not found, inumber if found 
 int find_inode(const char *path){	
 	// make a copy of path
-	char* pathCopy = (char*)malloc(strlen(path));
-	char* pathCopyStart = pathCopy;
+	char* pathCopyStart = (char*)malloc(strlen(path)+1);
+	char* pathCopy = pathCopyStart;
 	strcpy(pathCopy, path);
 	// check if the first directory is root
 	if(pathCopy[0] != '/'){
