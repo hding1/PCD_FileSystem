@@ -2,9 +2,10 @@
 
 #include "inode.h"
 
-static unsigned char bitmap[4096];
-static inode target_node;
-static sb super;
+unsigned char bitmap[4096];
+inode target_node;
+sb super;
+char zero_buf[4096];
 
 
 /*********************************Init functions************************************/
@@ -1024,15 +1025,25 @@ int truncate_file(unsigned int inum, int offset){
 
     }else if(offset > inode_size){
         // extend the file to size offset
-        char* zero_buff = calloc(offset - inode_size, 1);
-        if(zero_buff == NULL){
-            printf("inode truncate: zero_buff error!\n");
-            return -1;
-        }
-        status = write_file(inum, zero_buff, offset-inode_size, inode_size);
-        free(zero_buff);
-        if(status == -1) return -1;
+        int towrite = offset - inode_size;
+        int writeoff = inode_size;
 
+        for(int i = 0; i < 4096; i++){
+            zero_buf[i] = '\0';
+        }
+
+        while(towrite >= BLOCK_SIZE){
+            status = write_file(inum, zero_buf, BLOCK_SIZE, writeoff);
+            if(status == -1) return -1;
+            towrite -= BLOCK_SIZE;
+            writeoff += BLOCK_SIZE;
+        }
+       
+        if(towrite > 0){
+            status = write_file(inum, zero_buf, towrite, writeoff);
+            if(status == -1) return -1;
+        }
+        
     }
 
     return 0;

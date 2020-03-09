@@ -4,10 +4,10 @@
 
 int sb_init(){
 	sb super;
-	super.NUM_BLOCK = 262144;
-	super.NUM_FREE_BLOCK = 260853; // 262144 - 1 - 10 - 1280
+	super.NUM_BLOCK = 7864320;
+	super.NUM_FREE_BLOCK = 7863029; // NUM_BLOCK - 1 - 10 - 1280
 	super.INODE_PER_BLOCK = 32;
-	super.NUM_DATABLOCK = 260722;//
+	super.NUM_DATABLOCK = 7863029;//
 	super.NUM_MOUNT_TIME = 0;
 	super.MOUNT_TIME = time(NULL);
 
@@ -15,7 +15,7 @@ int sb_init(){
 	super.START_ILIST = 11;		// 1 + 10
 	super.START_DATA_BLOCK = 1291;	// 11 + 128*10
 
-	super.filesize = 1073741824;//1GB
+	super.filesize = (unsigned long)30 * 1024 * 1024 * 1024;
 	super.blocksize = 4096;
 	super.MAX_NUM_INODE = 4096 * 10;
 
@@ -43,16 +43,21 @@ int sb_init(){
 }
 
 int sb_read(sb* super){
-	void* output = malloc(sizeof(char) * DB_SIZE);
+	// void* output = malloc(sizeof(char) * DB_SIZE);
+	char output[DB_SIZE];
 	
 	if(disk_read(output, 0) == -1){
 		return -1;
 	}
 	
+	if(sizeof(sb) > DB_SIZE){
+		printf("sb size larger than DB_SIZE\n");
+		return -1;
+	}
 	
 	memcpy(super, output, sizeof(sb));
 
-	free(output);
+	// free(output);
 
 	return 0;
 }

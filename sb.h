@@ -26,7 +26,8 @@ typedef struct sb{
 	// The file system type etc(ie: whether its ext2,3 or 4).
 	// The operating system in which the file system was formatted
 
-	unsigned int filesize;
+	unsigned long filesize;
+	
 	unsigned int blocksize;
 	unsigned int MAX_NUM_INODE;
 	unsigned int START_DATA_BLOCK;
