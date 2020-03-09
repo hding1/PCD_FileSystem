@@ -1,5 +1,5 @@
 
-#define FUSE_USE_VERSION 31
+#define FUSE_USE_VERSION 29
 
 #include <string.h>
 #include <stdio.h>
@@ -76,7 +76,8 @@ int test_readdir(const char* path){
 }
 
 int test_unlink(void){
-	const char* path = "/dir1/dir2/dir4";
+	printf("Testing unlink\n");
+	const char* path = "/dir1/dir2/test.txt";
 	printf("Unlinking Directory: %s\n",path);
 	if(pcd_unlink(path)<0){
 		printf("Unlink Test1 Failed");
@@ -114,7 +115,7 @@ int test_read(void){
 	const char* path1 = "/dir1/dir2/test.txt";
 	printf("Reading from path '%s'\n",path1);
 	char* buf1 = (char *)malloc(21);
-	if(pcd_read(path1, buf1, 20, 0, 0)){
+	if(pcd_read(path1, buf1, 20, 0, 0)==-1){
 		printf("Read Failed");
 		return -1;
 	}
@@ -124,7 +125,7 @@ int test_read(void){
 	printf("Directory Read: %s\n",path2);
 	char* buf2 = (char *)malloc(1000);
 	if(pcd_readdir(path2, buf2, test_filler, 0, 0) < 0){
-		printf("Read Directory Failed");
+		printf("Read Directory Failed\n\n");
 		return -1;
 	}
 
@@ -161,6 +162,7 @@ int read_dir(void){
 }
 int main(){
 	// init file system
+	initialize("./disk");
 	mkfs();
 	// allocate space
 	test_mkdir();

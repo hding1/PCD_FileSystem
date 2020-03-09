@@ -8,8 +8,8 @@
 #include "db.h"
 #include <stdlib.h>
 
-void mkfs();
-
+int mkfs();
+void initialize(const char* path);
 void freefs();
 
 #endif //PCD_FILESYSTEM_FS_H_

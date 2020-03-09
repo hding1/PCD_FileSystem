@@ -17,17 +17,15 @@
 #ifndef INODE_H_
 #define INODE_H_
 
-#define NUM_INODE 4096
-#define DIR_ID_NUM 12
-#define INDIR_ID_NUM 1024
-#define D_INDIR_ID_NUM 1024*1024
-#define T_INDIR_ID_NUM 1024*1024*1024
-#define INODE_SIZE 128
-#define ROOT_INUM 0
-#define MAX_FILE_SIZE 
-
-#define BITMAP_BID 1
-#define ILIST_BID 2
+// #define NUM_INODE 4096
+// #define DIR_ID_NUM 12
+// #define INDIR_ID_NUM 1024
+// #define D_INDIR_ID_NUM 1024*1024
+// #define T_INDIR_ID_NUM 1024*1024*1024
+// #define INODE_SIZE 128
+// #define ROOT_INUM 0
+// #define BITMAP_BID 1
+// #define ILIST_BID 2
 
 typedef struct inode{
      /* Mode: keeps information about two things, 
@@ -37,7 +35,7 @@ typedef struct inode{
 
      /* Owner info: Access details like owner of the file, 
                     group of the file etc */
-     uid_t UID;     // 4 bytes
+     gid_t UID;     // 4 bytes
      gid_t GID;     // 4 bytes
 
      /* Size: size of the file in terms of bytes */
@@ -49,7 +47,7 @@ typedef struct inode{
      time_t last_modified;
 
      // Data blocks
-     unsigned int direct_blo[DIR_ID_NUM];
+     unsigned int direct_blo[12];
      unsigned int single_ind;
      unsigned int double_ind;
      unsigned int triple_ind;
@@ -64,13 +62,16 @@ int inode_list_init();
 
 // Helper function
 int find_free_inode();
-inode* find_inode_by_inum(unsigned int inum);
+int find_inode_by_inum(unsigned int inum, inode* node);
 int write_inode_to_disk(unsigned int inum, inode* target_node);
 int free_indblo_by_bid(unsigned int bid);
 int free_dindblo_by_bid(unsigned int bid);
 int free_tindblo_by_bid(unsigned int bid);
-unsigned int find_block_by_num(unsigned int inum, unsigned int num);  // return the bid of the nth block in this inode
-int write_block_by_num(unsigned int inum, unsigned int num, char* block);
+
+unsigned int find_block_by_num(unsigned int inum, int num);  // return the bid of the nth block in this inode
+int write_block_by_num(unsigned int inum, int num, char* block);
+int free_block_by_num(unsigned int inum, int num);
+
 int add_block(unsigned int inum);
 unsigned long get_inode_size(unsigned int inum);
 int set_inode_size(unsigned int inum, unsigned long size);
@@ -82,24 +83,23 @@ int inode_read_mode(unsigned int inum, mode_t* mode_out);
 int inode_write_mode(unsigned int inum, mode_t mode_in);
 int inode_read_size(unsigned int inum, unsigned long* size); 
 int inode_read_link_count(unsigned int inum, unsigned int* count); 
-int inode_reduce_link_count(unsigned int inum); 
+int inode_reduce_link_count(unsigned int inum);
+int inode_increase_link_count(unsigned int inum);
+
+int inode_read_UID(unsigned int inum, uid_t* out);
+int inode_write_UID(unsigned int inum, uid_t in);
+int inode_read_GID(unsigned int inum, gid_t* out);
+int inode_write_GID(unsigned int inum, gid_t in);
+int inode_read_last_accessed(unsigned int inum, time_t* out);
+int inode_write_last_accessed(unsigned int inum, time_t in);
+int inode_read_last_modified(unsigned int inum, time_t* out);
+int inode_write_last_modified(unsigned int inum, time_t in);
+
 
 unsigned int get_root_inum();
 int read_file(unsigned int inum, char* buf, int size, int offset);
 int write_file(unsigned int inum, const char* buf, int size, int offset);
+int truncate_file(unsigned int inum, int offset);
 
 #endif
-
-
-
-
-// TO DO
-// 1. use sb instead hardcoded bid
-// 2. figure out how to set UID GID          DONE
-// 3. free block only free used blocks       DONE
-// 4. safety checks
-// 5. read file boundary
-// 6. add new block, the rest of the block should all be zeros
-
-
 #endif //PCD_FILESYSTEM_INODE_H_
