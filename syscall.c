@@ -702,11 +702,11 @@ int pcd_truncate(const char *path, off_t size){
 	return 0;
 }
 
-int pcd_symlink(const char *linkname, const char *path){
-	if(debug) fprintf(stderr, "symlink(%s, %s)\n", linkname, path);
+int pcd_symlink(const char *targetPath, const char *linkname){
+	if(debug) fprintf(stderr, "symlink(%s, %s)\n", targetPath, linkname);
 
 	pcd_mknod(linkname, S_IFLNK| 777, 0);
-	pcd_write(linkname, path, strlen(path)+1, 0, NULL);
+	pcd_write(linkname, targetPath, strlen(targetPath)+1, 0, NULL);
 
 	return 0;
 }
