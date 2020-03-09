@@ -774,7 +774,7 @@ int test_db_multiple_allocate_free(){
 	sb mysb;
 	for(int i = 0; i < 260853; i++){
 		bid = db_allocate();
-		if(bid < 0 || bid > 262144){
+		if(bid < 0 || bid > 7864320){
 			printf("Error: db_allocate failed at %dth block!\n", i);
 			return FAIL;
 		}
@@ -783,7 +783,7 @@ int test_db_multiple_allocate_free(){
 		printf("Error: sb_read failed!\n");
 		return FAIL;
 	}
-	if(mysb.NUM_FREE_BLOCK != 0){
+	if(mysb.NUM_FREE_BLOCK != 7602176){
 		printf("mysb.NUM_FREE_BLOCK = %d\n", mysb.NUM_FREE_BLOCK);
 		printf("Error: num free block incorrect!\n");
 		return FAIL;
@@ -797,7 +797,7 @@ int test_db_multiple_allocate_free(){
 		printf("Error: sb_read failed!\n");
 		return FAIL;
 	}
-	if(mysb.NUM_FREE_BLOCK != 260853){
+	if(mysb.NUM_FREE_BLOCK != 7863029){
 		printf("Error: num free block incorrect!\n");
 		return FAIL;
 	}
@@ -805,7 +805,7 @@ int test_db_multiple_allocate_free(){
 	// Second time allocate
 	for(int i = 0; i < 260853; i++){
 		bid = db_allocate();
-		if(bid < 0 || bid > 262144){
+		if(bid < 0 || bid > 7864320){
 			printf("Error: db_allocate failed at %dth block!\n", i);
 			return FAIL;
 		}
@@ -814,7 +814,7 @@ int test_db_multiple_allocate_free(){
 		printf("Error: sb_read failed!\n");
 		return FAIL;
 	}
-	if(mysb.NUM_FREE_BLOCK != 0){
+	if(mysb.NUM_FREE_BLOCK != 7602176){
 		printf("Error: num free block incorrect!\n");
 		return FAIL;
 	}
@@ -827,7 +827,7 @@ int test_db_multiple_allocate_free(){
 		printf("Error: sb_read failed!\n");
 		return FAIL;
 	}
-	if(mysb.NUM_FREE_BLOCK != 260853){
+	if(mysb.NUM_FREE_BLOCK != 7863029){
 		printf("Error: num free block incorrect!\n");
 		return FAIL;
 	}
@@ -840,7 +840,7 @@ int test_db_allocate(){
 	unsigned int bid;
 	for(int i = 0; i < 260853; i++){
 		bid = db_allocate();
-		if(bid < 0 || bid > 262144){
+		if(bid < 0 || bid > 7864320){
 			printf("Error: db_allocate failed at %dth block!\n", i);
 			return FAIL;
 		}
@@ -850,7 +850,7 @@ int test_db_allocate(){
 		printf("Error: sb_read failed!\n");
 		return FAIL;
 	}
-	if(mysb.NUM_FREE_BLOCK != 0){
+	if(mysb.NUM_FREE_BLOCK != 7602176){
 		printf("Error: num free block incorrect!\n");
 		return FAIL;
 	}
@@ -866,7 +866,7 @@ int test_db_free(){
 		printf("Error: sb_read failed!\n");
 		return FAIL;
 	}
-	if(mysb.NUM_FREE_BLOCK != 260853){
+	if(mysb.NUM_FREE_BLOCK != 7863029){
 		printf("Error: num free block incorrect!\n");
 		return FAIL;
 	}
