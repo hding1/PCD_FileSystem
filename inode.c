@@ -906,7 +906,9 @@ int read_file(unsigned int inum, char* buf, int size, int offset){
 int write_file(unsigned int inum, const char* buf, int size, int offset){
 
     if(sb_read(&super) == -1) return -1;
-    unsigned int ROOT_INUM = super.ROOT_INUM;
+    if((offset+size)>super.filesize) return -1;
+        if((offset+size)>super.MAX_FILE_SIZE) return -1;
+        unsigned int ROOT_INUM = super.ROOT_INUM;
     unsigned int NUM_INODE = super.MAX_NUM_INODE;
     unsigned int BLOCK_SIZE = super.blocksize;
 
@@ -916,7 +918,14 @@ int write_file(unsigned int inum, const char* buf, int size, int offset){
     if(size < 0) return -1;
     if(size == 0) return 0;
     unsigned long inode_size = get_inode_size(inum);
-    if(offset < 0 || offset > inode_size) return -1;
+    if(offset<0) return -1;
+        if(offset > inode_size) {
+        //fprintf(stderr,"debug, inum = %d,buf = %s, size = %d, offset = %d, inode size = %d\n",inum,buf,size,offset,inode_size);
+        truncate_file(inum,offset);
+        inode_size = get_inode_size(inum);
+//      fprintf(stderr,"debug after truncate inode size = %d\n",inode_size);
+//      return -1;
+        }
 
     // Locate offset
     unsigned int start_num = offset / BLOCK_SIZE;   // start block# in this inode
@@ -926,7 +935,7 @@ int write_file(unsigned int inum, const char* buf, int size, int offset){
     unsigned int toWrite;
     if(size >= BLOCK_SIZE - start_off){
         toWrite = BLOCK_SIZE - start_off;
-    }else{ 
+    }else{
         toWrite = size;
     }
     unsigned int buf_off = 0;
@@ -961,9 +970,9 @@ int write_file(unsigned int inum, const char* buf, int size, int offset){
             toWrite = size;
         }
     }
-    
+
     //printf("writefile: inode size = %lu\n", get_inode_size(inum));
-    
+
     return buf_off;
 }
 

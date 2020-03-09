@@ -556,9 +556,7 @@ int pcd_chmod(const char *path, mode_t mode){
 	if(status < 0){
 		return status;
 	}
-	mode_t newFilePermission = mode & (!S_IFMT);
-	mode_t oldFileType = oldMode & (S_IFMT);
-	status = inode_write_mode(myInum, newFilePermission | oldFileType);
+	status = inode_write_mode(myInum, mode);
 	if(status < 0){
 		return status;
 	}

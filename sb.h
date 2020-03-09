@@ -27,7 +27,7 @@ typedef struct sb{
 	// The operating system in which the file system was formatted
 
 	unsigned long filesize;
-	
+	unsigned long MAX_FILE_SIZE;
 	unsigned int blocksize;
 	unsigned int MAX_NUM_INODE;
 	unsigned int START_DATA_BLOCK;

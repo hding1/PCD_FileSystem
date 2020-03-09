@@ -16,6 +16,7 @@ int sb_init(){
 	super.START_DATA_BLOCK = 1291;	// 11 + 128*10
 
 	super.filesize = (unsigned long)30 * 1024 * 1024 * 1024;
+	super.MAX_FILE_SIZE = (12+1024+1024*1024+(unsigned long)1024*1024*1024)*4096;
 	super.blocksize = 4096;
 	super.MAX_NUM_INODE = 4096 * 10;
 
