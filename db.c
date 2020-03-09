@@ -193,6 +193,7 @@ int db_free(unsigned int block_id){
 	free(buffer);
 	free(super);
 	free(new_free_block);
+	free(temp);
 	return 0;
 }
 /*

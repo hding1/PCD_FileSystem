@@ -87,7 +87,7 @@ void deallocate_cache(){
 
 int cache_to_disk(unsigned int buffer_id, unsigned int block_id){
         //void* Disk_Buffer = (void*)((char*)add_0 + block_id * 4096);
-	void* Disk_Buffer = malloc(sizeof(char)*DB_SIZE);
+	void* Disk_Buffer = calloc(sizeof(char)*DB_SIZE, 1);
 	void* Cache_Buffer = (void*)((char*)buffer_0 + buffer_id * DB_SIZE); 
         memcpy(Disk_Buffer,Cache_Buffer,DB_SIZE);
 	
