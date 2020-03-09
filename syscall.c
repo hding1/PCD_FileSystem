@@ -79,13 +79,14 @@ int find_inode_index(int inum, char * target){
 	// start number = 2, since 0 and 1 are for . and ..
 	unsigned int start = 2;
 	unsigned int offset = start*DIRENT_SIZE;
-	char tempbuf[DIRENT_SIZE];
+	char * tempbuf = (char*)malloc(DIRENT_SIZE);
 	unsigned long inodeSize = 0;
 	inode_read_size(inum, &inodeSize);
 	while(offset < inodeSize){
 		// read one entry at an time
 		if(read_file(inum, tempbuf, DIRENT_SIZE, offset)==-1){
 			perror("Error Unable to Read");
+			free(tempbuf);
 			return -1;
 		}
 		// cast the buffer to dirent
@@ -93,12 +94,14 @@ int find_inode_index(int inum, char * target){
 		// compare the dirent with target
 		if(strcmp(mydirent->name,target)==0){
 			int num = mydirent->inum;
+			free(tempbuf);
 			return num;
 		}
 		start++;
 		offset = start*DIRENT_SIZE;
 	}
 	// no target found
+	free(tempbuf);
 	return -1;
 }
 
