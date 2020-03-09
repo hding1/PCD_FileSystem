@@ -91,6 +91,8 @@ int find_inode_index(int inum, char * target){
 		dirent * mydirent = (dirent *) tempbuf;
 		// compare the dirent with target
 		if(strcmp(mydirent->name,target)==0){
+			int num = mydirent->inum;
+			free(tempbuf);
 			return mydirent->inum;
 		}
 		start++;
