@@ -131,6 +131,7 @@ int find_inode(const char *path){
 			return -1;
 		}
 		if(strlen(pathCopy)==strlen(dir)){
+			free(pathCopyStart);
 			return myInum;
 		}
 		pathCopy = pathCopy+strlen(dir)+1;
