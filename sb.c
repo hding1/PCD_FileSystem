@@ -43,16 +43,21 @@ int sb_init(){
 }
 
 int sb_read(sb* super){
-	void* output = malloc(sizeof(char) * DB_SIZE);
+	// void* output = malloc(sizeof(char) * DB_SIZE);
+	char output[DB_SIZE];
 	
 	if(disk_read(output, 0) == -1){
 		return -1;
 	}
 	
+	if(sizeof(sb) > DB_SIZE){
+		printf("sb size larger than DB_SIZE\n");
+		return -1;
+	}
 	
 	memcpy(super, output, sizeof(sb));
 
-	free(output);
+	// free(output);
 
 	return 0;
 }
