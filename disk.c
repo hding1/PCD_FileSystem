@@ -212,7 +212,13 @@ void hash_init(){
 }
 void hash_free(){
 	for(int i=0; i<BUFFER_NUM; i++){
-		free(hash_table->list[i]);
+		Hash_Node* curr = hash_table->list[i];
+		Hash_Node* = prev;
+		while(curr!=NULL){
+			prev = curr;
+			curr = curr->next;
+			free(prev);
+		}
 	}
 	free(hash_table->list);
 	free(hash_table);
