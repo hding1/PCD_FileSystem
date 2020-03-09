@@ -21,7 +21,7 @@ void* buffer_0;
 int allocate_disk(const char* filename);
 int free_disk();
 int disk_read(void* out, unsigned int block_id);
-int disk_write(void* in, unsigned int block_id, int access_disk = 0);
+int disk_write(void* in, unsigned int block_id, int access_disk);
 
 /*
  */

@@ -34,7 +34,7 @@ int sb_init(){
 	
 	memcpy(input, &super, sizeof(struct sb)); // dest src size
 
-	if(disk_write(input, 0) == -1){
+	if(disk_write(input, 0, 1) == -1){
 		free(input);
 		return -1;
 	}
@@ -69,7 +69,7 @@ int sb_write(sb* super){
 
         memcpy(input, super, sizeof(sb)); // dest src size
 
-        if(disk_write(input, 0) == -1){
+        if(disk_write(input, 0, 0) == -1){
 		return -1;
 	}
         

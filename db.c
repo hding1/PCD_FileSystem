@@ -75,7 +75,7 @@ int db_allocate(){
 			unsigned int t = 0;
 			unsigned int write_back  =  super->FREE_LIST;
 			memcpy(((char*)buffer) + i*sizeof(unsigned int), &t, sizeof(unsigned int));
-			if(disk_write(buffer, write_back)==-1){
+			if(disk_write(buffer, write_back,0)==-1){
 				bid = -1;
 			}
 			if(sb_write(super) == -1){
@@ -152,7 +152,7 @@ int db_free(unsigned int block_id){
 		free(super);
 
 		memcpy(buffer, &block_id, sizeof(unsigned int));
-		disk_write(buffer, block_id);
+		disk_write(buffer, block_id,0);
 		free(buffer);
 		return 0;
 	}
@@ -166,7 +166,7 @@ int db_free(unsigned int block_id){
 			unsigned int bl_id = block_id;
 			memcpy(((char*)buffer) + i*sizeof(unsigned int), &bl_id, sizeof(unsigned int));
 			unsigned int write_back  =  super->FREE_LIST;
-			disk_write(buffer,write_back);
+			disk_write(buffer,write_back,0);
 			// printf("i = %d\n", i);
 			free(buffer);
 			super->NUM_FREE_BLOCK +=1;
@@ -187,7 +187,7 @@ int db_free(unsigned int block_id){
 	if(sb_write(super) == -1){
 		return -1;
 	}
-	if(disk_write(new_free_block,block_id)==-1){
+	if(disk_write(new_free_block,block_id,0)==-1){
 		return -1;
 	}
 	free(buffer);
@@ -256,7 +256,7 @@ int db_write(void* in, unsigned int block_id){
 		printf("block %u id too large to write \n", block_id);
 		return -1;
 	}
-	if(disk_write(in, block_id) == -1){
+	if(disk_write(in, block_id,0) == -1){
 		return -1;
 	}
 	free(super);
