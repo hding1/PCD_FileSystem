@@ -110,8 +110,7 @@ void read_from_cache(void* out, unsigned int buffer_id){
 }
 
 void list_init(){
-	list_head =(List_Node*)malloc(sizeof(List_Node));
-	list_head = NULL;
+	list_head =(List_Node*)calloc(sizeof(List_Node), 1);
 
 	List_Node* head = list_head;
 	
