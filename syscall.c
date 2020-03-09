@@ -78,7 +78,7 @@ int find_inode_index(int inum, char * target){
 	// start number = 2, since 0 and 1 are for . and ..
 	unsigned int start = 2;
 	unsigned int offset = start*DIRENT_SIZE;
-	char * tempbuf[DIRENT_SIZE];
+	char tempbuf[DIRENT_SIZE];
 	unsigned long inodeSize = 0;
 	inode_read_size(inum, &inodeSize);
 	while(offset < inodeSize){
